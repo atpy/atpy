@@ -39,6 +39,13 @@ class BaseTable(object):
         if kwargs.has_key('name'):
             self.table_name = kwargs['name']
         
+    def __getattr__(self,attribute):
+        
+        if attribute in self.names:
+            return self.array[attribute]
+        else:
+            raise AttributeError(attribute)
+        
     def reset(self):
         
         self.table_name = ""
