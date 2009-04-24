@@ -148,8 +148,37 @@ class BaseTable(object):
             raise Exception("No columns to keep")
 
         self.remove_columns(remove_names)        
+    
+    def rename_column(self,old_name,new_name):
         
-    def describe(self,):
+        if new_name in self.names:
+            raise Exception("Column "+new_name+" already exists")
+            
+        if not old_name in self.names:
+            raise Exception("Column "+old_name+" not found")
+        
+        for i,name in enumerate(self.names):
+            if name == old_name:
+                self.names[i] = new_name
+
+                self.array[new_name] = self.array[old_name]
+                del self.array[old_name]
+
+                self.units[new_name] = self.units[old_name]
+                del self.units[old_name]
+
+                self.descriptions[new_name] = self.descriptions[old_name]
+                del self.descriptions[old_name]
+
+                self.null[new_name] = self.null[old_name]
+                del self.null[old_name]
+
+                self.formats[new_name] = self.formats[old_name]
+                del self.formats[old_name]
+
+                return
+        
+    def describe(self):
         
         print "Table : "+self.table_name
         
