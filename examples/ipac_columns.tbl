@@ -1,0 +1,7 @@
+\name=value                                                    
+\ Comment                                                      
+|  column1 |  column2 | column3 | column4  |    column5       |
+|   char   |   char   |   char  |   char   |     char         |
+|   unit   |   unit   |   unit  |    unit  |     unit         |
+|   null   |   null   |   null  |    null  |     null         |
+111111111112222222222233333333334444444444455555555555555555555

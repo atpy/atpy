@@ -1,0 +1,26 @@
+Installing ATpy
++++++++++++++++
+
+  Prerequisites
+  =============
+
+    ATpy requires the following packages to function properly:
+
+      - numpy 1.1.1 or later
+        http://numpy.scipy.org/
+
+      - pyfits 1.3 or later (for FITS tables)
+        http://www.stsci.edu/resources/software_hardware/pyfits
+
+      - vo (svn version - for VO tables)
+        https://www.stsci.edu/trac/ssb/astrolib/
+        
+      - sqlalchem 0.5.3 or later (for SQL tables)
+        http://www.sqlalchemy.org/
+
+  Installation
+  ============
+
+    To install ATpy, simply run:
+
+      sudo python setup.py install
