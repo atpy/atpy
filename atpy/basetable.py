@@ -47,6 +47,9 @@ class BaseTable(object):
         # Supplied table name overrides name passed through table
         if kwargs.has_key('name'):
             self.table_name = kwargs['name']
+            
+        # Update shape
+        self._update_shape()
         
     def __getattr__(self,attribute):
         
@@ -76,6 +79,9 @@ class BaseTable(object):
         
         for column in columns:
             self.add_column(column)
+            
+        # Update shape
+        self._update_shape()
         
     def add_column(self,column,unit='',null='',description='',format=None):
                 
@@ -93,6 +99,9 @@ class BaseTable(object):
             self.formats[name] = format
         else:
             self.formats[name] = str(default_format[column_type][0])+default_format[column_type][1]
+            
+        # Update shape
+        self._update_shape()
                 
     def add_comment(self,comment):
         self.comments.append(comment.strip())
@@ -116,6 +125,9 @@ class BaseTable(object):
         except ValueError,KeyError:
 
             raise Exception("Column "+name+" does not exist")
+            
+        # Update shape
+        self._update_shape()
     
     def remove_columns(self,remove_names):
         
@@ -162,6 +174,11 @@ class BaseTable(object):
             print format % (name,str(self.units[name]),str(type(self.array[name][0])),self.formats[name])
         
         print "-"*len_tot
+
+    def _update_shape(self):
+        n_rows = self.__len__()
+        n_cols = len(self.names)
+        self.shape = (n_rows,n_cols)
 
 class BaseTableSet(object):
 
