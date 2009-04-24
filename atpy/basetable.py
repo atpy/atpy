@@ -24,16 +24,25 @@ class BaseTable(object):
             
         # Otherwise transfer the data to the new instance
         elif len(args) == 1:
-            table = args[0]
-            self.table_name = table.table_name
-            self.names = table.names
-            self.array = table.array
-            self.units = table.units
-            self.descriptions = table.descriptions
-            self.keywords = table.keywords
-            self.comments = table.comments
-            self.null = table.null
-            self.formats = table.formats
+
+            arg = args[0]
+            
+            if isinstance(arg,BaseTable):        
+                table = arg
+                self.table_name = table.table_name
+                self.names = table.names
+                self.array = table.array
+                self.units = table.units
+                self.descriptions = table.descriptions
+                self.keywords = table.keywords
+                self.comments = table.comments
+                self.null = table.null
+                self.formats = table.formats
+            elif type(arg) == str:
+                filename = arg
+                self.read(filename)
+            else:
+                raise Exception("Unknown argument type: "+str(type(arg)))
         
         # Supplied table name overrides name passed through table
         if kwargs.has_key('name'):
