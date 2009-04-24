@@ -54,6 +54,9 @@ class BaseTable(object):
             return self.array[attribute]
         else:
             raise AttributeError(attribute)
+    
+    def __len__(self):
+        return len(self.array[self.names[0]])
         
     def reset(self):
         
