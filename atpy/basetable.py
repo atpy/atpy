@@ -59,7 +59,10 @@ class BaseTable(object):
             raise AttributeError(attribute)
     
     def __len__(self):
-        return len(self.array[self.names[0]])
+        if len(self.names) == 0:
+            return 0
+        else:
+            return len(self.array[self.names[0]])
         
     def reset(self):
         
@@ -124,7 +127,7 @@ class BaseTable(object):
         
         except ValueError,KeyError:
 
-            raise Exception("Column "+name+" does not exist")
+            raise Exception("Column "+remove_name+" does not exist")
             
         # Update shape
         self._update_shape()
