@@ -1,4 +1,5 @@
 import numpy as np
+from copy import copy
 
 default_format = {}
 default_format[None.__class__] = 16,'.9e'
@@ -206,7 +207,28 @@ class BaseTable(object):
             print format % (name,str(self.units[name]),str(type(self.array[name][0])),self.formats[name])
         
         print "-"*len_tot
-
+        
+    def where(self,mask):
+        
+        new_table = self.__class__()
+                
+        new_table.table_name = copy(self.table_name)
+        new_table.names = copy(self.names)
+        new_table.array = copy(self.array)
+        new_table.units = copy(self.units)
+        new_table.descriptions = copy(self.descriptions)
+        new_table.keywords = copy(self.keywords)
+        new_table.comments = copy(self.comments)
+        new_table.null = copy(self.null)
+        new_table.formats = copy(self.formats)
+                                
+        for name in new_table.names:
+            new_table.array[name] = self.array[name][mask]
+            
+        new_table._update_shape()
+            
+        return new_table
+        
     def _update_shape(self):
         n_rows = self.__len__()
         n_cols = len(self.names)
