@@ -88,6 +88,30 @@ class BaseTable(object):
         self._update_shape()
     
     def add_column(self,column,unit='',null='',description='',format=None):
+        '''
+        Add a column to the table
+        
+        Required Arguments:
+        
+            *column*: [ tuple ]
+                A two-element tuple, where the first element is the name of
+                the column, and the second column is a list or numpy array
+                containing the data
+                
+        Optional Keyword Arguments:
+        
+            *unit*: [ string ]
+                The unit of the values in the column
+                
+            *null*: [ same type as data ]
+                The values corresponding to 'null', if not NaN
+                
+            *description*: [ string ]
+                A description of the content of the column
+                
+            *format*: [ string ]
+                The format to use for ASCII printing
+        '''
         
         name,array = column
         
@@ -108,14 +132,43 @@ class BaseTable(object):
         self._update_shape()
     
     def add_comment(self,comment):
+        '''
+        Add a comment to the table
+        
+        Required Argument:
+        
+            *comment*: [ string ]
+                The comment to add to the table
+        '''
+        
         self.comments.append(comment.strip())
     
     def add_keyword(self,key,value):
+        '''
+        Add a keyword/value pair to the table
+        
+        Required Arguments:
+        
+            *key*: [ string ]
+                The name of the keyword
+                
+            *value*: [ string | float | integer | bool ]
+                The value of the keyword
+        '''
+        
         if type(value) == str:
             value = value.strip()
         self.keywords[key.strip()] = value
     
     def remove_column(self,remove_name):
+        '''
+        Remove a column from the table
+        
+        Required Argument:
+        
+            *remove_name*: [ string ]
+                The name of the column to remove
+        '''
         
         try:
             
@@ -134,6 +187,14 @@ class BaseTable(object):
         self._update_shape()
     
     def remove_columns(self,remove_names):
+        '''
+        Remove several columns from the table
+        
+        Required Argument:
+        
+            *remove_names*: [ list of strings ]
+                A list containing the names of the columns to remove
+        '''
         
         if type(remove_names) == str:
             remove_names = [remove_names]
@@ -142,6 +203,15 @@ class BaseTable(object):
             self.remove_column(name)
     
     def keep_columns(self,keep_names):
+        '''
+        Keep only specific columns in the table (remove the others)
+        
+        Required Argument:
+        
+            *keep_names*: [ list of strings ]
+                A list containing the names of the columns to keep.
+                All other columns will be removed.
+        '''
         
         if type(keep_names) == str:
             keep_names = [keep_names]
@@ -154,6 +224,17 @@ class BaseTable(object):
         self.remove_columns(remove_names)
     
     def rename_column(self,old_name,new_name):
+        '''
+        Rename a column from the table
+        
+        Require Arguments:
+        
+            *old_name*: [ string ]
+                The current name of the column.
+                
+            *new_name*: [ string ]
+                The new name for the column
+        '''
         
         if new_name in self.names:
             raise Exception("Column "+new_name+" already exists")
