@@ -75,7 +75,7 @@ class SQLTable(BaseTable):
                     if type(elem)==decimal.Decimal:
                         elem = float(elem)
                     column.append(elem)
-                self.add_column((col,uni2str(np.array(column))))
+                self.add_column((str(col),uni2str(np.array(column))))
     
     
     def write(self,dbname,dbtype='sqlite',username='',password='',host='localhost'):
