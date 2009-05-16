@@ -23,8 +23,34 @@ type_rev_dict[np.string_] = "char"
 type_rev_dict[str] = "char"
 
 class IPACTable(BaseTable):
+    ''' A class for reading and writing a single IPAC table.'''
     
-    def read(self,filename):
+    def read(self,filename,definition=3):
+        '''
+        Read a table from a IPAC file
+        
+        Required Arguments:
+            
+            *filename*: [ string ]
+                The IPAC file to read the table from
+        
+        Optional Keyword Arguments:
+            
+            *definition*: [ 1 | 2 | 3 ]
+                
+                The definition to use to read IPAC tables:
+                
+                1: any character below a pipe symbol belongs to the
+                   column on the left, and any characters below the
+                   first pipe symbol belong to the first column.
+                2: any character below a pipe symbol belongs to the
+                   column on the right.
+                3: no characters should be present below the pipe
+                   symbols (default).
+        '''
+        
+        if not definition in [1,2,3]:
+            raise Exception("definition should be one of 1/2/3")
         
         # Erase existing content
         self.reset()
@@ -53,7 +79,7 @@ class IPACTable(BaseTable):
                 self.add_keyword(key,value)
             
             line = f.readline()
-                
+        
         
         # Column headers
         
@@ -123,7 +149,14 @@ class IPACTable(BaseTable):
             
             for i in range(len(pipes)-1):
                 
-                first,last = pipes[i],pipes[i+1]
+                first,last = pipes[i]+1,pipes[i+1]
+                
+                if definition==1:
+                    last = last + 1
+                    if first==1:
+                        first=0
+                elif definition==2:
+                    first = first - 1
                 
                 if i+1==len(pipes)-1:
                     item = line[first:].strip()
@@ -140,9 +173,16 @@ class IPACTable(BaseTable):
         for name in names:
             array[name] = np.array(array[name],dtype=type_dict[types[name]])
             self.add_column(name,array[name],null=nulls[name],unit=units[name])
-
     
     def write(self,filename):
+        '''
+        Write the table to an IPAC file
+        
+        Required Arguments:
+            
+            *filename*: [ string ]
+                The IPAC file to write the table to
+        '''
         
         # Open file for writing
         f = file(filename,'wb')

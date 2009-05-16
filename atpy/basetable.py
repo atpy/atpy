@@ -16,6 +16,27 @@ default_format[np.unicode_] = 10,'s'
 class BaseTable(object):
     
     def __init__(self,*args,**kwargs):
+        '''
+        Create a table instance
+        
+        Optional Arguments:
+        
+            If no arguments are given, and empty table is created
+            
+            If one argument is given, it can either be:
+            
+                - the name of a file to read the table from
+
+                - a table instance (can be of any type). In this
+                  case, the entire contents of the passed instance
+                  are copied into the new table.
+        
+        Optional Keyword Arguments:
+        
+            Any keyword arguments are passed to read() method if a
+            filename is specified.
+        
+        '''
         
         self.reset()
         
@@ -41,7 +62,7 @@ class BaseTable(object):
                 self.formats = table.formats
             elif type(arg) == str:
                 filename = arg
-                self.read(filename)
+                self.read(filename,**kwargs)
             else:
                 raise Exception("Unknown argument type: "+str(type(arg)))
         
@@ -55,7 +76,7 @@ class BaseTable(object):
         return
     
     def __getattr__(self,attribute):
-        
+                
         if attribute in self.names:
             return self.array[attribute]
         else:
@@ -79,12 +100,12 @@ class BaseTable(object):
         self.comments = []
         return
     
-    def add_columns(self,names,data):
-        self.reset()
-        for column in columns:
-            self.add_column(names,data)
-        self._update_shape()
-        return
+#    def add_columns(self,names,data):
+#        self.reset()
+#        for column in columns:
+#            self.add_column(names,data)
+#        self._update_shape()
+#        return
     
     def add_column(self,name,data,unit='',null='',description='',format=None):
         '''
@@ -328,20 +349,21 @@ class BaseTableSet(object):
     
     def __init__(self,*args):
         '''
-        Create a table set
+        Create a table set instance
         
-        This can be called in three different ways:
+        Optional Arguments:
         
-        TableSet(): creates an empty instance of a FITS table set
-        
-        TableSet(list): where list is a list of individual tables
-        (which can have inhomogeneous types)
-        
-        TableSet(tableset): where tableset can be a table set of any type
+            If no arguments are given, and empty table set is created
+            
+            If one argument is given, it can either be:
+            
+                - a list of individual tables (which can have inhomogeneous types)
+            
+                - a table set of any type
         '''
         
         if len(args) > 1:
-            raise Exception("TableSet either takes no or one argument")
+            raise Exception(self.__name__+" either takes no or one argument")
         elif len(args) == 1:
             data = args[0]
         else:
