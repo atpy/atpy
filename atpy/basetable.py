@@ -150,37 +150,6 @@ class BaseTable(object):
         self._update_shape()
         return
     
-    def add_comment(self,comment):
-        '''
-        Add a comment to the table
-        
-        Required Argument:
-            
-            *comment*: [ string ]
-                The comment to add to the table
-        '''
-        
-        self.comments.append(comment.strip())
-        return
-    
-    def add_keyword(self,key,value):
-        '''
-        Add a keyword/value pair to the table
-        
-        Required Arguments:
-            
-            *key*: [ string ]
-                The name of the keyword
-            
-            *value*: [ string | float | integer | bool ]
-                The value of the keyword
-        '''
-        
-        if type(value) == str:
-            value = value.strip()
-        self.keywords[key.strip()] = value
-        return
-    
     def remove_column(self,remove_name):
         '''
         Remove a column from the table
@@ -358,6 +327,37 @@ class BaseTable(object):
         n_cols = len(self.names)
         self.shape = (n_rows,n_cols)
         
+        return
+        
+    def add_comment(self,comment):
+        '''
+        Add a comment to the table
+
+        Required Argument:
+
+            *comment*: [ string ]
+                The comment to add to the table
+        '''
+
+        self.comments.append(comment.strip())
+        return
+
+    def add_keyword(self,key,value):
+        '''
+        Add a keyword/value pair to the table
+
+        Required Arguments:
+
+            *key*: [ string ]
+                The name of the keyword
+
+            *value*: [ string | float | integer | bool ]
+                The value of the keyword
+        '''
+
+        if type(value) == str:
+            value = value.strip()
+        self.keywords[key.strip()] = value
         return
 
 class BaseTableSet(object):
