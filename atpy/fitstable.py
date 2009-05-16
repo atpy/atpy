@@ -1,5 +1,6 @@
 import numpy as np
 import pyfits
+
 from basetable import BaseTable, BaseTableSet
 
 standard_keys = ['XTENSION','NAXIS','NAXIS1','NAXIS2','TFIELDS','PCOUNT','GCOUNT','BITPIX']
@@ -27,10 +28,24 @@ def _list_tables(filename):
 class FITSTable(BaseTable):
     """ A class for reading and writing a single FITS table."""
     
-    def read(self,filename,echo=False,hdu=None):
-    
+    def read(self,filename,hdu=None):
+        '''
+        Read a table from a FITS file
+        
+        Required Arguments:
+            
+            *filename*: [ string ]
+                The file to read the FITS table from
+        
+        Optional Keyword Arguments:
+            
+            *hdu*: [ integer ]
+                The HDU to read the FITS table from (this is only required
+                if there are more than one tables in the FITS file)
+        '''
+        
         self.reset()
-    
+        
         # If no hdu is requested, check that there is only one table
         if not hdu:
             tables = _list_tables(filename)
@@ -46,7 +61,7 @@ class FITSTable(BaseTable):
                     print " hdu=%i : %s" % (table,tables[table])
                 print "-"*56
                 return
-                
+        
         hdu = pyfits.open(filename)[hdu]
         
         table = hdu.data
@@ -55,18 +70,21 @@ class FITSTable(BaseTable):
         
         for name in cols:
             self.add_column((name,table.field(name)))
-    
+        
         for key in header.keys():
             if not key[:4] in ['TFOR','TDIS','TDIM','TTYP','TUNI'] and not key in standard_keys:
                 self.add_keyword(key,header[key])
-
+        
         for comment in header.get_comment():
             self.add_comment(comment)
         
         self.table_name = hdu.name
-            
-    def hdu(self):
-
+    
+    def _hdu(self):
+        '''
+        Return the current table as a pyfits HDU object
+        '''
+        
         columns = []
         
         for name in self.names:
@@ -75,7 +93,7 @@ class FITSTable(BaseTable):
             unit = self.units[name]
             
             if unit == None: unit = ''
-                
+            
             elemtype,elemwidth = type(array[0]),1
             
             if elemtype == np.ndarray:
@@ -100,42 +118,99 @@ class FITSTable(BaseTable):
             else:
                 keyname = key
             hdu.header.update(keyname,self.keywords[key])
-            
+        
         for comment in self.comments:
             hdu.header.add_comment(comment)
-            
+        
         return hdu
+    
+    def write(self,filename,overwrite=False):
+        '''
+        Write the table to a FITS file
         
-    def write(self,filename,clobber=False):        
-        self.hdu().writeto(filename,clobber=clobber)
+        Required Arguments:
+            
+            *filename*: [ string ]
+                The file to write the FITS table to
         
+        Optional Keyword Arguments:
+            
+            *overwrite*: [ True | False ]
+                Whether to overwrite any existing file without warning
+        '''
+        
+        self._hdu().writeto(filename,clobber=overwrite)
+
 class FITSTableSet(BaseTableSet):
     """ A class for reading and writing a set of FITS tables."""
-
-    def __init__(self,tables=None):
-
+    
+    def __init__(self,*args):
+        '''
+        Create a FITS table set
+        
+        This can be called in three different ways:
+        
+        FITSTableSet(): creates an empty instance of a FITS table set
+        
+        FITSTableSet(list): where list is a list of individual tables
+        (which can have inhomogeneous types)
+        
+        FITSTableSet(tableset): where tableset can be a table set of any type
+        '''
+        
+        if len(args) > 1:
+            raise Exception("FITSTableSet either takes no or one argument")
+        elif len(args) == 1:
+            data = args[0]
+        else:
+            data = None
+        
         self.tables = []
-
-        if tables:
-            if type(tables) == list:
-                self.tables = tables
-            elif isinstance(tables,BaseTableSet):
-                for table in tables.tables:
+        
+        if data:
+            if type(data) == list:
+                for table in data:
+                    self.tables.append(FITSTable(table))
+            elif isinstance(data,BaseTableSet):
+                for table in data.tables:
                     self.tables.append(FITSTable(table))
             else:
-                raise Exception("Unknown type: "+type(tables))
-
+                raise Exception("Unknown type: "+type(data))
+    
     def read(self,filename):
-        hdus = _list_tables(filename)
+        '''
+        Read all tables from a FITS file
+        
+        Required Arguments:
+            
+            *filename*: [ string ]
+                The name of the file to read the tables from
+        '''
+        
         self.tables = []
-        for hdu in hdus:
-            t = FITSTable()
-            t.read(filename,hdu=hdu)
-            self.tables.append(t)
-
-    def write(self,filename,clobber=False):
+        
+        for hdu in _list_tables(filename):
+            table = FITSTable()
+            table.read(filename,hdu=hdu)
+            self.tables.append(table)
+    
+    def write(self,filename,overwrite=False):
+        '''
+        Write the tables to a FITS file
+        
+        Required Arguments:
+            
+            *filename*: [ string ]
+                The file to write the FITS table to
+        
+        Optional Keyword Arguments:
+            
+            *overwrite*: [ True | False ]
+                Whether to overwrite any existing file without warning
+        '''
+        
         hdulist = [pyfits.PrimaryHDU()]
         for i,table in enumerate(self.tables):
-            hdulist.append(table.hdu())
+            hdulist.append(table._hdu())
         hdulist = pyfits.HDUList(hdulist)
-        hdulist.writeto(filename,clobber=clobber)
+        hdulist.writeto(filename,clobber=overwrite)
