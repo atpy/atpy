@@ -290,6 +290,9 @@ class BaseTable(object):
         return
     
     def describe(self):
+        '''
+        Prints a description of the table
+        '''
         
         print "Table : "+self.table_name
         
@@ -318,6 +321,18 @@ class BaseTable(object):
         return
     
     def where(self,mask):
+        '''
+        Select certain rows from the table and return a new table instance
+        
+        Required Argument:
+            
+            *mask*: [ np.bool array ]
+                A boolean array with the same length as the table.
+                
+        Returns:
+        
+            A new table instance, containing only the rows selected
+        '''
         
         new_table = self.__class__()
         
