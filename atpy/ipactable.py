@@ -240,8 +240,10 @@ class IPACTable(BaseTable):
         
         f.write(line_names)
         f.write(line_types)
-        f.write(line_units)
-        f.write(line_nulls)
+        if len(line_units.replace("|","").strip()) > 0:
+            f.write(line_units)
+        if len(line_nulls.replace("|","").strip()) > 0:
+            f.write(line_nulls)
         
         for i in range(len(self.array[self.names[0]])):
             

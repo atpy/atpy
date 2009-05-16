@@ -20,19 +20,19 @@ class BaseTable(object):
         Create a table instance
         
         Optional Arguments:
-        
+            
             If no arguments are given, and empty table is created
             
             If one argument is given, it can either be:
-            
+                
                 - the name of a file to read the table from
-
+                
                 - a table instance (can be of any type). In this
                   case, the entire contents of the passed instance
                   are copied into the new table.
         
         Optional Keyword Arguments:
-        
+            
             Any keyword arguments are passed to read() method if a
             filename is specified.
         
@@ -76,7 +76,7 @@ class BaseTable(object):
         return
     
     def __getattr__(self,attribute):
-                
+        
         if attribute in self.names:
             return self.array[attribute]
         else:
@@ -99,7 +99,7 @@ class BaseTable(object):
         self.keywords = {}
         self.comments = []
         return
-    
+
 #    def add_columns(self,names,data):
 #        self.reset()
 #        for column in columns:
@@ -115,7 +115,7 @@ class BaseTable(object):
             
             *name*: [ string ]
                 The name of the column to add
-                
+            
             *data*: [ numpy array ]
                 The column data
         
@@ -133,7 +133,7 @@ class BaseTable(object):
             *format*: [ string ]
                 The format to use for ASCII printing
         '''
-                
+        
         self.names.append(name)
         self.array[name] = np.array(data)
         self.units[name] = unit
@@ -367,13 +367,13 @@ class BaseTableSet(object):
         Create a table set instance
         
         Optional Arguments:
-        
+            
             If no arguments are given, and empty table set is created
             
             If one argument is given, it can either be:
-            
+                
                 - a list of individual tables (which can have inhomogeneous types)
-            
+                
                 - a table set of any type
         '''
         
