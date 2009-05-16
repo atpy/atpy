@@ -37,7 +37,7 @@ class BaseTable(object):
                 self.descriptions = table.descriptions
                 self.keywords = table.keywords
                 self.comments = table.comments
-                self.null = table.null
+                self.nulls = table.nulls
                 self.formats = table.formats
             elif type(arg) == str:
                 filename = arg
@@ -51,6 +51,8 @@ class BaseTable(object):
         
         # Update shape
         self._update_shape()
+        
+        return
     
     def __getattr__(self,attribute):
         
@@ -66,92 +68,89 @@ class BaseTable(object):
             return len(self.array[self.names[0]])
     
     def reset(self):
-        
         self.table_name = ""
         self.names = []
         self.array = {}
         self.units = {}
         self.descriptions = {}
-        self.null = {}
+        self.nulls = {}
         self.formats = {}
         self.keywords = {}
         self.comments = []
+        return
     
-    def populate(self,columns):
-        
+    def add_columns(self,names,data):
         self.reset()
-        
         for column in columns:
-            self.add_column(column)
-        
-        # Update shape
+            self.add_column(names,data)
         self._update_shape()
+        return
     
-    def add_column(self,column,unit='',null='',description='',format=None):
+    def add_column(self,name,data,unit='',null='',description='',format=None):
         '''
         Add a column to the table
         
         Required Arguments:
-        
-            *column*: [ tuple ]
-                A two-element tuple, where the first element is the name of
-                the column, and the second column is a list or numpy array
-                containing the data
+            
+            *name*: [ string ]
+                The name of the column to add
                 
-        Optional Keyword Arguments:
+            *data*: [ numpy array ]
+                The column data
         
+        Optional Keyword Arguments:
+            
             *unit*: [ string ]
                 The unit of the values in the column
-                
+            
             *null*: [ same type as data ]
                 The values corresponding to 'null', if not NaN
-                
+            
             *description*: [ string ]
                 A description of the content of the column
-                
+            
             *format*: [ string ]
                 The format to use for ASCII printing
         '''
-        
-        name,array = column
-        
+                
         self.names.append(name)
-        self.array[name] = np.array(array)
+        self.array[name] = np.array(data)
         self.units[name] = unit
         self.descriptions[name] = description
-        self.null[name] = null
+        self.nulls[name] = null
         
-        column_type = type(array.ravel()[0])
+        column_type = type(data.ravel()[0])
         
         if format:
             self.formats[name] = format
         else:
             self.formats[name] = str(default_format[column_type][0])+default_format[column_type][1]
         
-        # Update shape
         self._update_shape()
+        return
     
     def add_comment(self,comment):
         '''
         Add a comment to the table
         
         Required Argument:
-        
+            
             *comment*: [ string ]
                 The comment to add to the table
         '''
         
         self.comments.append(comment.strip())
+        return
     
     def add_keyword(self,key,value):
         '''
         Add a keyword/value pair to the table
         
         Required Arguments:
-        
+            
             *key*: [ string ]
                 The name of the keyword
-                
+            
             *value*: [ string | float | integer | bool ]
                 The value of the keyword
         '''
@@ -159,13 +158,14 @@ class BaseTable(object):
         if type(value) == str:
             value = value.strip()
         self.keywords[key.strip()] = value
+        return
     
     def remove_column(self,remove_name):
         '''
         Remove a column from the table
         
         Required Argument:
-        
+            
             *remove_name*: [ string ]
                 The name of the column to remove
         '''
@@ -185,13 +185,14 @@ class BaseTable(object):
         
         # Update shape
         self._update_shape()
+        return
     
     def remove_columns(self,remove_names):
         '''
         Remove several columns from the table
         
         Required Argument:
-        
+            
             *remove_names*: [ list of strings ]
                 A list containing the names of the columns to remove
         '''
@@ -201,13 +202,15 @@ class BaseTable(object):
         
         for name in remove_names:
             self.remove_column(name)
+        
+        return
     
     def keep_columns(self,keep_names):
         '''
         Keep only specific columns in the table (remove the others)
         
         Required Argument:
-        
+            
             *keep_names*: [ list of strings ]
                 A list containing the names of the columns to keep.
                 All other columns will be removed.
@@ -222,16 +225,18 @@ class BaseTable(object):
             raise Exception("No columns to keep")
         
         self.remove_columns(remove_names)
+        
+        return
     
     def rename_column(self,old_name,new_name):
         '''
         Rename a column from the table
         
         Require Arguments:
-        
+            
             *old_name*: [ string ]
                 The current name of the column.
-                
+            
             *new_name*: [ string ]
                 The new name for the column
         '''
@@ -255,13 +260,13 @@ class BaseTable(object):
                 self.descriptions[new_name] = self.descriptions[old_name]
                 del self.descriptions[old_name]
                 
-                self.null[new_name] = self.null[old_name]
-                del self.null[old_name]
+                self.nulls[new_name] = self.nulls[old_name]
+                del self.nulls[old_name]
                 
                 self.formats[new_name] = self.formats[old_name]
                 del self.formats[old_name]
-                
-                return
+        
+        return
     
     def describe(self):
         
@@ -288,6 +293,8 @@ class BaseTable(object):
             print format % (name,str(self.units[name]),str(type(self.array[name][0])),self.formats[name])
         
         print "-"*len_tot
+        
+        return
     
     def where(self,mask):
         
@@ -300,7 +307,7 @@ class BaseTable(object):
         new_table.descriptions = copy(self.descriptions)
         new_table.keywords = copy(self.keywords)
         new_table.comments = copy(self.comments)
-        new_table.null = copy(self.null)
+        new_table.nulls = copy(self.nulls)
         new_table.formats = copy(self.formats)
         
         for name in new_table.names:
@@ -314,14 +321,65 @@ class BaseTable(object):
         n_rows = self.__len__()
         n_cols = len(self.names)
         self.shape = (n_rows,n_cols)
+        
+        return
 
 class BaseTableSet(object):
     
-    def append(self,table):
+    def __init__(self,*args):
+        '''
+        Create a table set
         
-        self.tables.append(table)
+        This can be called in three different ways:
+        
+        TableSet(): creates an empty instance of a FITS table set
+        
+        TableSet(list): where list is a list of individual tables
+        (which can have inhomogeneous types)
+        
+        TableSet(tableset): where tableset can be a table set of any type
+        '''
+        
+        if len(args) > 1:
+            raise Exception("TableSet either takes no or one argument")
+        elif len(args) == 1:
+            data = args[0]
+        else:
+            data = None
+        
+        self.tables = []
+        
+        if data:
+            if type(data) == list:
+                for table in data:
+                    self.tables.append(self._single_table(table))
+            elif isinstance(data,BaseTableSet):
+                for table in data.tables:
+                    self.tables.append(self._single_table(table))
+            else:
+                raise Exception("Unknown type: "+type(data))
+        
+        return
+    
+    def append(self,table):
+        '''
+        Append a table to the table set
+        
+        Required Arguments:
+            
+            *table*: [ a table instance ]
+                This can be a table of any type, which will be converted
+                to a table of the same type as the parent set (e.g. adding
+                a single VOTable to a FITSTableSet will convert the VOTable
+                to a FITSTable inside the set)
+        '''
+        self.tables.append(self._single_table(table))
+        return
     
     def describe(self):
-        
+        '''
+        Describe all the tables in the set
+        '''
         for table in self.tables:
             table.describe()
+        return

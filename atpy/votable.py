@@ -1,9 +1,9 @@
-from basetable import BaseTable, BaseTableSet
+import numpy as np
 
 from vo.table import parse
 from vo.tree import VOTableFile, Resource, Table, Field
 
-import numpy as np
+from basetable import BaseTable, BaseTableSet
 
 # Define type conversion dictionary
 type_dict = {}
@@ -25,11 +25,24 @@ def _list_tables(filename):
     return tables
 
 class VOTable(BaseTable):
+    ''' A class for reading and writing a single VO table.'''
     
-    "A class for writing vo tables."
-
-    def read(self,filename,echo=False,tid=-1):
-                
+    def read(self,filename,tid=-1):
+        '''
+        Read a table from a VOT file
+        
+        Required Arguments:
+            
+            *filename*: [ string ]
+                The VOT file to read the table from
+        
+        Optional Keyword Arguments:
+            
+            *tid*: [ integer ]
+                The ID of the table to read from the VO file (this is
+                only required if there are more than one table in the VO file)
+        '''
+        
         self.reset()
         
         # If no table is requested, check that there is only one table
@@ -52,106 +65,134 @@ class VOTable(BaseTable):
         for id,table in enumerate(votable.iter_tables()):
             if id==tid:
                 break
-                        
+        
         self.table_name = table.ID or table.name
-                
+        
         for field in table.fields:
-            self.add_column((field.name,table.array[field.name]))
+            self.add_column(field.name,table.array[field.name],unit=field.unit)
     
-    def to_table(self,VOTable):
-
+    def _to_table(self,VOTable):
+        '''
+        Return the current table as a VOT object
+        '''
+        
         table = Table(VOTable)
-
+        
         # Define some fields
         
         n_rows = len(self.array[self.names[0]])
-
+        
         fields = []
         for i,name in enumerate(self.names):
-
+            
             data = self.array[name]
             unit = self.units[name]
-
+            
             coltype = type(data)
-
+            
             elemtype=type(data[0])
             arraysize = None
             
             if elemtype==np.ndarray:
                 elemtype=type(data[0][0])
                 arraysize = str(len(data[0]))
-                
+            
             if type_dict.has_key(elemtype):
                 datatype = type_dict[elemtype]
             else:
                 raise Exception("cannot use numpy type "+str(elemtype))
-
+            
             if arraysize:
                 fields.append(Field(VOTable,ID="col"+str(i),name=name,datatype=datatype,unit=unit,arraysize=arraysize))
             else:
                 fields.append(Field(VOTable,ID="col"+str(i),name=name,datatype=datatype,unit=unit))
-                
+        
         table.fields.extend(fields)
-
+        
         table.create_arrays(n_rows)
-
+        
         for name in self.names:
             table.array[name] = self.array[name]
-
+        
         table.name = self.table_name
-
+        
         return table
     
     def write(self,filename,votype='ascii'):
-
+        '''
+        Write the table to a VOT file
+        
+        Required Arguments:
+            
+            *filename*: [ string ]
+                The VOT file to write the table to
+        
+        Optional Keyword Arguments:
+            
+            *votype*: [ 'ascii' | 'binary' ]
+                Whether to write the table as ASCII or binary
+        '''
+        
         VOTable = VOTableFile()
         resource = Resource()
         VOTable.resources.append(resource)
-
-        resource.tables.append(self.to_table(VOTable))
-
+        
+        resource.tables.append(self._to_table(VOTable))
+        
         if votype is 'binary':
             VOTable.get_first_table().format = 'binary'
             VOTable.set_all_tables_format('binary')
-            
-        VOTable.to_xml(filename)
-            
         
+        VOTable.to_xml(filename)
+
+
 class VOTableSet(BaseTableSet):
-    """ A class for reading and writing a set of VO tables."""
-
-    def __init__(self,tables=None):
-
-        self.tables = []
-
-        if tables:
-            if type(tables) == list:
-                self.tables = tables
-            elif isinstance(tables,BaseTableSet):
-                for table in tables.tables:
-                    self.tables.append(VOTable(table))
-            else:
-                raise Exception("Unknown type: "+type(tables))
-
+    ''' A class for reading and writing a set of VO tables.'''
+    
+    def _single_table(self,table):
+        return VOTable(table)
+    
     def read(self,filename):
-        tids = _list_tables(filename)
+        '''
+        Read all tables from a VOT file
+        
+        Required Arguments:
+            
+            *filename*: [ string ]
+                The VOT file to read the tables from
+        '''
+        
         self.tables = []
-        for tid in tids:
+        
+        for tid in _list_tables(filename):
             t = VOTable()
             t.read(filename,tid=tid)
             self.tables.append(t)
-          
+    
     def write(self,filename,votype='ascii'):
+        '''
+        Write all tables to a VOT file
+        
+        Required Arguments:
+            
+            *filename*: [ string ]
+                The VOT file to write the tables to
+        
+        Optional Keyword Arguments:
+            
+            *votype*: [ 'ascii' | 'binary' ]
+                Whether to write the tables as ASCII or binary tables
+        '''
         
         VOTable = VOTableFile()
         resource = Resource()
         VOTable.resources.append(resource)
         
         for table in self.tables:
-            resource.tables.append(table.to_table(VOTable))
+            resource.tables.append(table._to_table(VOTable))
         
         if votype is 'binary':
             VOTable.get_first_table().format = 'binary'
             VOTable.set_all_tables_format('binary')
-
+        
         VOTable.to_xml(filename)

@@ -28,12 +28,12 @@ type_dict_out[np.unicode_] = sql.String()
 type_dict_out[None.__class__] = sql.Float()
 
 class SQLTable(BaseTable):
-    """
+    '''
     Class for working with SQLTable read and write
-    """
+    '''
     
     def read(self,dbname,dbtype='sqlite',username='',password='',host='localhost'):
-        """
+        '''
         You can read in a SQL table with this method. 
         
         Example: 
@@ -44,7 +44,7 @@ class SQLTable(BaseTable):
         
         vt = VOTable(st)
         vt.write('file_name.xml') # You're done. It's all set!
-        """
+        '''
         
         def uni2str(array):
             if type(array) == np.unicode_:
@@ -75,7 +75,7 @@ class SQLTable(BaseTable):
                     if type(elem)==decimal.Decimal:
                         elem = float(elem)
                     column.append(elem)
-                self.add_column((str(col),uni2str(np.array(column))))
+                self.add_column(str(col),uni2str(np.array(column)))
     
     
     def write(self,dbname,dbtype='sqlite',username='',password='',host='localhost'):

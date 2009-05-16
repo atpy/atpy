@@ -26,7 +26,7 @@ def _list_tables(filename):
     return tables
 
 class FITSTable(BaseTable):
-    """ A class for reading and writing a single FITS table."""
+    ''' A class for reading and writing a single FITS table.'''
     
     def read(self,filename,hdu=None):
         '''
@@ -35,13 +35,13 @@ class FITSTable(BaseTable):
         Required Arguments:
             
             *filename*: [ string ]
-                The file to read the FITS table from
+                The FITS file to read the table from
         
         Optional Keyword Arguments:
             
             *hdu*: [ integer ]
-                The HDU to read the FITS table from (this is only required
-                if there are more than one tables in the FITS file)
+                The HDU to read from the FITS file (this is only required
+                if there are more than one table in the FITS file)
         '''
         
         self.reset()
@@ -66,10 +66,10 @@ class FITSTable(BaseTable):
         
         table = hdu.data
         header = hdu.header
-        cols = hdu.columns.names
-        
-        for name in cols:
-            self.add_column((name,table.field(name)))
+        columns = hdu.columns
+                        
+        for i,name in enumerate(columns.names):
+            self.add_column(name,table.field(name),unit=columns.units[i],null=columns.nulls[i])
         
         for key in header.keys():
             if not key[:4] in ['TFOR','TDIS','TDIM','TTYP','TUNI'] and not key in standard_keys:
@@ -80,7 +80,7 @@ class FITSTable(BaseTable):
         
         self.table_name = hdu.name
     
-    def _hdu(self):
+    def _to_hdu(self):
         '''
         Return the current table as a pyfits HDU object
         '''
@@ -91,6 +91,7 @@ class FITSTable(BaseTable):
             
             array = self.array[name]
             unit = self.units[name]
+            null = self.nulls[name]
             
             if unit == None: unit = ''
             
@@ -107,7 +108,7 @@ class FITSTable(BaseTable):
             else:
                 raise Exception("cannot use numpy type "+str(elemtype))
             
-            columns.append(pyfits.Column(name=name,format=format,unit=unit,array=array))
+            columns.append(pyfits.Column(name=name,format=format,unit=unit,null=null,array=array))
         
         hdu = pyfits.new_table(pyfits.ColDefs(columns))
         hdu.name = self.table_name
@@ -131,7 +132,7 @@ class FITSTable(BaseTable):
         Required Arguments:
             
             *filename*: [ string ]
-                The file to write the FITS table to
+                The FITS file to write the table to
         
         Optional Keyword Arguments:
             
@@ -139,43 +140,13 @@ class FITSTable(BaseTable):
                 Whether to overwrite any existing file without warning
         '''
         
-        self._hdu().writeto(filename,clobber=overwrite)
+        self._to_hdu().writeto(filename,clobber=overwrite)
 
 class FITSTableSet(BaseTableSet):
-    """ A class for reading and writing a set of FITS tables."""
+    ''' A class for reading and writing a set of FITS tables.'''
     
-    def __init__(self,*args):
-        '''
-        Create a FITS table set
-        
-        This can be called in three different ways:
-        
-        FITSTableSet(): creates an empty instance of a FITS table set
-        
-        FITSTableSet(list): where list is a list of individual tables
-        (which can have inhomogeneous types)
-        
-        FITSTableSet(tableset): where tableset can be a table set of any type
-        '''
-        
-        if len(args) > 1:
-            raise Exception("FITSTableSet either takes no or one argument")
-        elif len(args) == 1:
-            data = args[0]
-        else:
-            data = None
-        
-        self.tables = []
-        
-        if data:
-            if type(data) == list:
-                for table in data:
-                    self.tables.append(FITSTable(table))
-            elif isinstance(data,BaseTableSet):
-                for table in data.tables:
-                    self.tables.append(FITSTable(table))
-            else:
-                raise Exception("Unknown type: "+type(data))
+    def _single_table(self,table):
+        return FITSTable(table)
     
     def read(self,filename):
         '''
@@ -184,7 +155,7 @@ class FITSTableSet(BaseTableSet):
         Required Arguments:
             
             *filename*: [ string ]
-                The name of the file to read the tables from
+                The FITS file to read the tables from
         '''
         
         self.tables = []
@@ -201,7 +172,7 @@ class FITSTableSet(BaseTableSet):
         Required Arguments:
             
             *filename*: [ string ]
-                The file to write the FITS table to
+                The FITS file to write the tables to
         
         Optional Keyword Arguments:
             
@@ -211,6 +182,6 @@ class FITSTableSet(BaseTableSet):
         
         hdulist = [pyfits.PrimaryHDU()]
         for i,table in enumerate(self.tables):
-            hdulist.append(table._hdu())
+            hdulist.append(table._to_hdu())
         hdulist = pyfits.HDUList(hdulist)
         hdulist.writeto(filename,clobber=overwrite)
