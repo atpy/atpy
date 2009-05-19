@@ -213,6 +213,9 @@ class SQLTable(BaseTable):
 
 class SQLTableSet(BaseTableSet):
     
+    def _single_table(self,table):
+        return SQLTable(table)
+    
     def read(self,dbname,dbtype='sqlite',username='',password='',port='',host=''):
         '''
         Required Arguments:
