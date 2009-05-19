@@ -394,7 +394,7 @@ class BaseTableSet(object):
                 for table in data.tables:
                     self.tables.append(self._single_table(table))
             else:
-                raise Exception("Unknown type: "+type(data))
+                raise Exception("Unknown type: "+ str(type(data)))
         
         return
     

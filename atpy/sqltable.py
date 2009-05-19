@@ -38,7 +38,7 @@ def _smart_dialect(dbname,dbtype='sqlite',username='',password='',port='',host='
         
         if port is not '':
             port = ':' + port
-            
+        
         engine = sql.create_engine(dbtype+'://'+username+':'+password+'@'+host+port+'/'+dbname)
     
     # elif dbtype is 'mysql':
@@ -67,33 +67,48 @@ class SQLTable(BaseTable):
     
     def read(self,dbname,tid=-1,dbtype='sqlite',username='',password='',port='',host=''):
         '''
-        You can read in an SQL table with this method. 
+        Required Arguments:
+            
+            *dbname*: [ string ]
+                The SQL database to write the tables to
         
-        Example: 
-        st = SQLTable(name='Some Table') 
-        st.read('a_file_that_you_want_to_read.db')
+        Optional Keyword Arguments:
+            *tid*: [ integer ]
+                If you get a return from the read function stating that
+                there's more than one table, pick the corresponding integer
+                to which table you want to load, with tid = N, where N is
+                and integer.
+            
+            *dbtype*: [ 'sqlite' | 'postgres' | 'mysql']
+                Choosing which database format to write in.
+            
+            *username*: [ string ]
+                If not using sqlite, then username is most likely needed.
+            
+            *password*: [ string ]
+                If not using sqlite, then username is most likely needed.
+            
+            *port*: [ string ]
+                Port number is sometimes needed depending on setup of
+                database manager. If using sqlite, this field is not necessary.
+            
+            *host*: [ string ]
+                Typically 'localhost' or some ip address, depending on where the
+                database is located. If using sqlite, this field is not necessary.
         
-        # Want to convert the data from SQL to VOTable?
-        
-        vt = VOTable(st)
-        vt.write('file_name.xml') # You're done. It's all set!
         '''
-        
-        def uni2str(array):
-            if type(array) == np.unicode_:
-                array = array.astype(np.str)
-            else:
-                pass
-            return array
         
         # Erase existing content
         self.reset()
         
-        engine = _smart_dialect(dbname=dbname,dbtype=dbtype,username=username,password=password,port=port,host=host)
+        accept = ['sqlite'] # Add more types here when capabilities expand
         
-        else:
+        if dbtype not in accept:
             # print 'The dbtype, '+dbtype+' is not recognized. \nThe available dbtypes in ATpy are \n1) "sqlite" \n2) "postgres" \n3) "mysql"'
-            print 'The dbtype, '+dbtype+' is not recognized. \n"sqlite" is the only recognized dbtype at the moment. '
+            print 'The dbtype, '+dbtype+' is not recognized. \n"sqlite" is the only recognized dbtype at the moment.'
+            return
+        
+        engine = _smart_dialect(dbname=dbname,dbtype=dbtype,username=username,password=password,port=port,host=host)
         
         metadata = sql.MetaData(engine)
         
@@ -120,15 +135,15 @@ class SQLTable(BaseTable):
         
         if tid != -1:
             try:
-                tbl = sql.Table(tid, metadata, autoload=True)
-                self.table_name = tid
+                tbl = sql.Table(tbl_names[tid], metadata, autoload=True)
+                self.table_name = tbl_names[tid]
             except:
                 print 'Table name '+str(tid)+' is not recognized.'
+                return
         
         else:
             tbl = sql.Table(tbl_names[tid].encode(), metadata, autoload=True)
             self.table_name = tbl_names[0].encode()
-        
         
         results = engine.execute(tbl.select()).fetchall()
         for col in tbl.columns.keys():
@@ -141,7 +156,33 @@ class SQLTable(BaseTable):
             self.add_column(str(col),uni2str(np.array(column)))
     
     
-    def write(self,dbname,dbtype='sqlite',username='',password='',host=''):
+    def write(self,dbname,dbtype='sqlite',username='',password='',port='',host=''):
+        '''
+        Required Arguments:
+            
+            *dbname*: [ string ]
+                The SQL database to write the tables to
+        
+        Optional Keyword Arguments:
+            
+            *dbtype*: [ 'sqlite' | 'postgres' | 'mysql']
+                Choosing which database format to write in.
+            
+            *username*: [ string ]
+                If not using sqlite, then username is most likely needed.
+            
+            *password*: [ string ]
+                If not using sqlite, then username is most likely needed.
+            
+            *port*: [ string ]
+                Port number is sometimes needed depending on setup of
+                database manager. If using sqlite, this field is not necessary.
+            
+            *host*: [ string ]
+                Typically 'localhost' or some ip address, depending on where the
+                database is located. If using sqlite, this field is not necessary.
+        
+        '''
         
         engine = _smart_dialect(dbname=dbname,dbtype=dbtype,username=username,password=password,port=port,host=host)
         
@@ -161,76 +202,105 @@ class SQLTable(BaseTable):
             for col_name in np.array(self.names).astype(str):
                 source[col_name] = self.array[col_name][i]
             sources.append(source)
-                
+        
         
         # Insert values into database
         conn = engine.connect()
         conn.execute(tbl.insert(),sources)
         conn.close()
-    
+
 
 
 class SQLTableSet(BaseTableSet):
     
-    def _single_table(self,table):
-        return SQLTable(table)
-    
     def read(self,dbname,dbtype='sqlite',username='',password='',port='',host=''):
         '''
-        Read all tables from a SQL file
-        
         Required Arguments:
-        
+            
             *dbname*: [ string ]
-                The SQL database to read the tables from
+                The SQL database to write the tables to
+        
+        Optional Keyword Arguments:
+            
+            *dbtype*: [ 'sqlite' | 'postgres' | 'mysql']
+                Choosing which database format to write in.
+            
+            *username*: [ string ]
+                If not using sqlite, then username is most likely needed.
+            
+            *password*: [ string ]
+                If not using sqlite, then username is most likely needed.
+            
+            *port*: [ string ]
+                Port number is sometimes needed depending on setup of database manager.
+                If using sqlite, this field is not necessary.
+            
+            *host*: [ string ]
+                Typically 'localhost' or some ip address, depending on where the database is located.
+                If using sqlite, this field is not necessary.
         '''
         
         self.tables = []
         engine = _smart_dialect(dbname=dbname,dbtype=dbtype,username=username,password=password,port=port,host=host)
         
-        for tid in _list_tables(engine):
+        for i,tid in enumerate(_list_tables(engine)):
             table = SQLTable()
-            table.read(dbname,tid=tid,dbtype=dbtype,username=username,password=password,port=port,host=host)
+            table.read(dbname,tid=i,dbtype=dbtype,username=username,password=password,port=port,host=host)
             self.tables.append(table)
     
-    def write(self,dbname,dbtype='sqlite',username='',password='',host=''):
+    
+    def write(self,dbname,dbtype='sqlite',username='',password='',port='',host=''):
         '''
         Write all tables to a SQL file
         
         Required Arguments:
-        
+            
             *dbname*: [ string ]
                 The SQL database to write the tables to
-                
-        Optional Keyword Arguments:
         
+        Optional Keyword Arguments:
+            
             *dbtype*: [ 'sqlite' | 'postgres' | 'mysql']
-                Choosing which database format to write in
+                Choosing which database format to write in.
+            
+            *username*: [ string ]
+                If not using sqlite, then username is most likely needed.
+            
+            *password*: [ string ]
+                If not using sqlite, then username is most likely needed.
+            
+            *port*: [ string ]
+                Port number is sometimes needed depending on setup of database manager.
+                If using sqlite, this field is not necessary.
+            
+            *host*: [ string ]
+                Typically 'localhost' or some ip address, depending on where the database is located.
+                If using sqlite, this field is not necessary.
         '''
         
         engine = _smart_dialect(dbname=dbname,dbtype=dbtype,username=username,password=password,port=port,host=host)
+        conn = engine.connect() # Maybe change this part?
         
-        for table in self.tables:
+        for i,table in enumerate(self.tables):
             metadata = sql.MetaData()
             tbl = sql.Table(table.table_name, metadata)
-            for i, col_name in enumerate(np.array(table.names).astype(str)):
+            for j, col_name in enumerate(np.array(table.names).astype(str)):
                 tbl.columns.add(sql.Column(col_name,
                 type_dict_out[type(table.array[col_name][0])]
                 ))
-
+            
             metadata.create_all(engine)
-
+            
             sources = []
-
-            for i in range(len(table.array[self.names[0].encode()])):
+            
+            for j in range(len(table.array[self.tables[i].names[0].encode()])):
                 source = {}
                 for col_name in np.array(table.names).astype(str):
-                    source[col_name] = table.array[col_name][i]
+                    source[col_name] = table.array[col_name][j]
                 sources.append(source)
-
-            # Insert values into database
-            conn = engine.connect() # Maybe change this part?
-            conn.execute(tbl.insert(),sources)
             
-        conn.close()
+            # Insert values into database
+            conn.execute(tbl.insert(),sources)
         
+        conn.close()
+    
