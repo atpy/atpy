@@ -30,20 +30,27 @@ type_dict_out[np.unicode_] = sql.String()
 type_dict_out[None.__class__] = sql.Float()
 
 
-def _smart_dialect(dbname,dbtype='sqlite',username='',password='',port='',host=''):
+accept = ['postgres','mysql'] # sqlite is automatically included, regardless of this 'accept' list.
+
+
+def _smart_dialect(dbname,dbtype,username='',password='',port='',host=''):
+    dialect = ['postgres','mysql']
+    
     if dbtype is 'sqlite':
         engine = sql.create_engine(dbtype+':///'+dbname)
-    """
-    elif dbtype is 'postgres':
+        
+    elif dbtype in dialect:
         
         if port is not '':
             port = ':' + port
         
         engine = sql.create_engine(dbtype+'://'+username+':'+password+'@'+host+port+'/'+dbname)
     
-    # elif dbtype is 'mysql':
-    """
+    else:
+        print 'Your dbtype '+str(dbtype)+' was not recognized. \nSQLTable(Set) only accepts sqlite, postgres, or mysql as a dbtype.'
+        
     return engine
+
 
 def _list_tables(engine):
     sqltables = np.array(engine.table_names()).astype(np.str)
@@ -51,6 +58,7 @@ def _list_tables(engine):
     for i,table in enumerate(sqltables):
         tables[i] = table
     return tables
+
 
 def uni2str(array):
     if type(array) == np.unicode_:
@@ -62,7 +70,7 @@ def uni2str(array):
 
 class SQLTable(BaseTable):
     '''
-    Class for working with SQLTable read and write
+    Class for working with reading and writing tables in databases.
     '''
     
     def read(self,dbname,tid=-1,dbtype='sqlite',username='',password='',port='',host=''):
@@ -100,13 +108,6 @@ class SQLTable(BaseTable):
         
         # Erase existing content
         self.reset()
-        
-        accept = ['sqlite'] # Add more types here when capabilities expand
-        
-        if dbtype not in accept:
-            # print 'The dbtype, '+dbtype+' is not recognized. \nThe available dbtypes in ATpy are \n1) "sqlite" \n2) "postgres" \n3) "mysql"'
-            print 'The dbtype, '+dbtype+' is not recognized. \n"sqlite" is the only recognized dbtype at the moment.'
-            return
         
         engine = _smart_dialect(dbname=dbname,dbtype=dbtype,username=username,password=password,port=port,host=host)
         
@@ -212,6 +213,9 @@ class SQLTable(BaseTable):
 
 
 class SQLTableSet(BaseTableSet):
+    '''
+    Class for working with reading and writing sets of tables in databases.
+    '''
     
     def _single_table(self,table):
         return SQLTable(table)
