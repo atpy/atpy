@@ -3,7 +3,7 @@
 from distutils.core import setup
 
 setup(name='ATpy',
-      version='0.1.1',
+      version='0.1.2',
       description='Astronomical Tables in Python',
       author='Eli Bressert and Thomas Robitaille',
       author_email='elibre@users.sourceforge.net, robitaille@users.sourceforge.net',
