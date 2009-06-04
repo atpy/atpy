@@ -1,3 +1,7 @@
+# t.tablename.columnname
+# SQLTableSet(dbname,etc.)
+# fix dbtype mysql
+
 import numpy as np
 from copy import copy
 
@@ -140,7 +144,7 @@ class BaseTable(object):
         self.descriptions[name] = description
         self.nulls[name] = null
         
-        column_type = type(data.ravel()[0])
+        column_type = data.dtype.type
         
         if format:
             self.formats[name] = format
@@ -362,7 +366,7 @@ class BaseTable(object):
 
 class BaseTableSet(object):
     
-    def __init__(self,*args):
+    def __init__(self,*args,**kwargs):
         '''
         Create a table set instance
         
