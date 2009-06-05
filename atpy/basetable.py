@@ -372,36 +372,47 @@ class BaseTableSet(object):
         
         Optional Arguments:
             
-            If no arguments are given, and empty table set is created
+            If no arguments are given, an empty table set will be created.
             
-            If one argument is given, it can either be:
-                
-                - a list of individual tables (which can have inhomogeneous types)
-                
-                - a table set of any type
+            If one of the arguments is a list or a Table instance, then only
+            this argument will be used.
+            
+            If one or more arguments are present, they are passed to the read
+            method
+            
         '''
         
-        if len(args) > 1:
-            raise Exception(self.__name__+" either takes no or one argument")
-        elif len(args) == 1:
-            data = args[0]
-        else:
-            data = None
-        
         self.tables = []
-        
-        if data:
-            if type(data) == list:
-                for table in data:
+
+        for arg in args:
+            if type(arg) == list:
+                if len(args) > 1:
+                    raise Exception("one argument is a list - other arguments will be ignored")
+                for table in arg:
                     self.tables.append(self._single_table(table))
-            elif isinstance(data,BaseTableSet):
-                for table in data.tables:
+                return
+            if isinstance(arg,BaseTableSet):
+                if len(args) > 1:
+                    raise Exception("one argument is a TableSet - other arguments will be ignored")
+                for table in arg.tables:
                     self.tables.append(self._single_table(table))
-            else:
-                raise Exception("Unknown type: "+ str(type(data)))
+                return
+            
+        if len(args) > 0 or len(kwargs) > 0:    
+
+            # Pass arguments to read
+            self.read(*args,**kwargs)
         
         return
-    
+        
+    def __getattr__(self,attribute):
+
+        for table in self.tables:
+            if attribute == table.table_name:
+                return table
+        
+        raise AttributeError(attribute)
+            
     def append(self,table):
         '''
         Append a table to the table set
