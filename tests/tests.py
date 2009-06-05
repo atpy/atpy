@@ -1,4 +1,4 @@
-from __init__ import *
+from atpy import *
 
 # Read in AJ VO Table
 
@@ -10,7 +10,7 @@ vt.read('examples/aj285677t2_VOTable.xml')
 
 print "Converting to FITS Table"
 ft = FITSTable(vt)
-ft.write('temp1.fits',clobber=True)
+ft.write('temp1.fits',overwrite=True)
 
 # Convert to IPAC Table
 
@@ -68,7 +68,7 @@ vts.read('temp3.xml')
 
 print "Writing out FITS Table set"
 fts = FITSTableSet(vts)
-fts.write('temp3.fits',clobber=True)
+fts.write('temp3.fits',overwrite=True)
 
 # Read in IPAC Table
 
@@ -80,7 +80,7 @@ it.read('examples/2mass.tbl')
 
 print "Converting to FITS Table"
 ft = FITSTable(it)
-ft.write('temp4.fits',clobber=True)
+ft.write('temp4.fits',overwrite=True)
 
 # Convert to VO Table
 
