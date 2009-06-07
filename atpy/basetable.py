@@ -7,15 +7,15 @@ from copy import copy
 
 default_format = {}
 default_format[None.__class__] = 16,'.9e'
-default_format[np.int16] = 10,'i'
+default_format[np.int16] = 5,'i'
 default_format[np.int32] = 10,'i'
-default_format[np.int64] = 10,'i'
+default_format[np.int64] = 20,'i'
 default_format[np.float32] = 11,'.4e'
 default_format[np.float64] = 16,'.9e'
-default_format[np.str] = 10,'s'
-default_format[np.string_] = 10,'s'
-default_format[str] = 10,'s'
-default_format[np.unicode_] = 10,'s'
+default_format[np.str] = 0,'s'
+default_format[np.string_] = 0,'s'
+default_format[str] = 0,'s'
+default_format[np.unicode_] = 0,'s'
 
 class BaseTable(object):
     
@@ -149,8 +149,11 @@ class BaseTable(object):
         if format:
             self.formats[name] = format
         else:
-            self.formats[name] = str(default_format[column_type][0])+default_format[column_type][1]
-        
+            self.formats[name] = default_format[column_type]
+            
+        if self.formats[name][1] == 's':
+            self.formats[name] = self.array[name].itemsize,'s'
+                    
         self._update_shape()
         return
     
@@ -275,7 +278,7 @@ class BaseTable(object):
             len_name_max = max(len(name),len_name_max)
             len_unit_max = max(len(str(self.units[name])),len_unit_max)
             len_datatype_max = max(len(str(type(self.array[name][0]))),len_datatype_max)
-            len_formats_max = max(len(self.formats[name]),len_formats_max)
+            len_formats_max = max(len(self.format(name)),len_formats_max)
         
         # Print out table
         
@@ -287,7 +290,7 @@ class BaseTable(object):
         print "-"*len_tot
         
         for name in self.names:
-            print format % (name,str(self.units[name]),str(type(self.array[name][0])),self.formats[name])
+            print format % (name,str(self.units[name]),str(type(self.array[name][0])),self.format(name))
         
         print "-"*len_tot
         
@@ -332,6 +335,9 @@ class BaseTable(object):
         self.shape = (n_rows,n_cols)
         
         return
+    
+    def format(self,name):
+        return str(self.formats[name][0])+self.formats[name][1]
         
     def add_comment(self,comment):
         '''

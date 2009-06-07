@@ -211,22 +211,14 @@ class IPACTable(BaseTable):
             colnull = self.nulls[name]
             
             # Adjust the format for each column
-            
-            width = int(self.formats[name].replace("i","").replace("s","").replace("f","").replace("e","").split(".")[0])
-            suffix = self.formats[name][len(str(width)):]
-            
+
+            width = self.formats[name][0]
+                
             max_width = max(len(name),len(coltype),len(colunit),len(colnull))
-            
-            if coltype == 'char':
-                for item in self.array[name]:
-                    if len(item) > max_width:
-                        max_width = len(item)
-            
+                        
             if max_width > width:
                 width = max_width
-            
-            format[name] = str(width)+suffix
-            
+                    
             sf = "%"+str(width)+"s"
             line_names = line_names + "|" + (sf % name)
             line_types = line_types + "|" + (sf % coltype)
@@ -245,12 +237,12 @@ class IPACTable(BaseTable):
         if len(line_nulls.replace("|","").strip()) > 0:
             f.write(line_nulls)
         
-        for i in range(len(self.array[self.names[0]])):
+        for i in range(self.__len__()):
             
             line = ""
             
             for name in self.names:
-                line = line + " " + (("%"+format[name]) % self.array[name][i])
+                line = line + " " + (("%"+self.format(name)) % self.array[name][i])
             
             line = line + " \n"
             
