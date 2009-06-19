@@ -14,8 +14,10 @@ default_format[np.float32] = 11,'.4e'
 default_format[np.float64] = 16,'.9e'
 default_format[np.str] = 0,'s'
 default_format[np.string_] = 0,'s'
+default_format[np.uint8] = 0,'s'
 default_format[str] = 0,'s'
 default_format[np.unicode_] = 0,'s'
+default_format[np.object_] = 10,'s'
 
 class BaseTable(object):
     
