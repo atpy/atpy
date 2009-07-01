@@ -57,15 +57,19 @@ class BaseTable(object):
             
             if isinstance(arg,BaseTable):
                 table = arg
-                self.table_name = table.table_name
-                self.names = table.names
-                self.array = table.array
-                self.units = table.units
-                self.descriptions = table.descriptions
-                self.keywords = table.keywords
-                self.comments = table.comments
-                self.nulls = table.nulls
-                self.formats = table.formats
+                self.table_name = copy(table.table_name)
+                self.names = copy(table.names)
+                self.types = copy(table.types)
+                self.units = copy(table.units)
+                self.descriptions = copy(table.descriptions)
+                self.keywords = copy(table.keywords)
+                self.comments = copy(table.comments)
+                self.nulls = copy(table.nulls)
+                self.formats = copy(table.formats)
+                
+                for name in self.names:
+                    self.array[name] = copy(table.array[name])
+                
             elif type(arg) == str:
                 filename = arg
                 self.read(filename,**kwargs)
@@ -97,6 +101,7 @@ class BaseTable(object):
     def reset(self):
         self.table_name = ""
         self.names = []
+        self.types = {}
         self.array = {}
         self.units = {}
         self.descriptions = {}
@@ -142,6 +147,7 @@ class BaseTable(object):
         
         self.names.append(name)
         self.array[name] = np.array(data)
+        self.types[name] = self.array[name].dtype.type
         self.units[name] = unit
         self.descriptions[name] = description
         self.nulls[name] = null
@@ -292,12 +298,30 @@ class BaseTable(object):
         print "-"*len_tot
         
         for name in self.names:
-            print format % (name,str(self.units[name]),str(type(self.array[name][0])),self.format(name))
+            print format % (name,str(self.units[name]),str(self.types[name]),self.format(name))
         
         print "-"*len_tot
         
         return
-    
+        
+    def row(self,row_number,python_types=False):
+        row = []
+        if not python_types:
+            for name in self.names:
+               row.append(self.array[name][row_number])
+        else:
+            for name in self.names:
+                if np.isnan(self.array[name][row_number]):
+                    elem = None
+                elif self.types[name] in [np.float32,np.float64]:
+                    elem = float(self.array[name][row_number])
+                elif self.types[name] in [np.int16,np.int32,np.int64]:
+                    elem = int(self.array[name][row_number])
+                elif self.types[name] in [np.string_,np.str]:
+                    elem = str(self.array[name][row_number])
+                row.append(elem)
+        return tuple(row)
+        
     def where(self,mask):
         '''
         Select certain rows from the table and return a new table instance
@@ -316,6 +340,7 @@ class BaseTable(object):
         
         new_table.table_name = copy(self.table_name)
         new_table.names = copy(self.names)
+        new_table.types = copy(self.types)
         new_table.array = copy(self.array)
         new_table.units = copy(self.units)
         new_table.descriptions = copy(self.descriptions)
