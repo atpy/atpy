@@ -18,11 +18,20 @@ print "Converting to IPAC Table"
 it = IPACTable(vt)
 it.write('temp1.tbl')
 
+# Convert to SQLite databases
+
+print "Converting to SQL databases"
+st = SQLTable2(vt)
+st.write('postgres',database='python',user='tom',overwrite=True)
+st.write('sqlite','temp1.db',overwrite=True)
+st.write('mysql',db='python',user='tom',passwd="C2#uwQsk",overwrite=True)
+
 # Read in UKIDSS FITS table
 
 print "Reading in FITS Table"
 ft = FITSTable()
 ft.read('examples/catalog_1.fits.gz')
+ft.table_name = "UKIDSS"
 
 # Convert to VO Table
 
@@ -35,6 +44,14 @@ vt.write('temp2.xml')
 print "Converting to IPAC Table"
 it = IPACTable(ft)
 it.write('temp2.tbl')
+
+# Convert to SQL databases
+
+print "Converting to SQL databases"
+st = SQLTable2(ft)
+st.write('postgres',database='python',user='tom',overwrite=True)
+st.write('sqlite','temp2.db',overwrite=True)
+st.write('mysql',db='python',user='tom',passwd="C2#uwQsk",overwrite=True)
 
 # Reading in FITS file with vector columns
 
