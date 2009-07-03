@@ -1,7 +1,25 @@
 import numpy as np
-import sqlite3
-import MySQLdb
-import pgdb
+
+try:
+    import sqlite3
+    sqlite = True
+except:
+    print "WARNING: module sqlite3 not present - SQLite not available"
+    sqlite = False
+
+try:
+    import MySQLdb
+    mysql = True
+except:
+    print "WARNING: module MySQLdb not present - MySQL not available"
+    mysql = False
+    
+try:
+    import pgdb
+    postgres = True
+except:
+    print "WARNING: module pgdb (from PyGreSQL) not present - PostGreSQL not available"
+    postgres = False
 
 # Type conversion dictionary
 
@@ -75,7 +93,7 @@ def numpy_type(sql_type):
     '''
     sql_type = sql_type.split('(')[0]
     if not type_dict_rev.has_key(sql_type):
-        raise Exception("need to define reverse type for "+str(t))
+        raise Exception("need to define reverse type for "+str(sql_type))
     return type_dict_rev[sql_type]
 
 def list_tables(cursor,dbtype):
@@ -156,10 +174,16 @@ def connect_database(dbtype,*args,**kwargs):
         - pgdb.connect() for PostgreSQL
     '''
     if dbtype == 'sqlite':
+        if not sqlite:
+            raise Exception("sqlite3 module not installed")
         connection = sqlite3.connect(*args,**kwargs)
     elif dbtype == 'mysql':
+        if not mysql:
+            raise Exception("MySQLdb module not installed")
         connection = MySQLdb.connect(*args,**kwargs)
     elif dbtype == 'postgres':
+        if not postgres:
+            raise Exception("pgdb module not installed")
         connection = pgdb.connect(*args,**kwargs)
     else:
         raise Exception('dbtype should be one of sqlite/mysql/postgres')
