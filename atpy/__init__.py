@@ -5,3 +5,4 @@ from ipactable import IPACTable
 from sqltable import SQLTable,SQLTableSet
 from sqltable_dbapi import SQLTable2,SQLTableSet2
 from latextable import LaTeXTable
+from table import Table
