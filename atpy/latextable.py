@@ -1,9 +1,8 @@
-from basetable import BaseTable
 import numpy as np
 
-class LaTeXTable(BaseTable):
+class LaTeXTable(object):
         
-    def write(self,filename):
+    def latex_write(self,filename):
         
         # Open file for writing
         f = file(filename,'wb')
@@ -14,7 +13,7 @@ class LaTeXTable(BaseTable):
             
             for j,name in enumerate(self.names):
                 if j > 0: line += ' & '
-                line += (("%"+self.format(name)) % self.array[name][i])
+                line += (("%"+self.format(name)) % self.data[name][i])
             
             line = line + " \\\\ \n"
             

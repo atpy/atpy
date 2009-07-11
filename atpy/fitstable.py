@@ -1,8 +1,6 @@
 import numpy as np
 import pyfits
 
-from basetable import BaseTable, BaseTableSet
-
 standard_keys = ['XTENSION','NAXIS','NAXIS1','NAXIS2','TFIELDS','PCOUNT','GCOUNT','BITPIX']
 
 # Define type conversion dictionary
@@ -25,10 +23,10 @@ def _list_tables(filename):
             tables[i+1] = hdu.name
     return tables
 
-class FITSTable(BaseTable):
+class FITSMethods(object):
     ''' A class for reading and writing a single FITS table.'''
     
-    def read(self,filename,hdu=None):
+    def fits_read(self,filename,hdu=None):
         '''
         Read a table from a FITS file
         
@@ -78,7 +76,8 @@ class FITSTable(BaseTable):
         for comment in header.get_comment():
             self.add_comment(comment)
         
-        self.table_name = hdu.name
+        if hdu.name:
+            self.table_name = hdu.name
     
     def _to_hdu(self):
         '''
@@ -89,7 +88,7 @@ class FITSTable(BaseTable):
         
         for name in self.names:
             
-            array = self.array[name]
+            array = self.data[name]
             unit = self.units[name]
             null = self.nulls[name]
             
@@ -125,7 +124,7 @@ class FITSTable(BaseTable):
         
         return hdu
     
-    def write(self,filename,overwrite=False):
+    def fits_write(self,filename,overwrite=False):
         '''
         Write the table to a FITS file
         
@@ -142,13 +141,10 @@ class FITSTable(BaseTable):
         
         self._to_hdu().writeto(filename,clobber=overwrite)
 
-class FITSTableSet(BaseTableSet):
+class FITSSetMethods(object):
     ''' A class for reading and writing a set of FITS tables.'''
     
-    def _single_table(self,table):
-        return FITSTable(table)
-    
-    def read(self,filename):
+    def fits_read(self,filename):
         '''
         Read all tables from a FITS file
         
@@ -161,11 +157,11 @@ class FITSTableSet(BaseTableSet):
         self.tables = []
         
         for hdu in _list_tables(filename):
-            table = FITSTable()
-            table.read(filename,hdu=hdu)
+            table = self._single_table_class()
+            table.fits_read(filename,hdu=hdu)
             self.tables.append(table)
     
-    def write(self,filename,overwrite=False):
+    def fits_write(self,filename,overwrite=False):
         '''
         Write the tables to a FITS file
         

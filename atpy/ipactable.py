@@ -1,4 +1,3 @@
-from basetable import BaseTable
 import numpy as np
 
 # Define type conversion from IPAC table to numpy arrays
@@ -22,10 +21,10 @@ type_rev_dict[np.str] = "char"
 type_rev_dict[np.string_] = "char"
 type_rev_dict[str] = "char"
 
-class IPACTable(BaseTable):
+class IPACMethods(object):
     ''' A class for reading and writing a single IPAC table.'''
     
-    def read(self,filename,definition=3):
+    def ipac_read(self,filename,definition=3):
         '''
         Read a table from a IPAC file
         
@@ -52,7 +51,6 @@ class IPACTable(BaseTable):
         if not definition in [1,2,3]:
             raise Exception("definition should be one of 1/2/3")
         
-        # Erase existing content
         self.reset()
         
         # Open file for reading
@@ -174,7 +172,7 @@ class IPACTable(BaseTable):
             array[name] = np.array(array[name],dtype=type_dict[types[name]])
             self.add_column(name,array[name],null=nulls[name],unit=units[name])
     
-    def write(self,filename):
+    def ipac_write(self,filename):
         '''
         Write the table to an IPAC file
         
@@ -206,7 +204,7 @@ class IPACTable(BaseTable):
         
         for name in self.names:
             
-            coltype = type_rev_dict[type(self.array[name][0])]
+            coltype = type_rev_dict[type(self.data[name][0])]
             colunit = self.units[name]
             colnull = self.nulls[name]
             
@@ -242,7 +240,7 @@ class IPACTable(BaseTable):
             line = ""
             
             for name in self.names:
-                line = line + " " + (("%"+self.format(name)) % self.array[name][i])
+                line = line + " " + (("%"+self.format(name)) % self.data[name][i])
             
             line = line + " \n"
             

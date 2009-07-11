@@ -2,9 +2,6 @@ import decimal
 import numpy as np
 import sqlalchemy as sql
 
-from basetable import BaseTable, BaseTableSet
-
-
 # Define type conversion dictionary
 type_dict = {}
 type_dict[np.uint8] = "Unicode"
@@ -68,12 +65,12 @@ def uni2str(array):
     return array
 
 
-class SQLTable(BaseTable):
+class SQLTable(object):
     '''
     Class for working with reading and writing tables in databases.
     '''
     
-    def read(self,dbname,tid=-1,dbtype='sqlite',username='',password='',port='',host=''):
+    def sql_read(self,dbname,tid=-1,dbtype='sqlite',username='',password='',port='',host=''):
         '''
         Required Arguments:
             
@@ -157,7 +154,7 @@ class SQLTable(BaseTable):
             self.add_column(str(col),uni2str(np.array(column)))
     
     
-    def write(self,dbname,dbtype='sqlite',username='',password='',port='',host=''):
+    def sql_write(self,dbname,dbtype='sqlite',username='',password='',port='',host=''):
         '''
         Required Arguments:
             
@@ -191,17 +188,17 @@ class SQLTable(BaseTable):
         tbl = sql.Table(self.table_name, metadata)
         for i, col_name in enumerate(np.array(self.names).astype(str)):
             tbl.columns.add(sql.Column(col_name,
-            type_dict_out[type(self.array[col_name][0])]
+            type_dict_out[type(self.data[col_name][0])]
             ))
         
         metadata.create_all(engine)
         
         sources = []
         
-        for i in range(len(self.array[self.names[0].encode()])):
+        for i in range(len(self.data[self.names[0].encode()])):
             source = {}
             for col_name in np.array(self.names).astype(str):
-                source[col_name] = self.array[col_name][i]
+                source[col_name] = self.data[col_name][i]
             sources.append(source)
         
         
@@ -212,15 +209,12 @@ class SQLTable(BaseTable):
 
 
 
-class SQLTableSet(BaseTableSet):
+class SQLTableSet(object):
     '''
     Class for working with reading and writing sets of tables in databases.
     '''
     
-    def _single_table(self,table):
-        return SQLTable(table)
-    
-    def read(self,dbname,dbtype='sqlite',username='',password='',port='',host=''):
+    def sql_read(self,dbname,dbtype='sqlite',username='',password='',port='',host=''):
         '''
         Required Arguments:
             
@@ -256,7 +250,7 @@ class SQLTableSet(BaseTableSet):
             self.tables.append(table)
     
     
-    def write(self,dbname,dbtype='sqlite',username='',password='',port='',host=''):
+    def sql_write(self,dbname,dbtype='sqlite',username='',password='',port='',host=''):
         '''
         Write all tables to a SQL file
         

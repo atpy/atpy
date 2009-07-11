@@ -1,9 +1,11 @@
-# t.tablename.columnname
-# SQLTableSet(dbname,etc.)
-# fix dbtype mysql
-
 import numpy as np
 from copy import copy
+
+from fitstable import FITSMethods,FITSSetMethods
+from sqltable_dbapi import SQLMethods,SQLSetMethods
+from votable import VOMethods,VOSetMethods
+from ipactable import IPACMethods
+from autotable import AutoMethods
 
 default_format = {}
 default_format[None.__class__] = 16,'.9e'
@@ -19,7 +21,7 @@ default_format[str] = 0,'s'
 default_format[np.unicode_] = 0,'s'
 default_format[np.object_] = 10,'s'
 
-class BaseTable(object):
+class Table(FITSMethods,IPACMethods,SQLMethods,VOMethods,AutoMethods):
     
     def __init__(self,*args,**kwargs):
         '''
@@ -29,58 +31,18 @@ class BaseTable(object):
             
             If no arguments are given, and empty table is created
             
-            If one argument is given, it can either be:
-                
-                - the name of a file to read the table from
-                
-                - a table instance (can be of any type). In this
-                  case, the entire contents of the passed instance
-                  are copied into the new table.
-        
-        Optional Keyword Arguments:
-            
-            Any keyword arguments are passed to read() method if a
-            filename is specified.
-        
+            If one or more arguments are given they are passed to the
+            Table.read() method.
         '''
         
         self.reset()
         
-        # If more than one argument is provided, raise an exception
-        if len(args) > 1:
-            raise Exception("table() received too many arguments")
-        
-        # Otherwise transfer the data to the new instance
-        elif len(args) == 1:
-            
-            arg = args[0]
-            
-            if isinstance(arg,BaseTable):
-                table = arg
-                self.table_name = copy(table.table_name)
-                self.names = copy(table.names)
-                self.types = copy(table.types)
-                self.units = copy(table.units)
-                self.descriptions = copy(table.descriptions)
-                self.keywords = copy(table.keywords)
-                self.comments = copy(table.comments)
-                self.nulls = copy(table.nulls)
-                self.formats = copy(table.formats)
-                
-                for name in self.names:
-                    self.array[name] = copy(table.array[name])
-                
-            elif type(arg) == str:
-                filename = arg
-                self.read(filename,**kwargs)
-            else:
-                raise Exception("Unknown argument type: "+str(type(arg)))
-        
-        # Supplied table name overrides name passed through table
         if kwargs.has_key('name'):
-            self.table_name = kwargs['name']
+            self.table_name = kwargs.pop('name')
         
-        # Update shape
+        if len(args) + len(kwargs) > 0:
+            self.read(*args,**kwargs)
+        
         self._update_shape()
         
         return
@@ -88,7 +50,7 @@ class BaseTable(object):
     def __getattr__(self,attribute):
         
         if attribute in self.names:
-            return self.array[attribute]
+            return self.data[attribute]
         else:
             raise AttributeError(attribute)
     
@@ -96,13 +58,15 @@ class BaseTable(object):
         if len(self.names) == 0:
             return 0
         else:
-            return len(self.array[self.names[0]])
+            return len(self.data[self.names[0]])
     
     def reset(self):
-        self.table_name = ""
+        '''
+        Empty the table
+        '''
         self.names = []
         self.types = {}
-        self.array = {}
+        self.data = {}
         self.units = {}
         self.descriptions = {}
         self.nulls = {}
@@ -110,13 +74,6 @@ class BaseTable(object):
         self.keywords = {}
         self.comments = []
         return
-
-#    def add_columns(self,names,data):
-#        self.reset()
-#        for column in columns:
-#            self.add_column(names,data)
-#        self._update_shape()
-#        return
     
     def add_column(self,name,data,unit='',null='',description='',format=None):
         '''
@@ -146,8 +103,8 @@ class BaseTable(object):
         '''
         
         self.names.append(name)
-        self.array[name] = np.array(data)
-        self.types[name] = self.array[name].dtype.type
+        self.data[name] = np.array(data)
+        self.types[name] = self.data[name].dtype.type
         self.units[name] = unit
         self.descriptions[name] = description
         self.nulls[name] = null
@@ -158,10 +115,10 @@ class BaseTable(object):
             self.formats[name] = format
         else:
             self.formats[name] = default_format[column_type]
-            
+        
         if self.formats[name][1] == 's':
-            self.formats[name] = self.array[name].itemsize,'s'
-                    
+            self.formats[name] = self.data[name].itemsize,'s'
+        
         self._update_shape()
         return
     
@@ -180,7 +137,7 @@ class BaseTable(object):
             colnum = self.names.index(remove_name)
             self.names.pop(colnum)
             
-            self.array.pop(remove_name)
+            self.data.pop(remove_name)
             self.units.pop(remove_name)
             self.descriptions.pop(remove_name)
         
@@ -188,7 +145,6 @@ class BaseTable(object):
             
             raise Exception("Column "+remove_name+" does not exist")
         
-        # Update shape
         self._update_shape()
         return
     
@@ -256,8 +212,8 @@ class BaseTable(object):
             if name == old_name:
                 self.names[i] = new_name
                 
-                self.array[new_name] = self.array[old_name]
-                del self.array[old_name]
+                self.data[new_name] = self.data[old_name]
+                del self.data[old_name]
                 
                 self.units[new_name] = self.units[old_name]
                 del self.units[old_name]
@@ -285,7 +241,7 @@ class BaseTable(object):
         for name in self.names:
             len_name_max = max(len(name),len_name_max)
             len_unit_max = max(len(str(self.units[name])),len_unit_max)
-            len_datatype_max = max(len(str(type(self.array[name][0]))),len_datatype_max)
+            len_datatype_max = max(len(str(self.types[name])),len_datatype_max)
             len_formats_max = max(len(self.format(name)),len_formats_max)
         
         # Print out table
@@ -303,25 +259,25 @@ class BaseTable(object):
         print "-"*len_tot
         
         return
-        
+    
     def row(self,row_number,python_types=False):
         row = []
         if not python_types:
             for name in self.names:
-               row.append(self.array[name][row_number])
+               row.append(self.data[name][row_number])
         else:
             for name in self.names:
-                if np.isnan(self.array[name][row_number]):
+                if np.isnan(self.data[name][row_number]):
                     elem = None
                 elif self.types[name] in [np.float32,np.float64]:
-                    elem = float(self.array[name][row_number])
+                    elem = float(self.data[name][row_number])
                 elif self.types[name] in [np.int16,np.int32,np.int64]:
-                    elem = int(self.array[name][row_number])
+                    elem = int(self.data[name][row_number])
                 elif self.types[name] in [np.string_,np.str]:
-                    elem = str(self.array[name][row_number])
+                    elem = str(self.data[name][row_number])
                 row.append(elem)
         return tuple(row)
-        
+    
     def where(self,mask):
         '''
         Select certain rows from the table and return a new table instance
@@ -330,9 +286,9 @@ class BaseTable(object):
             
             *mask*: [ np.bool array ]
                 A boolean array with the same length as the table.
-                
-        Returns:
         
+        Returns:
+            
             A new table instance, containing only the rows selected
         '''
         
@@ -341,7 +297,7 @@ class BaseTable(object):
         new_table.table_name = copy(self.table_name)
         new_table.names = copy(self.names)
         new_table.types = copy(self.types)
-        new_table.array = copy(self.array)
+        new_table.array = copy(self.data)
         new_table.units = copy(self.units)
         new_table.descriptions = copy(self.descriptions)
         new_table.keywords = copy(self.keywords)
@@ -350,7 +306,7 @@ class BaseTable(object):
         new_table.formats = copy(self.formats)
         
         for name in new_table.names:
-            new_table.array[name] = self.array[name][mask]
+            new_table.array[name] = self.data[name][mask]
         
         new_table._update_shape()
         
@@ -365,39 +321,42 @@ class BaseTable(object):
     
     def format(self,name):
         return str(self.formats[name][0])+self.formats[name][1]
-        
+    
     def add_comment(self,comment):
         '''
         Add a comment to the table
-
+        
         Required Argument:
-
+            
             *comment*: [ string ]
                 The comment to add to the table
         '''
-
+        
         self.comments.append(comment.strip())
         return
-
+    
     def add_keyword(self,key,value):
         '''
         Add a keyword/value pair to the table
-
+        
         Required Arguments:
-
+            
             *key*: [ string ]
                 The name of the keyword
-
+            
             *value*: [ string | float | integer | bool ]
                 The value of the keyword
         '''
-
+        
         if type(value) == str:
             value = value.strip()
         self.keywords[key.strip()] = value
         return
 
-class BaseTableSet(object):
+class TableSet(FITSSetMethods,SQLSetMethods,VOSetMethods,AutoMethods):
+    
+    _single_table_class = Table
+    
     
     def __init__(self,*args,**kwargs):
         '''
@@ -412,40 +371,38 @@ class BaseTableSet(object):
             
             If one or more arguments are present, they are passed to the read
             method
-            
+        
         '''
         
         self.tables = []
-
-        for arg in args:
-            if type(arg) == list:
-                if len(args) > 1:
-                    raise Exception("one argument is a list - other arguments will be ignored")
-                for table in arg:
-                    self.tables.append(self._single_table(table))
-                return
-            if isinstance(arg,BaseTableSet):
-                if len(args) > 1:
-                    raise Exception("one argument is a TableSet - other arguments will be ignored")
-                for table in arg.tables:
-                    self.tables.append(self._single_table(table))
-                return
+        
+        if len(args) == 1:
             
-        if len(args) > 0 or len(kwargs) > 0:    
-
-            # Pass arguments to read
-            self.read(*args,**kwargs)
+            arg = args[0]
+            
+            if type(arg) == list:
+                for table in arg:
+                    self.tables.append(table)
+                    return
+            
+            elif isinstance(arg,TableSet):
+                for table in arg.tables:
+                    self.tables.append(table)
+                    return
+        
+        # Pass arguments to read
+        self.read(*args,**kwargs)
         
         return
-        
+    
     def __getattr__(self,attribute):
-
+        
         for table in self.tables:
             if attribute == table.table_name:
                 return table
         
         raise AttributeError(attribute)
-            
+    
     def append(self,table):
         '''
         Append a table to the table set
@@ -458,7 +415,7 @@ class BaseTableSet(object):
                 a single VOTable to a FITSTableSet will convert the VOTable
                 to a FITSTable inside the set)
         '''
-        self.tables.append(self._single_table(table))
+        self.tables.append(table)
         return
     
     def describe(self):

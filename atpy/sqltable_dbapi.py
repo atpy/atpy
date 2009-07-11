@@ -1,45 +1,82 @@
 # need to add check for 2D arrays (don't support it)
 
+# NOTE: docstring is long and so only written once!
+#       It is copied for the other routines
+
 import numpy as np
 import sqlhelper as sql
-from basetable import BaseTable,BaseTableSet
 
-class SQLTable2(BaseTable):
+class SQLMethods(object):
     '''
     Class for working with reading and writing tables in databases.
     '''
     
-    def read(self,dbtype,*args,**kwargs):
+    def sql_read(self,dbtype,*args,**kwargs):
         '''
         Required Arguments:
             
-            *dbname*: [ string ]
-                The SQL database to write the tables to
+            *dbtype*: [ 'sqlite' | 'mysql' | 'postgres' ]
+                The SQL database type
         
-        Optional Keyword Arguments:
+        Optional arguments (only for Table.read() class):
+            
             *tid*: [ integer ]
-                If you get a return from the read function stating that
-                there's more than one table, pick the corresponding integer
-                to which table you want to load, with tid = N, where N is
-                and integer.
+                The ID of the table to read from the database (this is only
+                required if there are more than one table in the database)
+        
+        The remaining arguments depend on the database type:
+        
+        * SQLite:
             
-            *dbtype*: [ 'sqlite' | 'postgres' | 'mysql']
-                Choosing which database format to write in.
+            Arguments are passed to sqlite3.connect(). For a full list of
+            available arguments, see the help page for sqlite3.connect(). The
+            main arguments are listed below.
             
-            *username*: [ string ]
-                If not using sqlite, then username is most likely needed.
+            Required arguments:
+                
+                *dbname*: [ string ]
+                    The name of the database file
+        
+        * MySQL:
             
-            *password*: [ string ]
-                If not using sqlite, then username is most likely needed.
+            Arguments are passed to MySQLdb.connect(). For a full list of
+            available arguments, see the documentation for MySQLdb. The main
+            arguments are listed below.
             
-            *port*: [ string ]
-                Port number is sometimes needed depending on setup of
-                database manager. If using sqlite, this field is not necessary.
+            Optional arguments:
+                
+                *host*: [ string ]
+                    The host to connect to (default is localhost)
+                
+                *user*: [ string ]
+                    The user to conenct as (default is current user)
+                
+                *passwd*: [ string ]
+                    The user password (default is blank)
+                
+                *db*: [ string ]
+                    The name of the database to connect to (no default)
+                
+                *port* [ integer ]
+                    The port to connect to (default is 3306)
+        
+        * PostGreSQL:
+            
+            Arguments are passed to pgdb.connect(). For a full list of
+            available arguments, see the help page for pgdb.connect(). The
+            main arguments are listed below.
             
             *host*: [ string ]
-                Typically 'localhost' or some ip address, depending on where the
-                database is located. If using sqlite, this field is not necessary.
-        
+                The host to connect to (default is localhost)
+            
+            *user*: [ string ]
+                The user to conenct as (default is current user)
+            
+            *password*: [ string ]
+                The user password (default is blank)
+            
+            *database*: [ string ]
+                The name of the database to connect to (no default)
         '''
         
         if kwargs.has_key('tid'):
@@ -84,33 +121,7 @@ class SQLTable2(BaseTable):
         
         self.table_name = table_name
     
-    def write(self,dbtype,*args,**kwargs):
-        '''
-        Required Arguments:
-            
-            *dbname*: [ string ]
-                The SQL database to write the tables to
-        
-        Optional Keyword Arguments:
-            
-            *dbtype*: [ 'sqlite' | 'postgres' | 'mysql']
-                Choosing which database format to write in.
-            
-            *username*: [ string ]
-                If not using sqlite, then username is most likely needed.
-            
-            *password*: [ string ]
-                If not using sqlite, then username is most likely needed.
-            
-            *port*: [ string ]
-                Port number is sometimes needed depending on setup of
-                database manager. If using sqlite, this field is not necessary.
-            
-            *host*: [ string ]
-                Typically 'localhost' or some ip address, depending on where the
-                database is located. If using sqlite, this field is not necessary.
-        
-        '''
+    def sql_write(self,dbtype,*args,**kwargs):
         
         # Check if table overwrite is requested
         if kwargs.has_key('overwrite'):
@@ -130,7 +141,8 @@ class SQLTable2(BaseTable):
         # Check that table name is ok
         # todo
         
-        # lowercase because pgsql automatically converts table names to lower case
+        # lowercase because pgsql automatically converts 
+        # table names to lower case
         
         # Check if table already exists
         
@@ -151,13 +163,12 @@ class SQLTable2(BaseTable):
         # Close connection
         connection.commit()
         cursor.close()
+    
+    sql_write.__doc__ = sql_read.__doc__
 
-class SQLTableSet2(BaseTableSet):
+class SQLSetMethods(object):
     
-    def _single_table(self,table):
-        return SQLTable2(table)
-    
-    def read(self,dbtype,*args,**kwargs):
+    def sql_read(self,dbtype,*args,**kwargs):
         
         self.tables = []
         
@@ -167,11 +178,15 @@ class SQLTableSet2(BaseTableSet):
         
         for tid in table_names:
             kwargs['tid'] = tid
-            table = SQLTable2()
-            table.read(dbtype,*args,**kwargs)
+            table = self._single_table_class()
+            table.sql_read(dbtype,*args,**kwargs)
             self.tables.append(table)
     
-    def write(self,dbtype,*args,**kwargs):
+    sql_read.__doc__ = SQLMethods.sql_read.__doc__
+    
+    def sql_write(self,dbtype,*args,**kwargs):
         
         for i,table in enumerate(self.tables):
-            self.write(dbtype,*args,**kwargs)
+            table.sql_write(dbtype,*args,**kwargs)
+    
+    sql_write.__doc__ = SQLMethods.sql_read.__doc__

@@ -3,8 +3,6 @@ import numpy as np
 from vo.table import parse
 from vo.tree import VOTableFile, Resource, Table, Field
 
-from basetable import BaseTable, BaseTableSet
-
 # Define type conversion dictionary
 type_dict = {}
 type_dict[np.uint8] = "int"
@@ -24,10 +22,10 @@ def _list_tables(filename):
         tables[i] = table.name
     return tables
 
-class VOTable(BaseTable):
+class VOMethods(object):
     ''' A class for reading and writing a single VO table.'''
     
-    def read(self,filename,tid=-1):
+    def vo_read(self,filename,tid=-1):
         '''
         Read a table from a VOT file
         
@@ -80,12 +78,12 @@ class VOTable(BaseTable):
         
         # Define some fields
         
-        n_rows = len(self.array[self.names[0]])
+        n_rows = len(self.data[self.names[0]])
         
         fields = []
         for i,name in enumerate(self.names):
             
-            data = self.array[name]
+            data = self.data[name]
             unit = self.units[name]
             
             coltype = type(data)
@@ -112,13 +110,13 @@ class VOTable(BaseTable):
         table.create_arrays(n_rows)
         
         for name in self.names:
-            table.array[name] = self.array[name]
+            table.array[name] = self.data[name]
         
         table.name = self.table_name
         
         return table
     
-    def write(self,filename,votype='ascii'):
+    def vo_write(self,filename,votype='ascii'):
         '''
         Write the table to a VOT file
         
@@ -146,13 +144,10 @@ class VOTable(BaseTable):
         VOTable.to_xml(filename)
 
 
-class VOTableSet(BaseTableSet):
+class VOSetMethods(object):
     ''' A class for reading and writing a set of VO tables.'''
     
-    def _single_table(self,table):
-        return VOTable(table)
-    
-    def read(self,filename):
+    def vo_read(self,filename):
         '''
         Read all tables from a VOT file
         
@@ -165,11 +160,11 @@ class VOTableSet(BaseTableSet):
         self.tables = []
         
         for tid in _list_tables(filename):
-            t = VOTable()
-            t.read(filename,tid=tid)
+            t = self._single_table_class()
+            t.vo_read(filename,tid=tid)
             self.tables.append(t)
     
-    def write(self,filename,votype='ascii'):
+    def vo_write(self,filename,votype='ascii'):
         '''
         Write all tables to a VOT file
         
