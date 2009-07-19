@@ -1,4 +1,4 @@
-def _determine_type(string):
+def _determine_type(string,verbose):
     
     s = string.lower()
     
@@ -8,19 +8,23 @@ def _determine_type(string):
         extension = s.split('.')[-2]
     
     if extension in ['fits','fit']:
-        print "Auto-detected input type: FITS table"
+        if verbose:
+            print "Auto-detected input type: FITS table"
         table_type = 'fits'
     
     elif extension in ['xml','vot']:
-        print "Auto-detected input type: VO table"
+        if verbose:
+            print "Auto-detected input type: VO table"
         table_type = 'vo'
     
     elif extension in ['tbl','ipac']:
-        print "Auto-detected input type: IPAC table"
+        if verbose:
+            print "Auto-detected input type: IPAC table"
         table_type = 'ipac'
     
     elif s in ['sqlite','postgres','mysql']:
-        print "Auto-detected input type: SQL table"
+        if verbose:
+            print "Auto-detected input type: SQL table"
         table_type = 'sql'
     
     else:
@@ -52,10 +56,15 @@ class AutoMethods(object):
            * ``vo_read``
         '''
         
+        if 'verbose' in kwargs:
+            verbose = kwargs.pop('verbose')
+        else:
+            verbose = True
+        
         if kwargs.has_key('type'):
             table_type = kwargs['type'].lower()
         elif type(args[0]) == str:
-            table_type = _determine_type(args[0])
+            table_type = _determine_type(args[0],verbose)
         else:
             raise Exception('Could not determine input type')
         
@@ -95,10 +104,15 @@ class AutoMethods(object):
            * ``vo_write``
         '''
         
+        if 'verbose' in kwargs:
+            verbose = kwargs.pop('verbose')
+        else:
+            verbose = True
+        
         if kwargs.has_key('type'):
             table_type = kwargs['type'].lower()
         elif type(args[0]) == str:
-            table_type = _determine_type(args[0])
+            table_type = _determine_type(args[0],verbose)
         else:
             raise Exception('Could not determine input type')
         
