@@ -1,307 +1,192 @@
-import decimal
+# NOTE: docstring is long and so only written once!
+#       It is copied for the other routines
+
 import numpy as np
-import sqlalchemy as sql
+import sqlhelper as sql
 
-# Define type conversion dictionary
-type_dict = {}
-type_dict[np.uint8] = "Unicode"
-type_dict[np.int16] = "Integer"
-type_dict[np.int32] = "Integer"
-type_dict[np.int64] = "Integer"
-type_dict[np.float32] = "Float"
-type_dict[np.float64] = "Float"
-type_dict[np.str] = "Text"
-type_dict[np.string_] = "Text"
-type_dict[str] = "Text"
-
-type_dict_out ={}
-type_dict_out[np.int16] = sql.Integer()
-type_dict_out[np.int32] = sql.Integer()
-type_dict_out[np.int64] = sql.Integer()
-type_dict_out[np.float32] = sql.Float()
-type_dict_out[np.float64] = sql.Float()
-type_dict_out[np.str] = sql.String()
-type_dict_out[np.string_] = sql.String()
-type_dict_out[str] = sql.String()
-type_dict_out[np.unicode_] = sql.String()
-type_dict_out[None.__class__] = sql.Float()
-
-
-accept = ['postgres','mysql'] # sqlite is automatically included, regardless of this 'accept' list.
-
-
-def _smart_dialect(dbname,dbtype,username='',password='',port='',host=''):
-    dialect = ['postgres','mysql']
-    
-    if dbtype is 'sqlite':
-        engine = sql.create_engine(dbtype+':///'+dbname)
-        
-    elif dbtype in dialect:
-        
-        if port is not '':
-            port = ':' + port
-        
-        engine = sql.create_engine(dbtype+'://'+username+':'+password+'@'+host+port+'/'+dbname)
-    
-    else:
-        print 'Your dbtype '+str(dbtype)+' was not recognized. \nSQLTable(Set) only accepts sqlite, postgres, or mysql as a dbtype.'
-        
-    return engine
-
-
-def _list_tables(engine):
-    sqltables = np.array(engine.table_names()).astype(np.str)
-    tables = {}
-    for i,table in enumerate(sqltables):
-        tables[i] = table
-    return tables
-
-
-def uni2str(array):
-    if type(array) == np.unicode_:
-        array = array.astype(np.str)
-    else:
-        pass
-    return array
-
-
-class SQLTable(object):
+class SQLMethods(object):
     '''
     Class for working with reading and writing tables in databases.
     '''
     
-    def sql_read(self,dbname,tid=-1,dbtype='sqlite',username='',password='',port='',host=''):
+    def sql_read(self,dbtype,*args,**kwargs):
         '''
         Required Arguments:
             
-            *dbname*: [ string ]
-                The SQL database to write the tables to
+            *dbtype*: [ 'sqlite' | 'mysql' | 'postgres' ]
+                The SQL database type
         
-        Optional Keyword Arguments:
+        Optional arguments (only for Table.read() class):
+            
             *tid*: [ integer ]
-                If you get a return from the read function stating that
-                there's more than one table, pick the corresponding integer
-                to which table you want to load, with tid = N, where N is
-                and integer.
+                The ID of the table to read from the database (this is only
+                required if there are more than one table in the database)
+        
+        The remaining arguments depend on the database type:
+        
+        * SQLite:
             
-            *dbtype*: [ 'sqlite' | 'postgres' | 'mysql']
-                Choosing which database format to write in.
+            Arguments are passed to sqlite3.connect(). For a full list of
+            available arguments, see the help page for sqlite3.connect(). The
+            main arguments are listed below.
             
-            *username*: [ string ]
-                If not using sqlite, then username is most likely needed.
+            Required arguments:
+                
+                *dbname*: [ string ]
+                    The name of the database file
+        
+        * MySQL:
             
-            *password*: [ string ]
-                If not using sqlite, then username is most likely needed.
+            Arguments are passed to MySQLdb.connect(). For a full list of
+            available arguments, see the documentation for MySQLdb. The main
+            arguments are listed below.
             
-            *port*: [ string ]
-                Port number is sometimes needed depending on setup of
-                database manager. If using sqlite, this field is not necessary.
+            Optional arguments:
+                
+                *host*: [ string ]
+                    The host to connect to (default is localhost)
+                
+                *user*: [ string ]
+                    The user to conenct as (default is current user)
+                
+                *passwd*: [ string ]
+                    The user password (default is blank)
+                
+                *db*: [ string ]
+                    The name of the database to connect to (no default)
+                
+                *port* [ integer ]
+                    The port to connect to (default is 3306)
+        
+        * PostGreSQL:
+            
+            Arguments are passed to pgdb.connect(). For a full list of
+            available arguments, see the help page for pgdb.connect(). The
+            main arguments are listed below.
             
             *host*: [ string ]
-                Typically 'localhost' or some ip address, depending on where the
-                database is located. If using sqlite, this field is not necessary.
-        
+                The host to connect to (default is localhost)
+            
+            *user*: [ string ]
+                The user to conenct as (default is current user)
+            
+            *password*: [ string ]
+                The user password (default is blank)
+            
+            *database*: [ string ]
+                The name of the database to connect to (no default)
         '''
+        
+        if kwargs.has_key('tid'):
+            tid = kwargs.pop('tid')
+        else:
+            tid = None
         
         # Erase existing content
         self.reset()
         
-        engine = _smart_dialect(dbname=dbname,dbtype=dbtype,username=username,password=password,port=port,host=host)
-        
-        metadata = sql.MetaData(engine)
-        
-        tbl_names = np.array(engine.table_names()).astype(np.str)
+        connection,cursor = sql.connect_database(dbtype,*args,**kwargs)
         
         # If no table is requested, check that there is only one table
-        if tid==-1:
-            tables = _list_tables(engine)
-            if len(tables) == 1:
-                tid = 0
+        
+        table_names = sql.list_tables(cursor,dbtype)
+        
+        if tid==None:
+            if len(table_names) == 1:
+                tid = 1
             else:
                 print "-"*56
                 print " There is more than one table in the requested file"
                 print " Please specify the table desired with the tid= argument"
                 print " The available tables are:"
                 print ""
-                for tid in tables:
-                    print " tid=%i : %s" % (tid,tables[tid])
+                for tid in table_names:
+                    print " tid=%i : %s" % (tid,table_names[tid])
                 print "-"*56
                 return
         
-        metadata = sql.MetaData(engine)
-        tbl_names = np.array(engine.table_names()).astype(np.str)
+        table_name = table_names[tid]
         
-        if tid != -1:
-            try:
-                tbl = sql.Table(tbl_names[tid], metadata, autoload=True)
-                self.table_name = tbl_names[tid]
-            except:
-                print 'Table name '+str(tid)+' is not recognized.'
-                return
+        column_names,column_types = sql.column_info(cursor,dbtype,table_name)
         
+        cursor = connection.cursor()
+        
+        for i,column_name in enumerate(column_names):
+            column_type = column_types[i]
+            cursor.execute('select '+sql.quote[dbtype]+column_name+sql.quote[dbtype]+' from '+table_name)
+            result = cursor.fetchall()
+            self.add_column(column_name,np.array(result,column_type).ravel())
+        
+        self.table_name = table_name
+    
+    def sql_write(self,dbtype,*args,**kwargs):
+        
+        self._raise_vector_columns()
+        
+        # Check if table overwrite is requested
+        if kwargs.has_key('overwrite'):
+            overwrite = kwargs.pop('overwrite')
         else:
-            tbl = sql.Table(tbl_names[tid].encode(), metadata, autoload=True)
-            self.table_name = tbl_names[0].encode()
+            overwrite = False
         
-        results = engine.execute(tbl.select()).fetchall()
-        for col in tbl.columns.keys():
-            column = []
-            for row in results:
-                elem = row[col]
-                if type(elem)==decimal.Decimal:
-                    elem = float(elem)
-                column.append(elem)
-            self.add_column(str(col),uni2str(np.array(column)))
+        # Open the connection
+        connection,cursor = sql.connect_database(dbtype,*args,**kwargs)
+        
+        # Check that table name is set
+        if not self.table_name:
+            raise Exception("Table name is not set")
+        else:
+            table_name = self.table_name
+        
+        # Check that table name is ok
+        # todo
+        
+        # lowercase because pgsql automatically converts 
+        # table names to lower case
+        
+        # Check if table already exists
+        
+        existing_tables = sql.list_tables(cursor,dbtype).values()
+        if table_name in existing_tables or table_name.lower() in existing_tables:
+            if overwrite:
+                sql.drop_table(cursor,table_name)
+            else:
+                raise Exception("Table already exists - use overwrite to replace existing table")
+        
+        # Create table
+        sql.create_table(cursor,dbtype,table_name,self.names,self.types)
+        
+        # Insert row
+        for i in range(self.__len__()):
+            sql.insert_row(cursor,dbtype,table_name,self.row(i,python_types=True))
+        
+        # Close connection
+        connection.commit()
+        cursor.close()
     
+    sql_write.__doc__ = sql_read.__doc__
+
+class SQLSetMethods(object):
     
-    def sql_write(self,dbname,dbtype='sqlite',username='',password='',port='',host=''):
-        '''
-        Required Arguments:
-            
-            *dbname*: [ string ]
-                The SQL database to write the tables to
-        
-        Optional Keyword Arguments:
-            
-            *dbtype*: [ 'sqlite' | 'postgres' | 'mysql']
-                Choosing which database format to write in.
-            
-            *username*: [ string ]
-                If not using sqlite, then username is most likely needed.
-            
-            *password*: [ string ]
-                If not using sqlite, then username is most likely needed.
-            
-            *port*: [ string ]
-                Port number is sometimes needed depending on setup of
-                database manager. If using sqlite, this field is not necessary.
-            
-            *host*: [ string ]
-                Typically 'localhost' or some ip address, depending on where the
-                database is located. If using sqlite, this field is not necessary.
-        
-        '''
-        
-        engine = _smart_dialect(dbname=dbname,dbtype=dbtype,username=username,password=password,port=port,host=host)
-        
-        metadata = sql.MetaData()
-        tbl = sql.Table(self.table_name, metadata)
-        for i, col_name in enumerate(np.array(self.names).astype(str)):
-            tbl.columns.add(sql.Column(col_name,
-            type_dict_out[type(self.data[col_name][0])]
-            ))
-        
-        metadata.create_all(engine)
-        
-        sources = []
-        
-        for i in range(len(self.data[self.names[0].encode()])):
-            source = {}
-            for col_name in np.array(self.names).astype(str):
-                source[col_name] = self.data[col_name][i]
-            sources.append(source)
-        
-        
-        # Insert values into database
-        conn = engine.connect()
-        conn.execute(tbl.insert(),sources)
-        conn.close()
-
-
-
-class SQLTableSet(object):
-    '''
-    Class for working with reading and writing sets of tables in databases.
-    '''
-    
-    def sql_read(self,dbname,dbtype='sqlite',username='',password='',port='',host=''):
-        '''
-        Required Arguments:
-            
-            *dbname*: [ string ]
-                The SQL database to write the tables to
-        
-        Optional Keyword Arguments:
-            
-            *dbtype*: [ 'sqlite' | 'postgres' | 'mysql']
-                Choosing which database format to write in.
-            
-            *username*: [ string ]
-                If not using sqlite, then username is most likely needed.
-            
-            *password*: [ string ]
-                If not using sqlite, then username is most likely needed.
-            
-            *port*: [ string ]
-                Port number is sometimes needed depending on setup of database manager.
-                If using sqlite, this field is not necessary.
-            
-            *host*: [ string ]
-                Typically 'localhost' or some ip address, depending on where the database is located.
-                If using sqlite, this field is not necessary.
-        '''
+    def sql_read(self,dbtype,*args,**kwargs):
         
         self.tables = []
-        engine = _smart_dialect(dbname=dbname,dbtype=dbtype,username=username,password=password,port=port,host=host)
         
-        for i,tid in enumerate(_list_tables(engine)):
-            table = SQLTable()
-            table.read(dbname,tid=i,dbtype=dbtype,username=username,password=password,port=port,host=host)
+        connection,cursor = sql.connect_database(dbtype,*args,**kwargs)
+        table_names = sql.list_tables(cursor,dbtype)
+        cursor.close()
+        
+        for tid in table_names:
+            kwargs['tid'] = tid
+            table = self._single_table_class()
+            table.sql_read(dbtype,*args,**kwargs)
             self.tables.append(table)
     
+    sql_read.__doc__ = SQLMethods.sql_read.__doc__
     
-    def sql_write(self,dbname,dbtype='sqlite',username='',password='',port='',host=''):
-        '''
-        Write all tables to a SQL file
-        
-        Required Arguments:
-            
-            *dbname*: [ string ]
-                The SQL database to write the tables to
-        
-        Optional Keyword Arguments:
-            
-            *dbtype*: [ 'sqlite' | 'postgres' | 'mysql']
-                Choosing which database format to write in.
-            
-            *username*: [ string ]
-                If not using sqlite, then username is most likely needed.
-            
-            *password*: [ string ]
-                If not using sqlite, then username is most likely needed.
-            
-            *port*: [ string ]
-                Port number is sometimes needed depending on setup of database manager.
-                If using sqlite, this field is not necessary.
-            
-            *host*: [ string ]
-                Typically 'localhost' or some ip address, depending on where the database is located.
-                If using sqlite, this field is not necessary.
-        '''
-        
-        engine = _smart_dialect(dbname=dbname,dbtype=dbtype,username=username,password=password,port=port,host=host)
-        conn = engine.connect() # Maybe change this part?
+    def sql_write(self,dbtype,*args,**kwargs):
         
         for i,table in enumerate(self.tables):
-            metadata = sql.MetaData()
-            tbl = sql.Table(table.table_name, metadata)
-            for j, col_name in enumerate(np.array(table.names).astype(str)):
-                tbl.columns.add(sql.Column(col_name,
-                type_dict_out[type(table.array[col_name][0])]
-                ))
-            
-            metadata.create_all(engine)
-            
-            sources = []
-            
-            for j in range(len(table.array[self.tables[i].names[0].encode()])):
-                source = {}
-                for col_name in np.array(table.names).astype(str):
-                    source[col_name] = table.array[col_name][j]
-                sources.append(source)
-            
-            # Insert values into database
-            conn.execute(tbl.insert(),sources)
-        
-        conn.close()
+            table.sql_write(dbtype,*args,**kwargs)
     
+    sql_write.__doc__ = SQLMethods.sql_read.__doc__
