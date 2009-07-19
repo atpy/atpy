@@ -1,5 +1,6 @@
 import numpy as np
 from copy import copy
+import string
 
 from fitstable import FITSMethods,FITSSetMethods
 from sqltable_dbapi import SQLMethods,SQLSetMethods
@@ -74,7 +75,23 @@ class Table(FITSMethods,IPACMethods,SQLMethods,VOMethods,AutoMethods):
         self.keywords = {}
         self.comments = []
         return
-    
+        
+    def _raise_vector_columns(self):
+        names = []
+        for name in self.data:
+            column = self.data[name]
+            if column.ndim > 1:
+                names.append(name)
+        if names:
+            names = string.join(names,", ")
+            raise Exception('''This table contains vector columns:
+            
+            '''+names+'''
+            
+            but the output format selected does not. Remove these columns
+            using the remove_column() method and try again.''')
+        return
+            
     def add_column(self,name,data,unit='',null='',description='',format=None):
         '''
         Add a column to the table

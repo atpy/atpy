@@ -182,6 +182,8 @@ class IPACMethods(object):
                 The IPAC file to write the table to
         '''
         
+        self._raise_vector_columns()
+        
         # Open file for writing
         f = file(filename,'wb')
         

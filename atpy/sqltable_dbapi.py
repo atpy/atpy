@@ -1,5 +1,3 @@
-# need to add check for 2D arrays (don't support it)
-
 # NOTE: docstring is long and so only written once!
 #       It is copied for the other routines
 
@@ -122,6 +120,8 @@ class SQLMethods(object):
         self.table_name = table_name
     
     def sql_write(self,dbtype,*args,**kwargs):
+        
+        self._raise_vector_columns()
         
         # Check if table overwrite is requested
         if kwargs.has_key('overwrite'):

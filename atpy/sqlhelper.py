@@ -142,7 +142,7 @@ def list_tables(cursor,dbtype):
         if len(table_names) == 1:
             table_names = table_names[0]
         for i,table_name in enumerate(table_names):
-            tables[i+1] = str(table_name)
+            tables[i+1] = str(table_name[0].encode())
     elif dbtype=='mysql':
         cursor.execute('SHOW TABLES;')
         for i,table_name in enumerate(cursor):
