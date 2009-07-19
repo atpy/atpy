@@ -34,10 +34,10 @@ def _check_MySQLdb_installed():
  
  # SQLite
 
-PyGreSQL_minimum_version = "4.0"
+PyGreSQL_minimum_version = "3.8.1"
 
 try:
-    print pkg_resources.require('PyGreSQL>='+PyGreSQL_minimum_version)
+    pkg_resources.require('PyGreSQL>='+PyGreSQL_minimum_version)
     import pgdb
     PyGreSQL_installed = True
 except:
@@ -142,7 +142,9 @@ def list_tables(cursor,dbtype):
         if len(table_names) == 1:
             table_names = table_names[0]
         for i,table_name in enumerate(table_names):
-            tables[i+1] = str(table_name[0].encode())
+            if type(table_name) == tuple:
+                table_name = table_name[0]
+            tables[i+1] = str(table_name.encode())
     elif dbtype=='mysql':
         cursor.execute('SHOW TABLES;')
         for i,table_name in enumerate(cursor):
