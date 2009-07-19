@@ -1,5 +1,20 @@
 import numpy as np
-import pyfits
+import pkg_resources
+
+pyfits_minimum_version = "2.1"
+
+try:
+    pkg_resources.require('pyfits>='+pyfits_minimum_version)
+    import pyfits
+    pyfits_installed = True
+except:
+    print "WARNING - pyfits "+pyfits_minimum_version+" or later required"
+    print "          FITS table reading/writing has been disabled"
+    pyfits_installed = False
+
+def _check_pyfits_installed():
+    if not pyfits_installed:
+        raise Exception("Cannot read/write FITS files - pyfits "+pyfits_minimum_version+" or later required")
 
 standard_keys = ['XTENSION','NAXIS','NAXIS1','NAXIS2','TFIELDS','PCOUNT','GCOUNT','BITPIX']
 
@@ -41,6 +56,8 @@ class FITSMethods(object):
                 The HDU to read from the FITS file (this is only required
                 if there are more than one table in the FITS file)
         '''
+        
+        _check_pyfits_installed()
         
         self.reset()
         
@@ -139,6 +156,8 @@ class FITSMethods(object):
                 Whether to overwrite any existing file without warning
         '''
         
+        _check_pyfits_installed()
+        
         self._to_hdu().writeto(filename,clobber=overwrite)
 
 class FITSSetMethods(object):
@@ -153,6 +172,8 @@ class FITSSetMethods(object):
             *filename*: [ string ]
                 The FITS file to read the tables from
         '''
+        
+        _check_pyfits_installed()
         
         self.tables = []
         
@@ -175,6 +196,8 @@ class FITSSetMethods(object):
             *overwrite*: [ True | False ]
                 Whether to overwrite any existing file without warning
         '''
+        
+        _check_pyfits_installed()
         
         hdulist = [pyfits.PrimaryHDU()]
         for i,table in enumerate(self.tables):

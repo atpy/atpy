@@ -1,25 +1,53 @@
 import numpy as np
+import pkg_resources
+
+# SQLite
 
 try:
     import sqlite3
-    sqlite = True
+    sqlite3_installed = True
 except:
-    print "WARNING: module sqlite3 not present - SQLite not available"
-    sqlite = False
+    print "WARNING - sqlite3 required"
+    print "          SQLite table reading/writing has been disabled"
+    sqlite3_installed = False
+
+def _check_sqlite3_installed():
+    if not sqlite3_installed:
+        raise Exception("Cannot read/write SQLite tables - sqlite3 required")
+
+# SQLite
+
+MySQLdb_minimum_version = "1.2.2"
 
 try:
+    pkg_resources.require('MySQL-python>='+MySQLdb_minimum_version)
     import MySQLdb
-    mysql = True
+    MySQLdb_installed = True
 except:
-    print "WARNING: module MySQLdb not present - MySQL not available"
-    mysql = False
-    
+    print "WARNING - MySQL-python "+MySQLdb_minimum_version+" or later required"
+    print "          MySQL table reading/writing has been disabled"
+    MySQLdb_installed = False
+
+def _check_MySQLdb_installed():
+    if not MySQLdb_installed:
+        raise Exception("Cannot read/write MySQL tables - MySQL-python "+MySQLdb_minimum_version+" or later required")
+ 
+ # SQLite
+
+PyGreSQL_minimum_version = "4.0"
+
 try:
+    print pkg_resources.require('PyGreSQL>='+PyGreSQL_minimum_version)
     import pgdb
-    postgres = True
+    PyGreSQL_installed = True
 except:
-    print "WARNING: module pgdb (from PyGreSQL) not present - PostGreSQL not available"
-    postgres = False
+    print "WARNING - PyGreSQL "+PyGreSQL_minimum_version+" or later required"
+    print "          PostGreSQL table reading/writing has been disabled"
+    PyGreSQL_installed = False
+
+def _check_PyGreSQL_installed():
+    if not PyGreSQL_installed:
+        raise Exception("Cannot read/write PostGreSQL tables - PyGreSQL "+PyGreSQL_minimum_version+" or later required")
 
 # Type conversion dictionary
 
@@ -174,16 +202,13 @@ def connect_database(dbtype,*args,**kwargs):
         - pgdb.connect() for PostgreSQL
     '''
     if dbtype == 'sqlite':
-        if not sqlite:
-            raise Exception("sqlite3 module not installed")
+        _check_sqlite3_installed()
         connection = sqlite3.connect(*args,**kwargs)
     elif dbtype == 'mysql':
-        if not mysql:
-            raise Exception("MySQLdb module not installed")
+        _check_MySQLdb_installed()
         connection = MySQLdb.connect(*args,**kwargs)
     elif dbtype == 'postgres':
-        if not postgres:
-            raise Exception("pgdb module not installed")
+        _check_PyGreSQL_installed()
         connection = pgdb.connect(*args,**kwargs)
     else:
         raise Exception('dbtype should be one of sqlite/mysql/postgres')
