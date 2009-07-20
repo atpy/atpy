@@ -46,7 +46,7 @@ def test_write(t, verbose=False, vector_columns=False):
 
     print "Converting to PostGreSQL database ... ",
     try:
-        t.write('postgres', database='python', user='tom', overwrite=True, \
+        t.write('postgres', database='python', user='atpy_test', overwrite=True, \
             verbose=False)
         if vector_columns:
             print "failed"
@@ -77,7 +77,7 @@ def test_write(t, verbose=False, vector_columns=False):
 
     print "Converting to MySQL database ... ",
     try:
-        t.write('mysql', db='python', user='tom', passwd="C2#uwQsk", \
+        t.write('mysql', db='python', user='atpy_test', passwd="C2#uwQsk", \
             overwrite=True, verbose=False)
         if vector_columns:
             print "failed"
@@ -90,6 +90,17 @@ def test_write(t, verbose=False, vector_columns=False):
             print "failed"
     except:
         print "failed"
+
+# Read in IRSA IPAC Table
+
+print "Reading IPAC Table ... ",
+try:
+    t = atpy.Table('examples/2mass.tbl', name='irsa', verbose=False)
+    print "passed"
+except:
+    print "failed"
+
+test_write(t, verbose=False)
 
 # Read in AJ VO Table
 
