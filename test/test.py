@@ -1,5 +1,12 @@
 import atpy
 import os
+import getpass
+
+# The default for the databases is to connect with the current username and
+# password "C2#uwQsk".
+
+username = getpass.getuser()
+password = "C2#uwQsk"
 
 
 def test_write(t, verbose=False, vector_columns=False):
@@ -46,7 +53,7 @@ def test_write(t, verbose=False, vector_columns=False):
 
     print "Converting to PostGreSQL database ... ",
     try:
-        t.write('postgres', database='python', user='atpy_test', overwrite=True, \
+        t.write('postgres', database='python', user=username, overwrite=True, \
             verbose=False)
         if vector_columns:
             print "failed"
@@ -77,7 +84,7 @@ def test_write(t, verbose=False, vector_columns=False):
 
     print "Converting to MySQL database ... ",
     try:
-        t.write('mysql', db='python', user='atpy_test', passwd="C2#uwQsk", \
+        t.write('mysql', db='python', user=username, passwd=password, \
             overwrite=True, verbose=False)
         if vector_columns:
             print "failed"
