@@ -23,6 +23,18 @@ default_format[np.unicode_] = 0, 's'
 default_format[np.object_] = 10, 's'
 
 
+class VectorException(Exception):
+
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return "This table contains vector columns:\n\n" + \
+        self.value + "\n\n" + \
+        "but the output format selected does not. Remove these " + \
+        "columns using the remove_column() method and try again."
+
+
 class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
 
     def __init__(self, *args, **kwargs):
@@ -85,12 +97,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
                 names.append(name)
         if names:
             names = string.join(names, ", ")
-            raise Exception('''This table contains vector columns:
-
-            ''' + names + '''
-
-            but the output format selected does not. Remove these columns
-            using the remove_column() method and try again.''')
+            raise VectorException(names)
         return
 
     def add_column(self, name, data, unit='', null='', description='', \
