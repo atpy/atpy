@@ -43,7 +43,7 @@ def _list_tables(filename):
 class VOMethods(object):
     ''' A class for reading and writing a single VO table.'''
 
-    def vo_read(self, filename, tid=-1):
+    def vo_read(self, filename, pedantic=False, tid=-1):
         '''
         Read a table from a VOT file
 
@@ -57,6 +57,10 @@ class VOMethods(object):
             *tid*: [ integer ]
                 The ID of the table to read from the VO file (this is
                 only required if there are more than one table in the VO file)
+                
+            *pendantic*: [ True | False ]
+                When *pedantic* is True, raise an error when the file violates the
+                VO Table specification, otherwise issue a warning.
         '''
 
         _check_vo_installed()
@@ -79,7 +83,7 @@ class VOMethods(object):
                 print "-"*56
                 return
 
-        votable = parse(filename)
+        votable = parse(filename, pedantic=pedantic)
         for id, table in enumerate(votable.iter_tables()):
             if id==tid:
                 break
