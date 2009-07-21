@@ -71,7 +71,7 @@ def test_write(t, verbose=False, vector_columns=False, \
 
     print "Converting to SQLite database ... ",
     try:
-        t.write('sqlite', 'temp1.db', overwrite=True, verbose=False)
+        t.write('sqlite', 'temp.db', overwrite=True, verbose=False)
         if vector_columns:
             print "failed"
         else:
@@ -83,6 +83,9 @@ def test_write(t, verbose=False, vector_columns=False, \
             print "failed"
     except:
         print "failed"
+
+    if os.path.exists('temp.db'):
+        os.remove('temp.db')
 
     print "Converting to MySQL database ... ",
     try:
