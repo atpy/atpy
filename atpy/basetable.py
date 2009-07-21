@@ -296,6 +296,21 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         return
 
     def row(self, row_number, python_types=False):
+        '''
+        Returns a single row
+        
+        Required arguments:
+        
+            *row_number*: [ integer ]
+                The row number (the first row is 0)
+                
+        Optional Keyword Arguments:
+        
+            *python_types*: [ True | False ]
+                Whether to return the row elements with python (True)
+                or numpy (False) types.
+        '''
+        
         row = []
         if not python_types:
             for name in self.names:
@@ -355,6 +370,14 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         return
 
     def format(self, name):
+        '''
+        Return the ASCII format of a given column
+        
+        Required Arguments:
+        
+            *name*: [ string ]
+                The column name
+        '''
         return str(self.formats[name][0]) + self.formats[name][1]
 
     def add_comment(self, comment):
