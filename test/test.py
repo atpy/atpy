@@ -9,7 +9,8 @@ username = getpass.getuser()
 password = "C2#uwQsk"
 
 
-def test_write(t, verbose=False, vector_columns=False):
+def test_write(t, verbose=False, vector_columns=False, \
+    table_set=False):
 
     # Read in AJ VO Table
 
@@ -33,21 +34,22 @@ def test_write(t, verbose=False, vector_columns=False):
 
     # Convert to IPAC Table
 
-    print "Writing IPAC Table ... ",
-    try:
-        t.write('temp.tbl', verbose=False)
-        os.remove('temp.tbl')
-        if vector_columns:
+    if not table_set:
+        print "Writing IPAC Table ... ",
+        try:
+            t.write('temp.tbl', verbose=False)
+            os.remove('temp.tbl')
+            if vector_columns:
+                print "failed"
+            else:
+                print "passed"
+        except atpy.VectorException:
+            if vector_columns:
+                print "passed"
+            else:
+                print "failed"
+        except:
             print "failed"
-        else:
-            print "passed"
-    except atpy.VectorException:
-        if vector_columns:
-            print "passed"
-        else:
-            print "failed"
-    except:
-        print "failed"
 
     # Convert to SQLite databases
 
@@ -113,7 +115,7 @@ test_write(t, verbose=False)
 
 print "Reading VO Table ... ",
 try:
-    t = atpy.Table('examples/aj285677t2_VOTable.xml', name='red sources', \
+    t = atpy.Table('examples/aj285677t3_VOTable.xml', name='red sources', \
         verbose=False)
     print "passed"
 except:
@@ -152,4 +154,4 @@ try:
 except:
     print "failed"
 
-test_write(ts, verbose=False, vector_columns=True)
+test_write(ts, verbose=False, vector_columns=True, table_set=True)
