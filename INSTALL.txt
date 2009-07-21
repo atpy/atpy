@@ -9,6 +9,9 @@ Installing ATpy
       - numpy 1.3.0 or later
         http://numpy.scipy.org/
 
+      - setuptools 0.6c9
+        http://pypi.python.org/pypi/setuptools/
+
     The following packages are optional, but are required to
     read/write to files of the relevant format:
 
