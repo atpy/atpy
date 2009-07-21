@@ -298,19 +298,19 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
     def row(self, row_number, python_types=False):
         '''
         Returns a single row
-        
+
         Required arguments:
-        
+
             *row_number*: [ integer ]
                 The row number (the first row is 0)
-                
+
         Optional Keyword Arguments:
-        
+
             *python_types*: [ True | False ]
                 Whether to return the row elements with python (True)
                 or numpy (False) types.
         '''
-        
+
         row = []
         if not python_types:
             for name in self.names:
@@ -372,9 +372,9 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
     def format(self, name):
         '''
         Return the ASCII format of a given column
-        
+
         Required Arguments:
-        
+
             *name*: [ string ]
                 The column name
         '''
