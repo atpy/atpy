@@ -1,6 +1,8 @@
 import numpy as np
 import pkg_resources
 
+from exceptions import TableException
+
 pyfits_minimum_version = "2.1"
 
 try:
@@ -73,15 +75,7 @@ class FITSMethods(object):
             if len(tables) == 1:
                 hdu = tables.keys()[0]
             else:
-                print "-"*56
-                print " There is more than one table in the requested file"
-                print " Please specify the HDU desired with the hdu= argument"
-                print " The available tables are:"
-                print ""
-                for table in tables:
-                    print " hdu=%i : %s" % (table, tables[table])
-                print "-"*56
-                return
+                raise TableException(tables,'hdu')
 
         hdu = pyfits.open(filename)[hdu]
 

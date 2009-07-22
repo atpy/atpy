@@ -1,6 +1,8 @@
 import numpy as np
 import pkg_resources
 
+from exceptions import TableException
+
 vo_minimum_version = "0.3"
 
 try:
@@ -73,15 +75,7 @@ class VOMethods(object):
             if len(tables) == 1:
                 tid = 0
             else:
-                print "-"*56
-                print " There is more than one table in the requested file."
-                print " Please specify the table desired with the tid="
-                print " argument. The available tables are:"
-                print ""
-                for tid in tables:
-                    print " tid=%i : %s" % (tid, tables[tid])
-                print "-"*56
-                return
+                raise TableException(tables,'tid')
 
         votable = parse(filename, pedantic=pedantic)
         for id, table in enumerate(votable.iter_tables()):

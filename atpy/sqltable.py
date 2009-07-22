@@ -4,6 +4,7 @@
 import numpy as np
 import sqlhelper as sql
 
+from exceptions import TableException, ExistingTableException
 
 class SQLMethods(object):
     '''
@@ -96,15 +97,7 @@ class SQLMethods(object):
             if len(table_names) == 1:
                 tid = 1
             else:
-                print "-"*56
-                print " There is more than one table in the requested file"
-                print " Please specify the table desired with the tid="
-                print " argument. The available tables are:"
-                print ""
-                for tid in table_names:
-                    print " tid=%i : %s" % (tid, table_names[tid])
-                print "-"*56
-                return
+                raise TableException(table_names,'tid')
 
         table_name = table_names[tid]
 
@@ -156,8 +149,7 @@ class SQLMethods(object):
             if overwrite:
                 sql.drop_table(cursor, table_name)
             else:
-                raise Exception("Table already exists - use overwrite to \
-                    replace existing table")
+                raise ExistingTableException()
 
         # Create table
         sql.create_table(cursor, dbtype, table_name, self.names, self.types)

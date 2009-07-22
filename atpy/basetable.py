@@ -8,6 +8,8 @@ from votable import VOMethods, VOSetMethods
 from ipactable import IPACMethods
 from autotable import AutoMethods
 
+from exceptions import VectorException
+
 default_format = {}
 default_format[None.__class__] = 16, '.9e'
 default_format[np.int16] = 5, 'i'
@@ -21,18 +23,6 @@ default_format[np.uint8] = 0, 's'
 default_format[str] = 0, 's'
 default_format[np.unicode_] = 0, 's'
 default_format[np.object_] = 10, 's'
-
-
-class VectorException(Exception):
-
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return "This table contains vector columns:\n\n" + \
-        self.value + "\n\n" + \
-        "but the output format selected does not. Remove these " + \
-        "columns using the remove_column() method and try again."
 
 
 class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
