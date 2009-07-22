@@ -82,7 +82,10 @@ class VOMethods(object):
             if id==tid:
                 break
 
-        self.table_name = table.ID or table.name
+        if table.ID:
+            self.table_name = table.ID
+        elif table.name:
+            self.table_name = table.name
 
         for field in table.fields:
             self.add_column(field.name, table.array[field.name], \

@@ -43,6 +43,8 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
 
         if 'name' in kwargs:
             self.table_name = kwargs.pop('name')
+        else:
+            self.table_name = None
 
         if len(args) + len(kwargs) > 0:
             self.read(*args, **kwargs)
@@ -250,8 +252,11 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         Prints a description of the table
         '''
 
-        print "Table : " + self.table_name
-
+        if self.table_name:
+            print "Table : " + self.table_name
+        else:
+            print "Table has no name"
+            
         # Find maximum column widths
         len_name_max, len_unit_max, len_datatype_max, \
             len_formats_max = 4, 4, 4, 6
