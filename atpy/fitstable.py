@@ -25,6 +25,7 @@ standard_keys = ['XTENSION', 'NAXIS', 'NAXIS1', 'NAXIS2', 'TFIELDS', \
 
 # Define type conversion dictionary
 type_dict = {}
+type_dict[np.bool_] = "L"
 type_dict[np.uint8] = "B"
 type_dict[np.int16] = "I"
 type_dict[np.int32] = "J"

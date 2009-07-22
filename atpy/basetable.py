@@ -12,6 +12,7 @@ from exceptions import VectorException
 
 default_format = {}
 default_format[None.__class__] = 16, '.9e'
+default_format[np.bool_] = 5, 's'
 default_format[np.int16] = 5, 'i'
 default_format[np.int32] = 10, 'i'
 default_format[np.int64] = 20, 'i'
@@ -256,7 +257,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
             print "Table : " + self.table_name
         else:
             print "Table has no name"
-            
+
         # Find maximum column widths
         len_name_max, len_unit_max, len_datatype_max, \
             len_formats_max = 4, 4, 4, 6

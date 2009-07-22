@@ -23,6 +23,7 @@ def _check_vo_installed():
 
 # Define type conversion dictionary
 type_dict = {}
+type_dict[np.bool_] = "boolean"
 type_dict[np.uint8] = "int"
 type_dict[np.int16] = "int"
 type_dict[np.int32] = "int"
