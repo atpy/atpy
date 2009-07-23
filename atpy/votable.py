@@ -10,7 +10,7 @@ try:
     from vo.table import parse
     from vo.tree import VOTableFile, Resource, Table, Field
     vo_installed = True
-except:
+except pkg_resources.VersionConflict:
     print "WARNING - vo " + vo_minimum_version + " or later required. " + \
         "VO table reading/writing has been disabled"
     vo_installed = False

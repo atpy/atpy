@@ -6,7 +6,7 @@ import pkg_resources
 try:
     import sqlite3
     sqlite3_installed = True
-except:
+except pkg_resources.VersionConflict:
     print "WARNING - sqlite3 required"
     print "          SQLite table reading/writing has been disabled"
     sqlite3_installed = False
@@ -24,7 +24,7 @@ try:
     pkg_resources.require('MySQL-python>=' + MySQLdb_minimum_version)
     import MySQLdb
     MySQLdb_installed = True
-except:
+except pkg_resources.VersionConflict:
     print "WARNING - MySQL-python " + MySQLdb_minimum_version + " or " + \
         "later required. MySQL table reading/writing has been disabled"
     MySQLdb_installed = False
@@ -43,7 +43,7 @@ try:
     pkg_resources.require('PyGreSQL>=' + PyGreSQL_minimum_version)
     import pgdb
     PyGreSQL_installed = True
-except:
+except pkg_resources.VersionConflict:
     print "WARNING - PyGreSQL " + PyGreSQL_minimum_version + " or later " + \
         "required. PostGreSQL table reading/writing has been disabled"
     PyGreSQL_installed = False
