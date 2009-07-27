@@ -9,7 +9,7 @@ try:
     pkg_resources.require('pyfits>=' + pyfits_minimum_version)
     import pyfits
     pyfits_installed = True
-except pkg_resources.VersionConflict, pkg_resources.DistributionNotFound:
+except:
     print "WARNING - pyfits " + pyfits_minimum_version + " or later " + \
         "required. FITS table reading/writing has been disabled"
     pyfits_installed = False
