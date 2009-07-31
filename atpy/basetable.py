@@ -352,7 +352,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         new_table.formats = copy(self.formats)
 
         for name in new_table.names:
-            new_table.array[name] = self.data[name][mask]
+            new_table.data[name] = self.data[name][mask]
 
         new_table._update_shape()
 
