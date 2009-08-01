@@ -1,25 +1,22 @@
+from distutils import version
 import numpy as np
-import pkg_resources
 
 from exceptions import TableException
 
-vo_minimum_version = "0.3"
+vo_minimum_version = version.LooseVersion('0.3')
 
 try:
-    pkg_resources.require('vo>=' + vo_minimum_version)
     from vo.table import parse
     from vo.tree import VOTableFile, Resource, Table, Field
     vo_installed = True
 except:
-    print "WARNING - vo " + vo_minimum_version + " or later required. " + \
-        "VO table reading/writing has been disabled"
     vo_installed = False
 
 
 def _check_vo_installed():
     if not vo_installed:
         raise Exception("Cannot read/write VO table files - vo " +  \
-            vo_minimum_version + " or later required")
+            vo_minimum_version.vstring + " or later required")
 
 # Define type conversion dictionary
 type_dict = {}

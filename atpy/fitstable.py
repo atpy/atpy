@@ -1,24 +1,23 @@
+from distutils import version
 import numpy as np
-import pkg_resources
 
 from exceptions import TableException
 
-pyfits_minimum_version = "2.1"
+pyfits_minimum_version = version.LooseVersion('2.1')
 
 try:
-    pkg_resources.require('pyfits>=' + pyfits_minimum_version)
     import pyfits
+    if version.LooseVersion(pyfits.__version__) < pyfits_minimum_version:
+        raise
     pyfits_installed = True
 except:
-    print "WARNING - pyfits " + pyfits_minimum_version + " or later " + \
-        "required. FITS table reading/writing has been disabled"
     pyfits_installed = False
 
 
 def _check_pyfits_installed():
     if not pyfits_installed:
         raise Exception("Cannot read/write FITS files - pyfits " + \
-            pyfits_minimum_version + " or later required")
+            pyfits_minimum_version.vstring + " or later required")
 
 standard_keys = ['XTENSION', 'NAXIS', 'NAXIS1', 'NAXIS2', 'TFIELDS', \
     'PCOUNT', 'GCOUNT', 'BITPIX']

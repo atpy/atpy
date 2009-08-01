@@ -1,5 +1,5 @@
+from distutils import version
 import numpy as np
-import pkg_resources
 
 # SQLite
 
@@ -7,8 +7,6 @@ try:
     import sqlite3
     sqlite3_installed = True
 except:
-    print "WARNING - sqlite3 required"
-    print "          SQLite table reading/writing has been disabled"
     sqlite3_installed = False
 
 
@@ -18,41 +16,37 @@ def _check_sqlite3_installed():
 
 # SQLite
 
-MySQLdb_minimum_version = "1.2.2"
+MySQLdb_minimum_version = version.LooseVersion('1.2.2')
 
 try:
-    pkg_resources.require('MySQL-python>=' + MySQLdb_minimum_version)
     import MySQLdb
+    if version.LooseVersion(MySQLdb.__version__) < MySQLdb_minimum_version:
+        raise
     MySQLdb_installed = True
 except:
-    print "WARNING - MySQL-python " + MySQLdb_minimum_version + " or " + \
-        "later required. MySQL table reading/writing has been disabled"
     MySQLdb_installed = False
 
 
 def _check_MySQLdb_installed():
     if not MySQLdb_installed:
         raise Exception("Cannot read/write MySQL tables - MySQL-python " + \
-            MySQLdb_minimum_version + " or later required")
+            MySQLdb_minimum_version.vstring + " or later required")
 
  # SQLite
 
-PyGreSQL_minimum_version = "3.8.1"
+PyGreSQL_minimum_version = version.LooseVersion('3.8.1')
 
 try:
-    pkg_resources.require('PyGreSQL>=' + PyGreSQL_minimum_version)
     import pgdb
     PyGreSQL_installed = True
 except:
-    print "WARNING - PyGreSQL " + PyGreSQL_minimum_version + " or later " + \
-        "required. PostGreSQL table reading/writing has been disabled"
-    PyGreSQL_installed = False
+   PyGreSQL_installed = False
 
 
 def _check_PyGreSQL_installed():
     if not PyGreSQL_installed:
         raise Exception("Cannot read/write PostGreSQL tables - PyGreSQL " + \
-            PyGreSQL_minimum_version + " or later required")
+            PyGreSQL_minimum_version.vstring + " or later required")
 
 # Type conversion dictionary
 
