@@ -118,7 +118,7 @@ test_write(t, verbose=False)
 
 print "Reading VO Table ... ",
 try:
-    t = atpy.Table('examples/aj285677t3_VOTable.xml', name='red sources', \
+    t = atpy.Table('examples/aj285677t3_votable.xml', name='red sources', \
         verbose=False)
     print "passed"
 except:
