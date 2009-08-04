@@ -94,7 +94,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         return
 
     def add_column(self, name, data, unit='', null='', description='', \
-        format=None):
+        format=None, dtype=None):
         '''
         Add a column to the table
 
@@ -119,10 +119,14 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
 
             *format*: [ string ]
                 The format to use for ASCII printing
+                
+            *dtype*: [ numpy type ]
+                Numpy type to convert the data to. This is the equivalent to
+                the dtype= argument in numpy.array
         '''
 
         self.names.append(name)
-        self.data[name] = np.array(data)
+        self.data[name] = np.array(data, dtype=dtype)
         self.types[name] = self.data[name].dtype.type
         self.units[name] = unit
         self.descriptions[name] = description
