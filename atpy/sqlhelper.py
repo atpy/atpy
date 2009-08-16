@@ -81,6 +81,8 @@ type_dict_rev['int8'] = np.int64
 type_dict_rev['float4'] = np.float32
 type_dict_rev['float8'] = np.float64
 type_dict_rev['double'] = np.float64
+type_dict_rev['DOUBLE PRECISION'] = np.float64
+
 type_dict_rev['FLOAT'] = np.float64
 type_dict_rev['REAL'] = np.float64
 
