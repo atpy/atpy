@@ -57,10 +57,10 @@ class VOMethods(object):
             *tid*: [ integer ]
                 The ID of the table to read from the VO file (this is
                 only required if there are more than one table in the VO file)
-                
+
             *pendantic*: [ True | False ]
-                When *pedantic* is True, raise an error when the file violates the
-                VO Table specification, otherwise issue a warning.
+                When *pedantic* is True, raise an error when the file violates
+                the VO Table specification, otherwise issue a warning.
         '''
 
         _check_vo_installed()
@@ -73,7 +73,7 @@ class VOMethods(object):
             if len(tables) == 1:
                 tid = 0
             else:
-                raise TableException(tables,'tid')
+                raise TableException(tables, 'tid')
 
         votable = parse(filename, pedantic=pedantic)
         for id, table in enumerate(votable.iter_tables()):
@@ -108,12 +108,12 @@ class VOMethods(object):
 
             coltype = type(data)
 
-            elemtype=type(data[0])
-            arraysize = None
+            elemtype = data.dtype.type
 
-            if elemtype==np.ndarray:
-                elemtype=type(data[0][0])
-                arraysize = str(len(data[0]))
+            if data.ndim > 1:
+                arraysize = str(data.shape[1])
+            else:
+                arraysize = None
 
             if elemtype in type_dict:
                 datatype = type_dict[elemtype]
@@ -131,8 +131,16 @@ class VOMethods(object):
 
         table.create_arrays(n_rows)
 
+        # Character columns are stored as object columns in the VOTable
+        # instance. Leaving the type as string should work, but causes
+        # a segmentation fault on MacOS X with Python 2.6 64-bit so
+        # we force the conversion to object type columns.
+
         for name in self.names:
-            table.array[name] = self.data[name]
+            if self.data[name].dtype.type in [np.string_, str, np.str]:
+                table.array[name] = self.data[name].astype(np.object_)
+            else:
+                table.array[name] = self.data[name]
 
         table.name = self.table_name
 
