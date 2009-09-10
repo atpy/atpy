@@ -165,7 +165,7 @@ class IPACMethods(object):
                 else:
                     item = line[first:last].strip()
 
-                if item == nulls[names[i]]:
+                if item == nulls[names[i]] or item.lower() == 'null':
                     item = 'NaN'
                 array[names[i]].append(item)
 
