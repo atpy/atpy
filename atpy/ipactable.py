@@ -2,9 +2,10 @@ import numpy as np
 
 # Define type conversion from IPAC table to numpy arrays
 type_dict = {}
-type_dict['i'] = np.int
-type_dict['int'] = np.int
-type_dict['integer'] = np.int
+type_dict['i'] = np.int32
+type_dict['int'] = np.int32
+type_dict['integer'] = np.int32
+type_dict['long'] = np.int64
 type_dict['double'] = np.float64
 type_dict['float'] = np.float32
 type_dict['real'] = np.float32
