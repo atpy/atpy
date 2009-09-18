@@ -1,0 +1,39 @@
+CHANGES
+--------
+
+Version 0.9.1
+
+    The main changes with this update are the removal of the pkg_ressources
+    module dependency (which caused problems for a number of users) and a
+    number of bug fixes.
+
+    New Features
+    ~~~~~~~~~~~~
+
+    - removed pkg_ressources dependency. Versions are now checked using
+      distutils, which is more standard
+      
+    - added support for boolean columns in FITS and VO tables
+
+    API changes
+    ~~~~~~~~~~~
+
+    - added dtype= argument to Table.add_column to force conversion to a
+      given type on the fly
+      
+    - added pendatic= argument for VO Table
+      
+    Bug fixes
+    ~~~~~~~~~
+
+    - fixed an issue which occurred with string columns in VO tables on
+      MacOS X with Python 2.6 64-bit
+      
+    - fixed a bug which prevented the where() method to work correctly
+    
+    - fixed several other minor bugs
+
+
+Version 0.9.0
+
+    First public beta release
