@@ -162,6 +162,8 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
 
             self.data.pop(remove_name)
             self.units.pop(remove_name)
+            self.types.pop(remove_name)
+            self.nulls.pop(remove_name)
             self.descriptions.pop(remove_name)
 
         except ValueError, KeyError:
