@@ -22,6 +22,11 @@ type_rev_dict[np.str] = "char"
 type_rev_dict[np.string_] = "char"
 type_rev_dict[str] = "char"
 
+invalid = {}
+invalid[np.int32] = -np.int64(2**31-1)
+invalid[np.int64] = -np.int64(2**63-1)
+invalid[np.float32] = np.float32(np.nan)
+invalid[np.float64] = np.float64(np.nan)
 
 class IPACMethods(object):
     ''' A class for reading and writing a single IPAC table.'''
@@ -135,8 +140,16 @@ class IPACMethods(object):
                 units[name]=''
 
         if len(nulls)==0:
+            nulls_given = False
             for name in names:
                 nulls[name]=''
+        else:
+            nulls_given = True
+
+        # Pre-compute numpy column types
+        numpy_types = {}
+        for name in names:
+            numpy_types[name] = type_dict[types[name]]
 
         # Data
 
@@ -166,11 +179,33 @@ class IPACMethods(object):
                 else:
                     item = line[first:last].strip()
 
-                if item == nulls[names[i]] or item.lower() == 'null':
-                    item = 'NaN'
+                if item.lower() == 'null' and nulls[names[i]] <> 'null':
+                    if nulls[names[i]] == '':
+                        print "WARNING: found unexpected 'null' value. Setting null value for column "+names[i]+" to 'null'"
+                        nulls[names[i]] = 'null'
+                        nulls_given = True
+                    else:
+                        raise Exception("null value for column "+names[i]+" is set to "+nulls[i]+" but found value 'null'")
                 array[names[i]].append(item)
 
             line = f.readline()
+
+        # Check that null values are of the correct type
+        if nulls_given:
+            for name in names:
+                try:
+                    n = numpy_types[name](nulls[name])
+                    nulls[name] = n
+                except:
+                    n = invalid[numpy_types[name]]
+                    for i,item in enumerate(array[name]):
+                        if item == nulls[name]:
+                            array[name][i] = n
+                    if len(str(nulls[name]).strip()) == 0:
+                        print "WARNING: empty null value for column "+name+" set to "+str(n)
+                    else:
+                        print "WARNING: null value for column "+name+" changed from "+str(nulls[name])+" to "+str(n)
+                    nulls[name] = n
 
         # Convert to numpy arrays
         for name in names:
@@ -213,7 +248,7 @@ class IPACMethods(object):
 
         for name in self.names:
 
-            coltype = type_rev_dict[type(self.data[name][0])]
+            coltype = type_rev_dict[self.types[name]]
             colunit = self.units[name]
             colnull = self.nulls[name]
 
