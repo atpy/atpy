@@ -74,24 +74,22 @@ type_dict_rev['int2'] = np.int16
 
 type_dict_rev['int'] = np.int32
 type_dict_rev['int4'] = np.int32
-type_dict_rev['INTEGER'] = np.int32
+type_dict_rev['integer'] = np.int32
 
 type_dict_rev['int8'] = np.int64
 
 type_dict_rev['float4'] = np.float32
 type_dict_rev['float8'] = np.float64
 type_dict_rev['double'] = np.float64
-type_dict_rev['DOUBLE PRECISION'] = np.float64
+type_dict_rev['double precision'] = np.float64
 
-type_dict_rev['FLOAT'] = np.float64
-type_dict_rev['REAL'] = np.float64
+type_dict_rev['float'] = np.float64
+type_dict_rev['real'] = np.float64
 
 type_dict_rev['text'] = np.str
-type_dict_rev['TEXT'] = np.str
 type_dict_rev['varchar'] = np.str
-type_dict_rev['VARCHAR'] = np.str
-type_dict_rev['BLOB'] = np.str
-
+type_dict_rev['blob'] = np.str
+type_dict_rev['timestamp'] = np.str
 type_dict_rev['date'] = np.str
 
 
@@ -119,7 +117,7 @@ def numpy_type(sql_type):
         *sql_type*: [ string ]
             The SQL type to find the numpy type for
     '''
-    sql_type = sql_type.split('(')[0]
+    sql_type = sql_type.split('(')[0].lower()
     if not sql_type in type_dict_rev:
         raise Exception("need to define reverse type for " + str(sql_type))
     return type_dict_rev[sql_type]
