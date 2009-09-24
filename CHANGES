@@ -31,6 +31,16 @@ Version 0.9.1
       
     - fixed a bug which prevented the where() method to work correctly
     
+    - improved handling of null values
+
+    - allow non-standard 'long' datatype for IPAC tables
+
+    - fixed bug with remove_column
+
+    - improved handling of SQL tables
+
+    - fixed bug with IPAC table output
+
     - fixed several other minor bugs
 
 
