@@ -86,6 +86,7 @@ class VOMethods(object):
             self.table_name = table.name
 
         for field in table.fields:
+            
             self.add_column(field.name, table.array[field.name], \
                 unit=field.unit)
 
@@ -137,10 +138,17 @@ class VOMethods(object):
         # we force the conversion to object type columns.
 
         for name in self.names:
+            
+            # Add data to the table
+            
             if self.data[name].dtype.type in [np.string_, str, np.str]:
                 table.array[name] = self.data[name].astype(np.object_)
             else:
                 table.array[name] = self.data[name]
+        
+            # At the moment, null values in VO table are dealt with via a 'mask' record array
+            
+            table.mask[name] = self.data[name] == self.nulls[name]
 
         table.name = self.table_name
 
