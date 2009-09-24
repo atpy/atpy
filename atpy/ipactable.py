@@ -245,24 +245,26 @@ class IPACMethods(object):
         line_types = ""
         line_units = ""
         line_nulls = ""
+        
+        width = {}
 
         for name in self.names:
 
             coltype = type_rev_dict[self.types[name]]
             colunit = self.units[name]
-            colnull = self.nulls[name]
-
+            colnull = ("%" + self.format(name)) % self.nulls[name]
+            
             # Adjust the format for each column
 
-            width = self.formats[name][0]
+            width[name] = self.formats[name][0]
 
             max_width = max(len(name), len(coltype), len(colunit), \
                 len(colnull))
 
-            if max_width > width:
-                width = max_width
+            if max_width > width[name]:
+                width[name] = max_width
 
-            sf = "%" + str(width) + "s"
+            sf = "%" + str(width[name]) + "s"
             line_names = line_names + "|" + (sf % name)
             line_types = line_types + "|" + (sf % coltype)
             line_units = line_units + "|" + (sf % colunit)
@@ -285,8 +287,9 @@ class IPACMethods(object):
             line = ""
 
             for name in self.names:
-                line = line + " " + (("%" + self.format(name)) % \
-                    self.data[name][i])
+                item = (("%" + self.format(name)) % self.data[name][i])
+                item = ("%" + str(width[name]) + "s") % item
+                line = line + " " + item
 
             line = line + " \n"
 
