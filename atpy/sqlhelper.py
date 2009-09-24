@@ -119,7 +119,10 @@ def numpy_type(sql_type):
     '''
     sql_type = sql_type.split('(')[0].lower()
     if not sql_type in type_dict_rev:
-        raise Exception("need to define reverse type for " + str(sql_type))
+        print "WARNING: need to define reverse type for " + str(sql_type)
+        print "         Please report this on the ATpy forums!"
+        print "         This type has been converted to a string"
+        sql_type = 'text'
     return type_dict_rev[sql_type]
 
 
