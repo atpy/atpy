@@ -28,6 +28,7 @@ invalid[np.int64] = -np.int64(2**63-1)
 invalid[np.float32] = np.float32(np.nan)
 invalid[np.float64] = np.float64(np.nan)
 
+
 class IPACMethods(object):
     ''' A class for reading and writing a single IPAC table.'''
 
@@ -198,7 +199,7 @@ class IPACMethods(object):
                     nulls[name] = n
                 except:
                     n = invalid[numpy_types[name]]
-                    for i,item in enumerate(array[name]):
+                    for i, item in enumerate(array[name]):
                         if item == nulls[name]:
                             array[name][i] = n
                     if len(str(nulls[name]).strip()) == 0:
@@ -245,15 +246,19 @@ class IPACMethods(object):
         line_types = ""
         line_units = ""
         line_nulls = ""
-        
+
         width = {}
 
         for name in self.names:
 
             coltype = type_rev_dict[self.types[name]]
             colunit = self.units[name]
-            colnull = ("%" + self.format(name)) % self.nulls[name]
-            
+
+            if self.nulls[name]:
+                colnull = ("%" + self.format(name)) % self.nulls[name]
+            else:
+                colnull = ''
+
             # Adjust the format for each column
 
             width[name] = self.formats[name][0]

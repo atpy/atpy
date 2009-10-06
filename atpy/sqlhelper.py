@@ -148,16 +148,16 @@ def list_tables(cursor, dbtype):
         for i, table_name in enumerate(table_names):
             if type(table_name) == tuple:
                 table_name = table_name[0]
-            tables[i + 1] = str(table_name.encode())
+            tables[str(table_name.encode())] = str(table_name.encode())
     elif dbtype=='mysql':
         cursor.execute('SHOW TABLES;')
         for i, table_name in enumerate(cursor):
-            tables[i + 1] = str(table_name[0])
+            tables[str(table_name[0])] = str(table_name[0])
     elif dbtype=='postgres':
         cursor.execute("SELECT table_name FROM information_schema.tables \
             WHERE table_schema NOT IN ('pg_catalog', 'information_schema');")
         for i, table_name in enumerate(cursor.fetchall()):
-            tables[i + 1] = str(table_name[0])
+            tables[str(table_name[0])] = str(table_name[0])
     else:
         raise Exception('dbtype should be one of sqlite/mysql/postgres')
     return tables
@@ -270,6 +270,11 @@ def create_table(cursor, dbtype, table_name, column_names, column_types):
         if i > 0:
             query += ", "
         column_type = type_dict[column_types[column_name]]
+
+        # PostgreSQL does not support TINYINT
+        if dbtype == 'postgres' and column_type == 'TINYINT':
+            column_type = 'SMALLINT'
+
         query += quote[dbtype] + column_name + quote[dbtype] + " " + \
             column_type
 

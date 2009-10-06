@@ -6,6 +6,7 @@ import sqlhelper as sql
 
 from exceptions import TableException, ExistingTableException
 
+
 class SQLMethods(object):
     '''
     Class for working with reading and writing tables in databases.
@@ -20,8 +21,8 @@ class SQLMethods(object):
 
         Optional arguments (only for Table.read() class):
 
-            *tid*: [ integer ]
-                The ID of the table to read from the database (this is only
+            *table*: [ string ]
+                The name of the table to read from the database (this is only
                 required if there are more than one table in the database)
 
         The remaining arguments depend on the database type:
@@ -79,10 +80,10 @@ class SQLMethods(object):
                 The name of the database to connect to (no default)
         '''
 
-        if 'tid' in kwargs:
-            tid = kwargs.pop('tid')
+        if 'table' in kwargs:
+            table = kwargs.pop('table')
         else:
-            tid = None
+            table = None
 
         # Erase existing content
         self.reset()
@@ -93,13 +94,13 @@ class SQLMethods(object):
 
         table_names = sql.list_tables(cursor, dbtype)
 
-        if tid==None:
+        if table==None:
             if len(table_names) == 1:
-                tid = 1
+                table_name = table_names[0]
             else:
-                raise TableException(table_names,'tid')
-
-        table_name = table_names[tid]
+                raise TableException(table_names, 'table')
+        else:
+            table_name = table_names[table]
 
         column_names, column_types = sql.column_info(cursor, dbtype, \
             table_name)
@@ -176,8 +177,8 @@ class SQLSetMethods(object):
         table_names = sql.list_tables(cursor, dbtype)
         cursor.close()
 
-        for tid in table_names:
-            kwargs['tid'] = tid
+        for table in table_names:
+            kwargs['table'] = table
             table = self._single_table_class()
             table.sql_read(dbtype, *args, **kwargs)
             self.tables.append(table)

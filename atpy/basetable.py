@@ -119,7 +119,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
 
             *format*: [ string ]
                 The format to use for ASCII printing
-                
+
             *dtype*: [ numpy type ]
                 Numpy type to convert the data to. This is the equivalent to
                 the dtype= argument in numpy.array

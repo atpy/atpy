@@ -75,7 +75,7 @@ class FITSMethods(object):
             if len(tables) == 1:
                 hdu = tables.keys()[0]
             else:
-                raise TableException(tables,'hdu')
+                raise TableException(tables, 'hdu')
 
         hdu = pyfits.open(filename)[hdu]
 
@@ -162,7 +162,11 @@ class FITSMethods(object):
 
         _check_pyfits_installed()
 
-        self._to_hdu().writeto(filename, clobber=overwrite)
+        try:
+            self._to_hdu().writeto(filename, clobber=overwrite)
+        except:
+            self._to_hdu().writeto(filename, clobber=overwrite, \
+                                            output_verify='silentfix')
 
 
 class FITSSetMethods(object):
