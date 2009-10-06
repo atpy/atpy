@@ -40,7 +40,7 @@ try:
     import pgdb
     PyGreSQL_installed = True
 except:
-   PyGreSQL_installed = False
+    PyGreSQL_installed = False
 
 
 def _check_PyGreSQL_installed():
