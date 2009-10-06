@@ -77,6 +77,7 @@ type_dict_rev['int4'] = np.int32
 type_dict_rev['integer'] = np.int32
 
 type_dict_rev['int8'] = np.int64
+type_dict_ref['bigint'] = np.int64
 
 type_dict_rev['float4'] = np.float32
 type_dict_rev['float8'] = np.float64
