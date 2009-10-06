@@ -22,6 +22,8 @@ Version 0.9.1
       given type on the fly
       
     - added pendatic= argument for VO Table
+    
+    - tables in SQL databases are now referred to by name instead of tid
       
     Bug fixes
     ~~~~~~~~~
