@@ -1,6 +1,19 @@
 CHANGES
 --------
 
+Version 0.9.2 (under development)
+
+    New Features
+    ~~~~~~~~~~~~
+    
+    API changes
+    ~~~~~~~~~~~
+    
+    Bug fixes
+    ~~~~~~~~~
+    
+    - fixed a bug that prevented lists from being passed to add_column
+
 Version 0.9.1
 
     The main changes with this update are the removal of the pkg_ressources

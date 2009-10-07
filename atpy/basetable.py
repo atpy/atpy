@@ -132,12 +132,10 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         self.descriptions[name] = description
         self.nulls[name] = null
 
-        column_type = data.dtype.type
-
         if format:
             self.formats[name] = format
         else:
-            self.formats[name] = default_format[column_type]
+            self.formats[name] = default_format[self.types[name]]
 
         if self.formats[name][1] == 's':
             self.formats[name] = self.data[name].itemsize, 's'
