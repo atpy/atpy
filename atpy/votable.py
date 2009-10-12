@@ -121,12 +121,16 @@ class VOMethods(object):
             else:
                 raise Exception("cannot use numpy type " + str(elemtype))
 
-            if arraysize:
-                fields.append(Field(VOTable, ID="col" + str(i), name=name, \
-                    datatype=datatype, unit=unit, arraysize=arraysize))
+            if elemtype == np.float32:
+                precision = 'F8'
+            elif elemtype == np.float64:
+                precision = 'F17'
             else:
-                fields.append(Field(VOTable, ID="col" + str(i), name=name, \
-                    datatype=datatype, unit=unit))
+                precision = None
+
+            fields.append(Field(VOTable, ID="col" + str(i), name=name, \
+                    datatype=datatype, unit=unit, arraysize=arraysize, \
+                    precision=precision))
 
         table.fields.extend(fields)
 
