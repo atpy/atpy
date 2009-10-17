@@ -1,4 +1,5 @@
 import numpy as np
+
 from copy import copy
 import string
 
@@ -9,6 +10,8 @@ from ipactable import IPACMethods
 from autotable import AutoMethods
 
 from exceptions import VectorException
+
+import rechelper as rec
 
 default_format = {}
 default_format[None.__class__] = 16, '.9e'
@@ -23,7 +26,26 @@ default_format[np.string_] = 0, 's'
 default_format[np.uint8] = 0, 's'
 default_format[str] = 0, 's'
 default_format[np.unicode_] = 0, 's'
-default_format[np.object_] = 10, 's'
+
+
+class ColumnHeader(object):
+
+    def __init__(self, dtype, unit=None, description=None, null=None, format=None):
+        self.dtype = dtype
+        self.unit = unit
+        self.description = description
+        self.null = null
+        self.format = format
+
+    def __repr__(self):
+        s = "%s" % str(self.dtype)
+        if self.unit:
+            s += ", unit=%s" % str(self.unit)
+        if self.null:
+            s += ", null=%s" % str(self.null)
+        if self.description:
+            s +=", description=%s" % self.description
+        return s
 
 
 class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
@@ -50,43 +72,51 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         if len(args) + len(kwargs) > 0:
             self.read(*args, **kwargs)
 
-        self._update_shape()
-
         return
 
     def __getattr__(self, attribute):
 
-        if attribute in self.names:
+        if attribute == 'names':
+            return self.data.dtype.names
+        elif attribute == 'units':
+            print "WARNING: Table.units is depracated - use Table.columns to access this information"
+            return dict([(name, self.columns[name].unit) for name in self.names])
+        elif attribute == 'types':
+            print "WARNING: Table.types is depracated - use Table.columns to access this information"
+            return dict([(name, self.columns[name].type) for name in self.names])
+        elif attribute == 'nulls':
+            print "WARNING: Table.nulls is depracated - use Table.columns to access this information"
+            return dict([(name, self.columns[name].null) for name in self.names])
+        elif attribute == 'formats':
+            print "WARNING: Table.formats is depracated - use Table.columns to access this information"
+            return dict([(name, self.columns[name].format) for name in self.names])
+        elif attribute == 'shape':
+            return (len(self.data), len(self.names))
+        elif attribute in self.names:
             return self.data[attribute]
         else:
             raise AttributeError(attribute)
 
     def __len__(self):
-        if len(self.names) == 0:
+        if len(self.columns) == 0:
             return 0
         else:
-            return len(self.data[self.names[0]])
+            return len(self.data)
 
     def reset(self):
         '''
         Empty the table
         '''
-        self.names = []
-        self.types = {}
-        self.data = {}
-        self.units = {}
-        self.descriptions = {}
-        self.nulls = {}
-        self.formats = {}
         self.keywords = {}
         self.comments = []
+        self.columns = {}
+        self.data = None
         return
 
     def _raise_vector_columns(self):
         names = []
-        for name in self.data:
-            column = self.data[name]
-            if column.ndim > 1:
+        for name in self.names:
+            if self.data[name].ndim > 1:
                 names.append(name)
         if names:
             names = string.join(names, ", ")
@@ -125,53 +155,30 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
                 the dtype= argument in numpy.array
         '''
 
-        self.names.append(name)
-        self.data[name] = np.array(data, dtype=dtype)
-        self.types[name] = self.data[name].dtype.type
-        self.units[name] = unit
-        self.descriptions[name] = description
-        self.nulls[name] = null
+        data = np.array(data, dtype=dtype)
+        dtype = data.dtype
 
-        if format:
-            self.formats[name] = format
+        if len(self.columns) > 0:
+            newdtype = (name, data.dtype)
+            self.data = rec.append_field(self.data, data, dtype=newdtype)
         else:
-            self.formats[name] = default_format[self.types[name]]
+            self.data = np.rec.fromarrays([data], dtype=[(name, dtype)])
 
-        if self.formats[name][1] == 's':
-            self.formats[name] = self.data[name].itemsize, 's'
+        if not format:
+            format = default_format[dtype.type]
 
-        self._update_shape()
+        if format[1] == 's':
+            format = data.itemsize, 's'
+
+        self.columns[name] = ColumnHeader(dtype, unit=unit, description=description, null=null, format=format)
+
         return
 
     def remove_column(self, remove_name):
-        '''
-        Remove a column from the table
-
-        Required Argument:
-
-            *remove_name*: [ string ]
-                The name of the column to remove
-        '''
-
-        try:
-
-            colnum = self.names.index(remove_name)
-            self.names.pop(colnum)
-
-            self.data.pop(remove_name)
-            self.units.pop(remove_name)
-            self.types.pop(remove_name)
-            self.nulls.pop(remove_name)
-            self.descriptions.pop(remove_name)
-            self.formats.pop(remove_name)
-
-        except ValueError, KeyError:
-
-            raise Exception("Column " + remove_name + " does not exist")
-
-        self._update_shape()
+        print "WARNING: remove_column is depracated - use remove_columns instead"
+        self.remove_columns([remove_name])
         return
-
+        
     def remove_columns(self, remove_names):
         '''
         Remove several columns from the table
@@ -185,8 +192,10 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         if type(remove_names) == str:
             remove_names = [remove_names]
 
-        for name in remove_names:
-            self.remove_column(name)
+        for remove_name in remove_names:
+            self.columns.pop(remove_name)
+
+        self.data = rec.drop_fields(self.data, remove_names)
 
         return
 
@@ -232,24 +241,11 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         if not old_name in self.names:
             raise Exception("Column " + old_name + " not found")
 
-        for i, name in enumerate(self.names):
-            if name == old_name:
-                self.names[i] = new_name
+        pos = self.names.index(old_name)
+        self.names = self.names[:pos] + (new_name, ) + self.names[pos+1:]
 
-                self.data[new_name] = self.data[old_name]
-                del self.data[old_name]
-
-                self.units[new_name] = self.units[old_name]
-                del self.units[old_name]
-
-                self.descriptions[new_name] = self.descriptions[old_name]
-                del self.descriptions[old_name]
-
-                self.nulls[new_name] = self.nulls[old_name]
-                del self.nulls[old_name]
-
-                self.formats[new_name] = self.formats[old_name]
-                del self.formats[old_name]
+        self.columns[new_name] = self.columns[old_name]
+        del self.columns[old_name]
 
         return
 
@@ -269,10 +265,10 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
 
         for name in self.names:
             len_name_max = max(len(name), len_name_max)
-            len_unit_max = max(len(str(self.units[name])), len_unit_max)
-            len_datatype_max = max(len(str(self.types[name])), \
+            len_unit_max = max(len(str(self.columns[name].unit)), len_unit_max)
+            len_datatype_max = max(len(str(self.columns[name].dtype)), \
                 len_datatype_max)
-            len_formats_max = max(len(self.format(name)), len_formats_max)
+            len_formats_max = max(len(self.columns[name].format), len_formats_max)
 
         # Print out table
 
@@ -289,8 +285,8 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         print "-"*len_tot
 
         for name in self.names:
-            print format % (name, str(self.units[name]), \
-                str(self.types[name]), self.format(name))
+            print format % (name, str(self.columns[name].unit), \
+                str(self.columns[name].dtype), self.format(name))
 
         print "-"*len_tot
 
@@ -312,22 +308,14 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
                 or numpy (False) types.
         '''
 
-        row = []
-        if not python_types:
-            for name in self.names:
-                row.append(self.data[name][row_number])
+        if python_types:
+            row_data = list(self.data[row_number].tolist())
+            for i, elem in enumerate(row_data):
+                if elem <> elem:
+                    row_data[i] = None
+            return row_data
         else:
-            for name in self.names:
-                if np.isnan(self.data[name][row_number]):
-                    elem = None
-                elif self.types[name] in [np.float32, np.float64]:
-                    elem = float(self.data[name][row_number])
-                elif self.types[name] in [np.int16, np.int32, np.int64]:
-                    elem = int(self.data[name][row_number])
-                elif self.types[name] in [np.string_, np.str]:
-                    elem = str(self.data[name][row_number])
-                row.append(elem)
-        return tuple(row)
+            return self.data[row_number]
 
     def where(self, mask):
         '''
@@ -346,29 +334,14 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         new_table = self.__class__()
 
         new_table.table_name = copy(self.table_name)
-        new_table.names = copy(self.names)
-        new_table.types = copy(self.types)
-        new_table.array = copy(self.data)
-        new_table.units = copy(self.units)
-        new_table.descriptions = copy(self.descriptions)
+
+        new_table.columns = copy(self.columns)
         new_table.keywords = copy(self.keywords)
         new_table.comments = copy(self.comments)
-        new_table.nulls = copy(self.nulls)
-        new_table.formats = copy(self.formats)
 
-        for name in new_table.names:
-            new_table.data[name] = self.data[name][mask]
-
-        new_table._update_shape()
+        new_table.data = self.data[mask]
 
         return new_table
-
-    def _update_shape(self):
-        n_rows = self.__len__()
-        n_cols = len(self.names)
-        self.shape = (n_rows, n_cols)
-
-        return
 
     def format(self, name):
         '''
@@ -379,7 +352,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
             *name*: [ string ]
                 The column name
         '''
-        return str(self.formats[name][0]) + self.formats[name][1]
+        return str(self.columns[name].format[0]) + self.columns[name].format[1]
 
     def add_comment(self, comment):
         '''

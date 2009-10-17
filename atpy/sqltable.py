@@ -85,6 +85,11 @@ class SQLMethods(object):
         else:
             table = None
 
+        if 'verbose' in kwargs:
+            verbose = kwargs.pop('verbose')
+        else:
+            verbose = True
+
         # Erase existing content
         self.reset()
 
@@ -96,7 +101,7 @@ class SQLMethods(object):
 
         if table==None:
             if len(table_names) == 1:
-                table_name = table_names[0]
+                table_name = table_names.keys()[0]
             else:
                 raise TableException(table_names, 'table')
         else:
@@ -107,13 +112,13 @@ class SQLMethods(object):
 
         cursor = connection.cursor()
 
-        for i, column_name in enumerate(column_names):
-            column_type = column_types[i]
-            cursor.execute('select ' + sql.quote[dbtype] + column_name + \
-                sql.quote[dbtype] + ' from ' + table_name)
-            result = cursor.fetchall()
-            self.add_column(column_name, \
-                np.array(result, column_type).ravel())
+        cursor.execute('select * from ' + table_name)
+
+        results = np.rec.fromrecords(list(cursor.fetchall()), \
+                        dtype=zip(column_names, column_types))
+
+        for column in results.dtype.names:
+            self.add_column(column, results[column])
 
         self.table_name = table_name
 
@@ -153,7 +158,9 @@ class SQLMethods(object):
                 raise ExistingTableException()
 
         # Create table
-        sql.create_table(cursor, dbtype, table_name, self.names, self.types)
+        columns = [(name, self.columns[name].dtype.type) \
+                                            for name in self.names]
+        sql.create_table(cursor, dbtype, table_name, columns)
 
         # Insert row
         for i in range(self.__len__()):

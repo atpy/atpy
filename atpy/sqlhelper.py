@@ -242,7 +242,7 @@ def drop_table(cursor, table_name):
     return
 
 
-def create_table(cursor, dbtype, table_name, column_names, column_types):
+def create_table(cursor, dbtype, table_name, columns):
     '''
     Create a table in an SQL database
 
@@ -266,10 +266,11 @@ def create_table(cursor, dbtype, table_name, column_names, column_types):
 
     query = 'create table ' + table_name + ' ('
 
-    for i, column_name in enumerate(column_names):
+    for i, column in enumerate(columns):
         if i > 0:
             query += ", "
-        column_type = type_dict[column_types[column_name]]
+        column_name = column[0]
+        column_type = type_dict[column[1]]
 
         # PostgreSQL does not support TINYINT
         if dbtype == 'postgres' and column_type == 'TINYINT':

@@ -44,4 +44,4 @@ class VectorException(Exception):
         return "This table contains vector columns:\n\n" + \
         self.value + "\n\n" + \
         "but the output format selected does not. Remove these " + \
-        "columns using the remove_column() method and try again."
+        "columns using the remove_columns() method and try again."

@@ -43,7 +43,7 @@ def _list_tables(filename):
 class VOMethods(object):
     ''' A class for reading and writing a single VO table.'''
 
-    def vo_read(self, filename, pedantic=False, tid=-1):
+    def vo_read(self, filename, pedantic=False, tid=-1, verbose=True):
         '''
         Read a table from a VOT file
 
@@ -99,31 +99,28 @@ class VOMethods(object):
 
         # Define some fields
 
-        n_rows = len(self.data[self.names[0]])
+        n_rows = len(self)
 
         fields = []
         for i, name in enumerate(self.names):
 
             data = self.data[name]
-            unit = self.units[name]
-
-            coltype = type(data)
-
-            elemtype = data.dtype.type
+            unit = self.columns[name].unit
+            dtype = self.columns[name].dtype
 
             if data.ndim > 1:
                 arraysize = str(data.shape[1])
             else:
                 arraysize = None
 
-            if elemtype in type_dict:
-                datatype = type_dict[elemtype]
+            if dtype.type in type_dict:
+                datatype = type_dict[dtype.type]
             else:
-                raise Exception("cannot use numpy type " + str(elemtype))
+                raise Exception("cannot use numpy type " + str(dtype.type))
 
-            if elemtype == np.float32:
+            if dtype.type == np.float32:
                 precision = 'F8'
-            elif elemtype == np.float64:
+            elif dtype.type == np.float64:
                 precision = 'F17'
             else:
                 precision = None
@@ -143,17 +140,20 @@ class VOMethods(object):
 
         for name in self.names:
 
+            dtype = self.columns[name].dtype
+
             # Add data to the table
-
-            if self.data[name].dtype.type in [np.string_, str, np.str]:
-                table.array[name] = self.data[name].astype(np.object_)
-            else:
-                table.array[name] = self.data[name]
-
             # At the moment, null values in VO table are dealt with via a
             # 'mask' record array
 
-            table.mask[name] = self.data[name] == self.nulls[name]
+            if dtype.type == np.string_:
+                table.array[name] = self.data[name].astype(np.object_)
+                table.mask[name] = (self.data[name] == \
+                            self.columns[name].null).astype(np.object_)
+            else:
+                table.array[name] = self.data[name]
+                table.mask[name] = self.data[name] == \
+                            self.columns[name].null
 
         table.name = self.table_name
 
@@ -192,7 +192,7 @@ class VOMethods(object):
 class VOSetMethods(object):
     ''' A class for reading and writing a set of VO tables.'''
 
-    def vo_read(self, filename):
+    def vo_read(self, filename, verbose=True):
         '''
         Read all tables from a VOT file
 
@@ -208,7 +208,7 @@ class VOSetMethods(object):
 
         for tid in _list_tables(filename):
             t = self._single_table_class()
-            t.vo_read(filename, tid=tid)
+            t.vo_read(filename, tid=tid, verbose=verbose)
             self.tables.append(t)
 
     def vo_write(self, filename, votype='ascii'):

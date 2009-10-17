@@ -49,7 +49,7 @@ def _list_tables(filename):
 class FITSMethods(object):
     ''' A class for reading and writing a single FITS table.'''
 
-    def fits_read(self, filename, hdu=None):
+    def fits_read(self, filename, hdu=None, verbose=True):
         '''
         Read a table from a FITS file
 
@@ -107,28 +107,31 @@ class FITSMethods(object):
 
         for name in self.names:
 
-            array = self.data[name]
-            unit = self.units[name]
-            null = self.nulls[name]
+            data = self.data[name]
+            unit = self.columns[name].unit
+            null = self.columns[name].null
+            dtype = self.columns[name].dtype
+            arraysize = None
 
             if unit == None:
                 unit = ''
 
-            elemtype, elemwidth = type(array[0]), 1
+            if data.ndim > 1:
+                arraysize = str(data.shape[1])
 
-            if elemtype == np.ndarray:
-                elemtype, elemwidth = type(array[0][0]), len(array[0])
+            if dtype.type == np.string_:
+                elemwidth = dtype.itemsize
 
-            if elemtype in [np.str, np.string_, str]:
-                elemwidth = array.itemsize
-
-            if elemtype in type_dict:
-                format = str(elemwidth) + type_dict[elemtype]
+            if dtype.type in type_dict:
+                if arraysize:
+                    format = str(arraysize) + type_dict[dtype.type]
+                else:
+                    format = type_dict[dtype.type]
             else:
-                raise Exception("cannot use numpy type " + str(elemtype))
+                raise Exception("cannot use numpy type " + str(dtype.type))
 
             columns.append(pyfits.Column(name=name, format=format, unit=unit, \
-                null=null, array=array))
+                null=null, array=data))
 
         hdu = pyfits.new_table(pyfits.ColDefs(columns))
         hdu.name = self.table_name
@@ -172,7 +175,7 @@ class FITSMethods(object):
 class FITSSetMethods(object):
     ''' A class for reading and writing a set of FITS tables.'''
 
-    def fits_read(self, filename):
+    def fits_read(self, filename, verbose=True):
         '''
         Read all tables from a FITS file
 
@@ -188,7 +191,7 @@ class FITSSetMethods(object):
 
         for hdu in _list_tables(filename):
             table = self._single_table_class()
-            table.fits_read(filename, hdu=hdu)
+            table.fits_read(filename, hdu=hdu, verbose=verbose)
             self.tables.append(table)
 
     def fits_write(self, filename, overwrite=False):

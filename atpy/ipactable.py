@@ -32,7 +32,7 @@ invalid[np.float64] = np.float64(np.nan)
 class IPACMethods(object):
     ''' A class for reading and writing a single IPAC table.'''
 
-    def ipac_read(self, filename, definition=3):
+    def ipac_read(self, filename, definition=3, verbose=True):
         '''
         Read a table from a IPAC file
 
@@ -182,7 +182,8 @@ class IPACMethods(object):
 
                 if item.lower() == 'null' and nulls[names[i]] <> 'null':
                     if nulls[names[i]] == '':
-                        print "WARNING: found unexpected 'null' value. Setting null value for column "+names[i]+" to 'null'"
+                        if verbose:
+                            print "WARNING: found unexpected 'null' value. Setting null value for column "+names[i]+" to 'null'"
                         nulls[names[i]] = 'null'
                         nulls_given = True
                     else:
@@ -202,10 +203,11 @@ class IPACMethods(object):
                     for i, item in enumerate(array[name]):
                         if item == nulls[name]:
                             array[name][i] = n
-                    if len(str(nulls[name]).strip()) == 0:
-                        print "WARNING: empty null value for column "+name+" set to "+str(n)
-                    else:
-                        print "WARNING: null value for column "+name+" changed from "+str(nulls[name])+" to "+str(n)
+                    if verbose:
+                        if len(str(nulls[name]).strip()) == 0:
+                            print "WARNING: empty null value for column "+name+" set to "+str(n)
+                        else:
+                            print "WARNING: null value for column "+name+" changed from "+str(nulls[name])+" to "+str(n)
                     nulls[name] = n
 
         # Convert to numpy arrays
@@ -251,17 +253,20 @@ class IPACMethods(object):
 
         for name in self.names:
 
-            coltype = type_rev_dict[self.types[name]]
-            colunit = self.units[name]
+            dtype = self.columns[name].dtype
 
-            if self.nulls[name]:
-                colnull = ("%" + self.format(name)) % self.nulls[name]
+            coltype = type_rev_dict[dtype.type]
+            colunit = self.columns[name].unit
+            colnull = self.columns[name].null
+
+            if colnull:
+                colnull = ("%" + self.format(name)) % colnull
             else:
                 colnull = ''
 
             # Adjust the format for each column
 
-            width[name] = self.formats[name][0]
+            width[name] = self.columns[name].format[0]
 
             max_width = max(len(name), len(coltype), len(colunit), \
                 len(colnull))

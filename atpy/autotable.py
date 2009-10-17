@@ -58,7 +58,7 @@ class AutoMethods(object):
         '''
 
         if 'verbose' in kwargs:
-            verbose = kwargs.pop('verbose')
+            verbose = kwargs['verbose']
         else:
             verbose = True
 
