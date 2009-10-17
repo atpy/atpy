@@ -20,13 +20,19 @@ MySQLdb_minimum_version = version.LooseVersion('1.2.2')
 
 try:
     import MySQLdb
+    import MySQLdb.constants.FIELD_TYPE as mysqlft
     if version.LooseVersion(MySQLdb.__version__) < MySQLdb_minimum_version:
         raise
     MySQLdb_installed = True
 except:
     MySQLdb_installed = False
 
-
+mysql_types = {}
+for variable in list(dir(mysqlft)):
+    if variable[0] <> '_':
+        code = mysqlft.__getattribute__(variable)
+        mysql_types[code] = variable
+            
 def _check_MySQLdb_installed():
     if not MySQLdb_installed:
         raise Exception("Cannot read/write MySQL tables - MySQL-python " + \
@@ -78,6 +84,7 @@ type_dict_rev['integer'] = np.int32
 
 type_dict_rev['int8'] = np.int64
 type_dict_rev['bigint'] = np.int64
+type_dict_rev['long'] = np.int64
 
 type_dict_rev['float4'] = np.float32
 type_dict_rev['float8'] = np.float64
@@ -196,7 +203,21 @@ def column_info(cursor, dbtype, table_name):
             names.append(str(column[0]))
     return names, types
 
+def column_info_desc(dbtype,description):
 
+    names, types = [], []
+    if dbtype=='sqlite':
+        raise Exception("Full SQL queries not implemented for sqlite")
+    elif dbtype=='mysql':
+        for column in description:
+            names.append(column[0])
+            types.append(numpy_type(mysql_types[column[1]]))
+    elif dbtype=='postgres':
+        for column in description:
+            names.append(column[0])
+            types.append(numpy_type(column[1]))
+    return names, types
+   
 def connect_database(dbtype, *args, **kwargs):
     '''
     Connect to a database and return a connection handle

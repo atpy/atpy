@@ -6,7 +6,6 @@ import sqlhelper as sql
 
 from exceptions import TableException, ExistingTableException
 
-
 class SQLMethods(object):
     '''
     Class for working with reading and writing tables in databases.
@@ -90,6 +89,11 @@ class SQLMethods(object):
         else:
             verbose = True
 
+        if 'query' in kwargs:
+            query = kwargs.pop('query')
+        else:
+            query = None
+
         # Erase existing content
         self.reset()
 
@@ -107,12 +111,19 @@ class SQLMethods(object):
         else:
             table_name = table_names[table]
 
-        column_names, column_types = sql.column_info(cursor, dbtype, \
-            table_name)
+        if query:
 
-        cursor = connection.cursor()
+            cursor.execute(query)
+            column_names, column_types = sql.column_info_desc(dbtype, cursor.description)
+            
+        else:
 
-        cursor.execute('select * from ' + table_name)
+            column_names, column_types = sql.column_info(cursor, dbtype, \
+                table_name)
+
+            cursor = connection.cursor()
+
+            cursor.execute('select * from ' + table_name)
 
         results = np.rec.fromrecords(list(cursor.fetchall()), \
                         dtype=zip(column_names, column_types))
