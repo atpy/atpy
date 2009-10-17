@@ -32,7 +32,7 @@ for variable in list(dir(mysqlft)):
     if variable[0] <> '_':
         code = mysqlft.__getattribute__(variable)
         mysql_types[code] = variable
-            
+
 def _check_MySQLdb_installed():
     if not MySQLdb_installed:
         raise Exception("Cannot read/write MySQL tables - MySQL-python " + \
@@ -203,11 +203,13 @@ def column_info(cursor, dbtype, table_name):
             names.append(str(column[0]))
     return names, types
 
-def column_info_desc(dbtype,description):
+def column_info_desc(dbtype,description,column_types_dict=None):
 
     names, types = [], []
     if dbtype=='sqlite':
-        raise Exception("Full SQL queries not implemented for sqlite")
+        for column in description:
+            names.append(column[0])
+            types.append(column_types_dict[column[0]])
     elif dbtype=='mysql':
         for column in description:
             names.append(column[0])
@@ -217,7 +219,7 @@ def column_info_desc(dbtype,description):
             names.append(column[0])
             types.append(numpy_type(column[1]))
     return names, types
-   
+
 def connect_database(dbtype, *args, **kwargs):
     '''
     Connect to a database and return a connection handle

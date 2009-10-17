@@ -111,15 +111,24 @@ class SQLMethods(object):
         else:
             table_name = table_names[table]
 
+        # Find overall names and types for the table
+        column_names, column_types = sql.column_info(cursor, dbtype, \
+            table_name)
+
         if query:
 
+            # Execute the query
             cursor.execute(query)
-            column_names, column_types = sql.column_info_desc(dbtype, cursor.description)
-            
-        else:
 
-            column_names, column_types = sql.column_info(cursor, dbtype, \
-                table_name)
+            if dbtype == 'sqlite':
+                column_types_dict = dict(zip(column_names,column_types))
+            else:
+                column_types_dict = None
+
+            # Override column names and types
+            column_names, column_types = sql.column_info_desc(dbtype, cursor.description, column_types_dict=column_types_dict)
+
+        else:
 
             cursor = connection.cursor()
 
