@@ -28,10 +28,11 @@ except:
     MySQLdb_installed = False
 
 mysql_types = {}
-for variable in list(dir(mysqlft)):
-    if variable[0] <> '_':
-        code = mysqlft.__getattribute__(variable)
-        mysql_types[code] = variable
+if MySQLdb_installed:
+    for variable in list(dir(mysqlft)):
+        if variable[0] <> '_':
+            code = mysqlft.__getattribute__(variable)
+            mysql_types[code] = variable
 
 def _check_MySQLdb_installed():
     if not MySQLdb_installed:
