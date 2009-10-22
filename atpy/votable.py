@@ -32,8 +32,8 @@ type_dict[np.string_] = "char"
 type_dict[str] = "char"
 
 
-def _list_tables(filename):
-    votable = parse(filename)
+def _list_tables(filename, pedantic=False):
+    votable = parse(filename, pedantic=pedantic)
     tables = {}
     for i, table in enumerate(votable.iter_tables()):
         tables[i] = table.name
@@ -69,7 +69,7 @@ class VOMethods(object):
 
         # If no table is requested, check that there is only one table
         if tid==-1:
-            tables = _list_tables(filename)
+            tables = _list_tables(filename, pedantic=pedantic)
             if len(tables) == 1:
                 tid = 0
             else:
@@ -192,7 +192,7 @@ class VOMethods(object):
 class VOSetMethods(object):
     ''' A class for reading and writing a set of VO tables.'''
 
-    def vo_read(self, filename, verbose=True):
+    def vo_read(self, filename, pedantic=False, verbose=True):
         '''
         Read all tables from a VOT file
 
@@ -200,15 +200,21 @@ class VOSetMethods(object):
 
             *filename*: [ string ]
                 The VOT file to read the tables from
+
+        Optional Keyword Arguments:
+
+            *pendantic*: [ True | False ]
+                When *pedantic* is True, raise an error when the file violates
+                the VO Table specification, otherwise issue a warning.
         '''
 
         _check_vo_installed()
 
         self.tables = []
 
-        for tid in _list_tables(filename):
+        for tid in _list_tables(filename, pedantic=pedantic):
             t = self._single_table_class()
-            t.vo_read(filename, tid=tid, verbose=verbose)
+            t.vo_read(filename, tid=tid, verbose=verbose, pedantic=pedantic)
             self.tables.append(t)
 
     def vo_write(self, filename, votype='ascii'):
