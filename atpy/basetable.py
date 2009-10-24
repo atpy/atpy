@@ -178,7 +178,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         print "WARNING: remove_column is depracated - use remove_columns instead"
         self.remove_columns([remove_name])
         return
-        
+
     def remove_columns(self, remove_names):
         '''
         Remove several columns from the table
@@ -317,9 +317,25 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         else:
             return self.data[row_number]
 
+    def rows(self, row_ids):
+        '''
+        Select specific rows from the table and return a new table instance
+
+        Required Argument:
+
+            *row_ids*: [ list | np.int array ]
+                A python list or numpy array specifying which rows to select,
+                and in what order.
+
+        Returns:
+
+            A new table instance, containing only the rows selected
+        '''
+        return self.where(np.array(row_ids,dtype=int))
+
     def where(self, mask):
         '''
-        Select certain rows from the table and return a new table instance
+        Select matching rows from the table and return a new table instance
 
         Required Argument:
 
