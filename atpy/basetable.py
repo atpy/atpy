@@ -438,8 +438,8 @@ class TableSet(FITSSetMethods, SQLSetMethods, VOSetMethods, AutoMethods):
                     self.tables.append(table)
                     return
 
-        # Pass arguments to read
-        self.read(*args, **kwargs)
+            # Pass arguments to read
+            self.read(*args, **kwargs)
 
         return
 
