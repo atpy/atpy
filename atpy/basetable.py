@@ -158,6 +158,11 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         data = np.array(data, dtype=dtype)
         dtype = data.dtype
 
+        if dtype.type == np.object_:
+            longest = len(max(data, key=len))
+            data = np.array(data, dtype='|%iS' % longest)
+            dtype = data.dtype
+
         if len(self.columns) > 0:
             newdtype = (name, data.dtype)
             self.data = rec.append_field(self.data, data, dtype=newdtype)
