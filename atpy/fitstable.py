@@ -111,20 +111,20 @@ class FITSMethods(object):
             unit = self.columns[name].unit
             null = self.columns[name].null
             dtype = self.columns[name].dtype
-            arraysize = None
+            elemwidth = None
 
             if unit == None:
                 unit = ''
 
             if data.ndim > 1:
-                arraysize = str(data.shape[1])
+                elemwidth = str(data.shape[1])
 
             if dtype.type == np.string_:
                 elemwidth = dtype.itemsize
 
             if dtype.type in type_dict:
-                if arraysize:
-                    format = str(arraysize) + type_dict[dtype.type]
+                if elemwidth:
+                    format = str(elemwidth) + type_dict[dtype.type]
                 else:
                     format = type_dict[dtype.type]
             else:
