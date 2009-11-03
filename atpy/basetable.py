@@ -15,12 +15,17 @@ import rechelper as rec
 
 default_format = {}
 default_format[None.__class__] = 16, '.9e'
-default_format[np.bool_] = 5, 's'
+default_format[np.bool_] = 1, 'i'
+default_format[np.int8] = 3, 'i'
+default_format[np.uint8] = 3, 'i'
 default_format[np.int16] = 5, 'i'
-default_format[np.int32] = 10, 'i'
-default_format[np.int64] = 20, 'i'
-default_format[np.float32] = 15, '.8e'
-default_format[np.float64] = 24, '.17e'
+default_format[np.uint16] = 5, 'i'
+default_format[np.int32] = 12, 'i'
+default_format[np.uint32] = 12, 'i'
+default_format[np.int64] = 22, 'i'
+default_format[np.uint64] = 23, 'i'
+default_format[np.float32] = 16, '.8e'
+default_format[np.float64] = 25, '.17e'
 default_format[np.str] = 0, 's'
 default_format[np.string_] = 0, 's'
 default_format[np.uint8] = 0, 's'
@@ -77,7 +82,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
     def __getattr__(self, attribute):
 
         if attribute == 'names':
-            return self.data.dtype.names
+            return self.__dict__['data'].dtype.names
         elif attribute == 'units':
             print "WARNING: Table.units is depracated - use Table.columns to access this information"
             return dict([(name, self.columns[name].unit) for name in self.names])
@@ -93,9 +98,17 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         elif attribute == 'shape':
             return (len(self.data), len(self.names))
         elif attribute in self.names:
-            return self.data[attribute]
+            return self.__dict__['data'][attribute]
         else:
             raise AttributeError(attribute)
+
+    def __setattr__(self, attribute, value):
+        if 'data' in self.__dict__:
+            if isinstance(self.data,np.recarray):
+                if attribute in self.data.dtype.names:
+                    self.data[attribute] = value
+                    return
+        self.__dict__[attribute] = value
 
     def __len__(self):
         if len(self.columns) == 0:
@@ -122,6 +135,40 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
             names = string.join(names, ", ")
             raise VectorException(names)
         return
+
+    def add_empty_column(self, name, dtype, unit='', null='', \
+        description='', format=None):
+        '''
+        Add an empty column to the table. This only works if there
+        are already existing columns in the table.
+
+        Required Arguments:
+
+            *name*: [ string ]
+                The name of the column to add
+
+            *dtype*: [ numpy type ]
+                Numpy type of the column. This is the equivalent to
+                the dtype= argument in numpy.array
+
+        Optional Keyword Arguments:
+
+            *unit*: [ string ]
+                The unit of the values in the column
+
+            *null*: [ same type as data ]
+                The values corresponding to 'null', if not NaN
+
+            *description*: [ string ]
+                A description of the content of the column
+
+            *format*: [ string ]
+                The format to use for ASCII printing
+        '''
+        data = np.zeros(self.__len__(), dtype=dtype)
+        
+        self.add_column(name, data, unit=unit, null=null, \
+            description=description, format=format)
 
     def add_column(self, name, data, unit='', null='', description='', \
         format=None, dtype=None):
