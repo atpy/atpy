@@ -1,10 +1,11 @@
+import os
 import numpy as np
 
 # Define type conversion from IPAC table to numpy arrays
 type_dict = {}
-type_dict['i'] = np.int32
-type_dict['int'] = np.int32
-type_dict['integer'] = np.int32
+type_dict['i'] = np.int64
+type_dict['int'] = np.int64
+type_dict['integer'] = np.int64
 type_dict['long'] = np.int64
 type_dict['double'] = np.float64
 type_dict['float'] = np.float32
@@ -13,9 +14,15 @@ type_dict['char'] = np.str
 type_dict['date'] = np.str
 
 type_rev_dict = {}
+type_rev_dict[np.bool_] = "int"
+type_rev_dict[np.int8] = "int"
 type_rev_dict[np.int16] = "int"
 type_rev_dict[np.int32] = "int"
 type_rev_dict[np.int64] = "int"
+type_rev_dict[np.uint8] = "int"
+type_rev_dict[np.uint16] = "int"
+type_rev_dict[np.uint32] = "int"
+type_rev_dict[np.uint64] = "int"
 type_rev_dict[np.float32] = "float"
 type_rev_dict[np.float64] = "double"
 type_rev_dict[np.str] = "char"
@@ -32,7 +39,7 @@ invalid[np.float64] = np.float64(np.nan)
 class IPACMethods(object):
     ''' A class for reading and writing a single IPAC table.'''
 
-    def ipac_read(self, filename, definition=3, verbose=True):
+    def ipac_read(self, filename, definition=3, verbose=True, smart_typing=False):
         '''
         Read a table from a IPAC file
 
@@ -54,6 +61,15 @@ class IPACMethods(object):
                    column on the right.
                 3: no characters should be present below the pipe
                    symbols (default).
+
+            *smart_typing*: [ True | False ]
+
+                Whether to try and save memory by using the smallest
+                integer type that can contain a column. For example,
+                a column containing only values between 0 and 255 can
+                be stored as an unsigned 8-bit integer column. The
+                default is false, so that all integer columns are
+                stored as 64-bit integers.
         '''
 
         if not definition in [1, 2, 3]:
@@ -212,12 +228,48 @@ class IPACMethods(object):
 
         # Convert to numpy arrays
         for name in names:
-            array[name] = np.array(array[name], \
-                dtype=type_dict[types[name]])
+
+            if smart_typing:
+
+                dtype = None
+
+                low = min(array[name])
+                high = max(array[name])
+
+                if types[name] in ['i', 'int', 'integer']:
+                    low, high = long(low), long(high)
+                    for nt in [np.uint8, np.int8, np.uint16, np.int16, np.uint32, np.int32, np.uint64, np.int64]:
+                        if low >= np.iinfo(nt).min and high <= np.iinfo(nt).max:
+                            dtype = nt
+                            break
+                elif types[name] in ['long']:
+                    low, high = long(low), long(high)
+                    for nt in [np.uint64, np.int64]:
+                        if low >= np.iinfo(nt).min and high <= np.iinfo(nt).max:
+                            dtype = nt
+                            break
+                elif types[name] in ['float', 'real']:
+                    low, high = float(low), float(high)
+                    for nt in [np.float32, np.float64]:
+                        if low >= np.finfo(nt).min and high <= np.finfo(nt).max:
+                            dtype = nt
+                            break
+                else:
+                    dtype = type_dict[types[name]]
+
+            else:
+                dtype = type_dict[types[name]]
+
+            array[name] = np.array(array[name], dtype=dtype)
+
+            if smart_typing:
+                if np.min(array) >= 0 and np.max(array) <= 1:
+                    array = array == 1
+
             self.add_column(name, array[name], \
                 null=nulls[name], unit=units[name])
 
-    def ipac_write(self, filename):
+    def ipac_write(self, filename, overwrite=False):
         '''
         Write the table to an IPAC file
 
@@ -228,6 +280,12 @@ class IPACMethods(object):
         '''
 
         self._raise_vector_columns()
+
+        if os.path.exists(filename):
+            if overwrite:
+                os.remove(filename)
+            else:
+                raise Exception("File exists: %s" % filename)
 
         # Open file for writing
         f = file(filename, 'wb')
