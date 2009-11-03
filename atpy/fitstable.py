@@ -25,10 +25,14 @@ standard_keys = ['XTENSION', 'NAXIS', 'NAXIS1', 'NAXIS2', 'TFIELDS', \
 # Define type conversion dictionary
 type_dict = {}
 type_dict[np.bool_] = "L"
+type_dict[np.int8] = "B"
 type_dict[np.uint8] = "B"
 type_dict[np.int16] = "I"
+type_dict[np.uint16] = "I"
 type_dict[np.int32] = "J"
+type_dict[np.uint32] = "J"
 type_dict[np.int64] = "K"
+type_dict[np.uint64] = "K"
 type_dict[np.float32] = "E"
 type_dict[np.float64] = "D"
 type_dict[np.str] = "A"
@@ -130,8 +134,19 @@ class FITSMethods(object):
             else:
                 raise Exception("cannot use numpy type " + str(dtype.type))
 
+            if dtype.type == np.uint16:
+                bzero = - np.iinfo(np.int16).min
+            elif dtype.type == np.uint32:
+                bzero = - np.iinfo(np.int32).min
+            elif dtype.type == np.uint64:
+                bzero = - np.iinfo(np.int64).min
+            elif dtype.type == np.int8:
+                bzero = -128
+            else:
+                bzero = None
+
             columns.append(pyfits.Column(name=name, format=format, unit=unit, \
-                null=null, array=data))
+                null=null, array=data, bzero=bzero))
 
         hdu = pyfits.new_table(pyfits.ColDefs(columns))
         hdu.name = self.table_name
