@@ -21,10 +21,17 @@ def _check_vo_installed():
 # Define type conversion dictionary
 type_dict = {}
 type_dict[np.bool_] = "boolean"
-type_dict[np.uint8] = "int"
-type_dict[np.int16] = "int"
+
+type_dict[np.int8] = "short"
+type_dict[np.int16] = "short"
 type_dict[np.int32] = "int"
-type_dict[np.int64] = "int"
+type_dict[np.int64] = "long"
+
+type_dict[np.uint8] = "short"
+type_dict[np.uint16] = "short"
+type_dict[np.uint32] = "int"
+type_dict[np.uint64] = "long"
+
 type_dict[np.float32] = "float"
 type_dict[np.float64] = "double"
 type_dict[np.str] = "char"
@@ -119,7 +126,7 @@ class VOMethods(object):
                 raise Exception("cannot use numpy type " + str(dtype.type))
 
             if dtype.type == np.float32:
-                precision = 'F8'
+                precision = 'F9'
             elif dtype.type == np.float64:
                 precision = 'F17'
             else:
