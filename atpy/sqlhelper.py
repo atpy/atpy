@@ -60,6 +60,11 @@ def _check_PyGreSQL_installed():
 type_dict = {}
 
 type_dict[np.uint8] = "TINYINT"
+type_dict[np.uint16] = "SMALLINT"
+type_dict[np.uint32] = "INT"
+type_dict[np.uint64] = "BIGINT"
+
+type_dict[np.int8] = "TINYINT"
 type_dict[np.int16] = "SMALLINT"
 type_dict[np.int32] = "INT"
 type_dict[np.int64] = "BIGINT"
@@ -75,6 +80,8 @@ type_dict[str] = "TEXT"
 # Reverse type conversion dictionary
 
 type_dict_rev = {}
+
+type_dict_rev['tinyint'] = np.int8
 
 type_dict_rev['smallint'] = np.int16
 type_dict_rev['int2'] = np.int16
