@@ -1,5 +1,6 @@
 from distutils import version
 import numpy as np
+import warnings
 
 from exceptions import TableException
 
@@ -22,15 +23,10 @@ def _check_vo_installed():
 type_dict = {}
 type_dict[np.bool_] = "boolean"
 
-type_dict[np.int8] = "short"
+type_dict[np.uint8] = "unsignedByte"
 type_dict[np.int16] = "short"
 type_dict[np.int32] = "int"
 type_dict[np.int64] = "long"
-
-type_dict[np.uint8] = "short"
-type_dict[np.uint16] = "short"
-type_dict[np.uint32] = "int"
-type_dict[np.uint64] = "long"
 
 type_dict[np.float32] = "float"
 type_dict[np.float64] = "double"
@@ -122,6 +118,17 @@ class VOMethods(object):
 
             if dtype.type in type_dict:
                 datatype = type_dict[dtype.type]
+            elif dtype.type == np.int8:
+                warnings.warn("int8 unsupported - converting to int16")
+                datatype = type_dict[np.int16]
+            elif dtype.type == np.uint16:
+                warnings.warn("uint16 unsupported - converting to int32")
+                datatype = type_dict[np.int32]
+            elif dtype.type == np.uint32:
+                warnings.warn("uint32 unsupported - converting to int64")
+                datatype = type_dict[np.int64]
+            elif dtype.type == np.uint64:
+                raise Exception("uint64 unsupported")
             else:
                 raise Exception("cannot use numpy type " + str(dtype.type))
 
