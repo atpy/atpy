@@ -1,5 +1,6 @@
 from distutils import version
 import numpy as np
+import warnings
 
 # SQLite
 
@@ -323,6 +324,17 @@ def create_table(cursor, dbtype, table_name, columns):
         # PostgreSQL does not support TINYINT
         if dbtype == 'postgres' and column_type == 'TINYINT':
             column_type = 'SMALLINT'
+
+        # PostgreSQL does not support unsigned integers
+        if dbtype == 'postgres':
+            if column[1] == np.uint16:
+                warnings.warn("uint16 unsupported - converting to int32")
+                column_type = type_dict[np.int32]
+            elif column[1] == np.uint32:
+                warnings.warn("uint32 unsupported - converting to int64")
+                column_type = type_dict[np.int64]
+            elif column[1] == np.uint64:
+                raise Exception("uint64 unsupported")
 
         # MySQL can take an UNSIGNED attribute
         if dbtype == 'mysql' and column[1] in [np.uint8, np.uint16, np.uint32, np.uint64]:
