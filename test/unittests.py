@@ -298,6 +298,16 @@ try:
             self.table_orig.write('mysql', db='python', overwrite=True, verbose=False, user=username, passwd=password)
             self.table_new = atpy.Table('mysql', db='python', verbose=False, user=username, passwd=password, table='atpy_test')
 
+    class MySQLTestCaseQuery(unittest.TestCase, DefaultTestCase):
+
+        format = 'mysql'
+
+        def writeread(self, dtype):
+
+            self.table_orig = generate_simple_table(dtype)
+            self.table_orig.write('mysql', db='python', overwrite=True, verbose=False, user=username, passwd=password)
+            self.table_new = atpy.Table('mysql', db='python', verbose=False, user=username, passwd=password, table='atpy_test', query='select * from atpy_test')
+
 except:
     pass
 
@@ -315,6 +325,19 @@ try:
             self.table_orig = generate_simple_table(dtype)
             self.table_orig.write('postgres', database='python', overwrite=True, verbose=False, user=username, password=password)
             self.table_new = atpy.Table('postgres', database='python', verbose=False, user=username, password=password, table='atpy_test')
+
+    class PostGreSQLTestCaseQuery(unittest.TestCase, DefaultTestCase):
+
+        format = 'postgres'
+
+        test_uint64 = None # unsupported
+
+        def writeread(self, dtype):
+
+            self.table_orig = generate_simple_table(dtype)
+            self.table_orig.write('postgres', database='python', overwrite=True, verbose=False, user=username, password=password)
+            self.table_new = atpy.Table('postgres', database='python', verbose=False, user=username, password=password, table='atpy_test', query='select * from atpy_test')
+
 
 except:
     pass

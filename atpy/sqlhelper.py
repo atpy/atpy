@@ -82,8 +82,10 @@ type_dict[str] = "TEXT"
 
 type_dict_rev = {}
 
+type_dict_rev['tiny'] = np.int8
 type_dict_rev['tinyint'] = np.int8
 
+type_dict_rev['short'] = np.int16
 type_dict_rev['smallint'] = np.int16
 type_dict_rev['int2'] = np.int16
 
@@ -94,6 +96,7 @@ type_dict_rev['integer'] = np.int32
 type_dict_rev['int8'] = np.int64
 type_dict_rev['bigint'] = np.int64
 type_dict_rev['long'] = np.int64
+type_dict_rev['longlong'] = np.int64
 
 type_dict_rev['float'] = np.float32
 type_dict_rev['float4'] = np.float32
