@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import warnings
 
 # Define type conversion from IPAC table to numpy arrays
 type_dict = {}
@@ -257,8 +258,14 @@ class IPACMethods(object):
                 else:
                     dtype = type_dict[types[name]]
 
-            else:
+            else:                
                 dtype = type_dict[types[name]]
+
+                # If max integer is larger than 2**63 then use uint64
+                if dtype == np.int64:
+                    if long(max(array[name])) > 2**63:
+                        dtype = np.uint64
+                        warnings.warn("using type uint64 for column %s" % name)
 
             array[name] = np.array(array[name], dtype=dtype)
 
@@ -355,7 +362,10 @@ class IPACMethods(object):
             line = ""
 
             for name in self.names:
-                item = (("%" + self.format(name)) % self.data[name][i])
+                if self.columns[name].dtype == np.uint64:
+                    item = (("%" + self.format(name)) % long(self.data[name][i]))
+                else:
+                    item = (("%" + self.format(name)) % self.data[name][i])
                 item = ("%" + str(width[name]) + "s") % item
                 line = line + " " + item
 
