@@ -186,7 +186,9 @@ class DefaultTestCase():
                 self.failUnless(np.isinf(after[i]))
             else:
                 if self.format == 'mysql':
-                    self.assertAlmostEqualSig(before[i], after[i], significant=6)
+                    self.assertAlmostEqualSig(before[i], after[i], significant=5)
+                if self.format == 'postgres':
+                    self.assertAlmostEqualSig(before[i], after[i], significant=5)
                 else:
                     self.assertEqual(before[i], after[i])
 
@@ -202,7 +204,9 @@ class DefaultTestCase():
                 self.failUnless(np.isinf(after[i]))
             else:
                 if self.format == 'mysql':
-                    self.assertAlmostEqualSig(before[i], after[i], significant=15)
+                    self.assertAlmostEqualSig(before[i], after[i], significant=12)
+                elif self.format == 'postgres':
+                        self.assertAlmostEqualSig(before[i], after[i], significant=12)
                 else:
                     self.assertEqual(before[i], after[i])
 
@@ -302,11 +306,15 @@ try:
 
     class PostGreSQLTestCase(unittest.TestCase, DefaultTestCase):
 
+        format = 'postgres'
+
+        test_uint64 = None # unsupported
+
         def writeread(self, dtype):
 
             self.table_orig = generate_simple_table(dtype)
             self.table_orig.write('postgres', database='python', overwrite=True, verbose=False, user=username, password=password)
-            self.table_new = atpy.Table('postgres', database='python', overwrite=True, verbose=False, user=username, password=password, table='atpy_test')
+            self.table_new = atpy.Table('postgres', database='python', verbose=False, user=username, password=password, table='atpy_test')
 
 except:
     pass
