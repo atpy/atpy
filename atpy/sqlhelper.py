@@ -69,7 +69,7 @@ type_dict[np.int16] = "SMALLINT"
 type_dict[np.int32] = "INT"
 type_dict[np.int64] = "BIGINT"
 
-type_dict[np.float32] = "REAL"
+type_dict[np.float32] = "FLOAT"
 
 type_dict[np.float64] = "DOUBLE PRECISION"
 
@@ -94,12 +94,13 @@ type_dict_rev['int8'] = np.int64
 type_dict_rev['bigint'] = np.int64
 type_dict_rev['long'] = np.int64
 
+type_dict_rev['float'] = np.float32
 type_dict_rev['float4'] = np.float32
+
 type_dict_rev['float8'] = np.float64
 type_dict_rev['double'] = np.float64
 type_dict_rev['double precision'] = np.float64
 
-type_dict_rev['float'] = np.float64
 type_dict_rev['real'] = np.float64
 
 type_dict_rev['text'] = np.str
@@ -133,14 +134,27 @@ def numpy_type(sql_type):
         *sql_type*: [ string ]
             The SQL type to find the numpy type for
     '''
+    unsigned = 'unsigned' in sql_type
     sql_type = sql_type.split('(')[0].lower()
     if not sql_type in type_dict_rev:
         print "WARNING: need to define reverse type for " + str(sql_type)
         print "         Please report this on the ATpy forums!"
         print "         This type has been converted to a string"
         sql_type = 'text'
-    return type_dict_rev[sql_type]
-
+    dtype = type_dict_rev[sql_type]
+    if unsigned:
+        if dtype == np.int8:
+            return np.uint8
+        elif dtype == np.int16:
+            return np.uint16
+        elif dtype == np.int32:
+            return np.uint32
+        elif dtype == np.int64:
+            return np.uint64
+        else:
+            raise Exception("Unexpected unsigned attribute for non-integer column")
+    else:
+        return dtype
 
 def list_tables(cursor, dbtype):
     '''
@@ -198,7 +212,10 @@ def column_info(cursor, dbtype, table_name):
         for column in cursor.execute('pragma table_info(' + \
             table_name + ')').fetchall():
             names.append(str(column[1]))
-            types.append(numpy_type(column[2]))
+            if "INT" in column[2]:
+                types.append(np.int64)
+            else:
+                types.append(numpy_type(column[2]))
     elif dbtype=='mysql':
         cursor.execute('DESCRIBE ' + table_name)
         for column in cursor:
@@ -306,6 +323,18 @@ def create_table(cursor, dbtype, table_name, columns):
         # PostgreSQL does not support TINYINT
         if dbtype == 'postgres' and column_type == 'TINYINT':
             column_type = 'SMALLINT'
+
+        # MySQL can take an UNSIGNED attribute
+        if dbtype == 'mysql' and column[1] in [np.uint8, np.uint16, np.uint32, np.uint64]:
+            column_type += " UNSIGNED"
+
+        # SQLite only has one integer type
+        if dbtype == 'sqlite' and "INT" in column_type:
+            column_type = "INTEGER"
+
+        # SQLite doesn't support uint64
+        if dbtype == 'sqlite' and column[1] == np.uint64:
+            raise Exception("SQLite tables do not support unsigned 64-bit ints")
 
         query += quote[dbtype] + column_name + quote[dbtype] + " " + \
             column_type
