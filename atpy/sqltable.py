@@ -121,7 +121,7 @@ class SQLMethods(object):
             cursor.execute(query)
 
             if dbtype == 'sqlite':
-                column_types_dict = dict(zip(column_names,column_types))
+                column_types_dict = dict(zip(column_names, column_types))
             else:
                 column_types_dict = None
 
@@ -135,10 +135,10 @@ class SQLMethods(object):
             cursor.execute('select * from ' + table_name)
 
         results = np.rec.fromrecords(list(cursor.fetchall()), \
-                        dtype=zip(column_names, column_types))
+                        names = column_names)
 
-        for column in results.dtype.names:
-            self.add_column(column, results[column])
+        for i, column in enumerate(results.dtype.names):
+            self.add_column(column, results[column], dtype=column_types[i])
 
         self.table_name = table_name
 
