@@ -88,8 +88,24 @@ class FITSMethods(object):
         columns = hdu.columns
 
         for i, name in enumerate(columns.names):
-            self.add_column(name, table.field(name), unit=columns.units[i], \
-                null=columns.nulls[i])
+            
+            format, bzero = hdu.columns[i].format[-1], hdu.columns[i].bzero
+                        
+            if bzero and format in ['B','I','J']:
+                data = pyfits.rec.recarray.field(hdu.data, i)
+                if format == 'B' and bzero == -128:
+                    data = (data.astype(np.int16) + bzero).astype(np.int8)
+                elif format == 'I' and bzero == - np.iinfo(np.int16).min:
+                    data = (data.astype(np.int32) + bzero).astype(np.uint16)
+                elif format == 'J' and bzero == - np.iinfo(np.int32).min:
+                    data = (data.astype(np.int64) + bzero).astype(np.uint32)
+                else:
+                    data = table.field(name)
+            else:
+                data = table.field(name)
+                
+            self.add_column(name, data, unit=columns.units[i], \
+                null=columns.nulls[i])                    
 
         for key in header.keys():
             if not key[:4] in ['TFOR', 'TDIS', 'TDIM', 'TTYP', 'TUNI'] and \
@@ -139,7 +155,7 @@ class FITSMethods(object):
             elif dtype.type == np.uint32:
                 bzero = - np.iinfo(np.int32).min
             elif dtype.type == np.uint64:
-                bzero = - np.iinfo(np.int64).min
+                raise Exception("uint64 unsupported")
             elif dtype.type == np.int8:
                 bzero = -128
             else:
