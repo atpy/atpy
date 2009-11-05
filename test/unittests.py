@@ -80,8 +80,8 @@ def generate_simple_table(dtype, shape):
 class DefaultTestCase():
 
     def assertAlmostEqualSig(test, first, second, significant=7, msg=None):
-        format = "%%.%ig" % significant
-        if format % first <> format % second:
+        ratio = first / second
+        if np.abs(ratio - 1.) > 10.**(-significant+1):
             raise test.failureException, \
             (msg or '%r != %r within %r significant digits' % (first, second, significant))
 
@@ -154,16 +154,16 @@ class DefaultTestCase():
 
     def test_float32(self):
         if self.format == 'mysql':
-            self.float_test(np.float32, significant=5)
-        if self.format == 'postgres':
-            self.float_test(np.float32, significant=5)
+            self.float_test(np.float32, significant=6)
+        elif self.format == 'postgres':
+            self.float_test(np.float32, significant=6)
         else:
             self.float_test(np.float32)
 
     def test_float64(self):
         if self.format == 'mysql':
-            self.float_test(np.float64, significant=12)
-        if self.format == 'postgres':
+            self.float_test(np.float64, significant=15)
+        elif self.format == 'postgres':
             self.float_test(np.float64, significant=12)
         else:
             self.float_test(np.float64)
@@ -183,6 +183,8 @@ try:
 
         format = 'fits'
 
+        test_uint64 = None # unsupported
+
         def writeread(self, dtype):
 
             self.table_orig = generate_simple_table(dtype, shape)
@@ -193,6 +195,9 @@ try:
     class FITSTestCaseVector(unittest.TestCase, DefaultTestCase):
 
         format = 'fits'
+
+        test_string = None # unsupported
+        test_uint64 = None # unsupported
 
         def writeread(self, dtype):
 
@@ -224,6 +229,7 @@ try:
 
         format = 'vo'
 
+        test_string = None # unsupported
         test_uint64 = None # unsupported
 
         def writeread(self, dtype):
@@ -262,6 +268,19 @@ try:
             self.table_orig = generate_simple_table(dtype, shape)
             self.table_orig.write('sqlite', 'test_atpy.db', verbose=False, overwrite=True)
             self.table_new = atpy.Table('sqlite', 'test_atpy.db', verbose=False)
+            os.remove('test_atpy.db')
+            
+    class SQLiteTestCaseQuery(unittest.TestCase, DefaultTestCase):
+
+        format = 'sqlite'
+
+        test_uint64 = None # unsupported
+
+        def writeread(self, dtype):
+
+            self.table_orig = generate_simple_table(dtype, shape)
+            self.table_orig.write('sqlite', 'test_atpy.db', verbose=False, overwrite=True)
+            self.table_new = atpy.Table('sqlite', 'test_atpy.db', verbose=False, query='select * from atpy_test')
             os.remove('test_atpy.db')
 
 except:

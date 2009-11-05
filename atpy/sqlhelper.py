@@ -346,6 +346,9 @@ def create_table(cursor, dbtype, table_name, columns):
         if dbtype == 'sqlite' and column[1] == np.uint64:
             raise Exception("SQLite tables do not support unsigned 64-bit ints")
 
+        if dbtype == 'postgres' and column[1] == np.float32:
+            column_type = "REAL"
+
         query += quote[dbtype] + column_name + quote[dbtype] + " " + \
             column_type
 
