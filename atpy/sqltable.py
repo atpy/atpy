@@ -6,6 +6,7 @@ import sqlhelper as sql
 
 from exceptions import TableException, ExistingTableException
 
+
 class SQLMethods(object):
     '''
     Class for working with reading and writing tables in databases.
@@ -120,13 +121,10 @@ class SQLMethods(object):
             # Execute the query
             cursor.execute(query)
 
-            if dbtype == 'sqlite':
-                column_types_dict = dict(zip(column_names, column_types))
-            else:
-                column_types_dict = None
+            column_types_dict = dict(zip(column_names, column_types))
 
             # Override column names and types
-            column_names, column_types = sql.column_info_desc(dbtype, cursor.description, column_types_dict=column_types_dict)
+            column_names, column_types = sql.column_info_desc(dbtype, cursor.description, column_types_dict)
 
         else:
 

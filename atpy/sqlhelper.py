@@ -35,6 +35,7 @@ if MySQLdb_installed:
             code = mysqlft.__getattribute__(variable)
             mysql_types[code] = variable
 
+
 def _check_MySQLdb_installed():
     if not MySQLdb_installed:
         raise Exception("Cannot read/write MySQL tables - MySQL-python " + \
@@ -160,6 +161,7 @@ def numpy_type(sql_type):
     else:
         return dtype
 
+
 def list_tables(cursor, dbtype):
     '''
     List all tables in a given SQL database
@@ -232,22 +234,15 @@ def column_info(cursor, dbtype, table_name):
             names.append(str(column[0]))
     return names, types
 
-def column_info_desc(dbtype,description,column_types_dict=None):
+
+def column_info_desc(dbtype, description, column_types_dict):
 
     names, types = [], []
-    if dbtype=='sqlite':
-        for column in description:
-            names.append(column[0])
-            types.append(column_types_dict[column[0]])
-    elif dbtype=='mysql':
-        for column in description:
-            names.append(column[0])
-            types.append(numpy_type(mysql_types[column[1]]))
-    elif dbtype=='postgres':
-        for column in description:
-            names.append(column[0])
-            types.append(numpy_type(column[1]))
+    for column in description:
+        names.append(column[0])
+        types.append(column_types_dict[column[0]])
     return names, types
+
 
 def connect_database(dbtype, *args, **kwargs):
     '''
