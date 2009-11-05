@@ -9,8 +9,8 @@ import atpy
 import numpy as np
 
 # Size of the test table
-shape = (100,)
-shape_vector = (100,10)
+shape = (100, )
+shape_vector = (100, 10)
 
 # SQL connection parameters
 username = getpass.getuser()
@@ -42,25 +42,6 @@ numpy_types = [np.bool, np.int8, np.int16, np.int32, np.int64, np.uint8, \
                np.dtype('|S100')]
 
 
-def random_int64(size):
-    a0 = np.random.random_integers(0, 0xFFFF, size=size).astype(np.uint64)
-    a1 = np.random.random_integers(0, 0xFFFF, size=size).astype(np.uint64)
-    a2 = np.random.random_integers(0, 0xFFFF, size=size).astype(np.uint64)
-    a3 = np.random.random_integers(0, 0xFFFF, size=size).astype(np.uint64)
-    a = a0 + (a1<<16) + (a2 << 32) + (a3 << 48)
-    return a.view(dtype=np.int64)
-
-
-def random_uint64(size):
-    print "calling random uint64"
-    a0 = np.random.random_integers(0, 0xFFFF, size=size).astype(np.uint64)
-    a1 = np.random.random_integers(0, 0xFFFF, size=size).astype(np.uint64)
-    a2 = np.random.random_integers(0, 0xFFFF, size=size).astype(np.uint64)
-    a3 = np.random.random_integers(0, 0xFFFF, size=size).astype(np.uint64)
-    a = a0 + (a1<<16) + (a2 << 32) + (a3 << 48)
-    return a
-
-
 def random_generic(dtype, name, shape):
 
     if 'int' in name:
@@ -78,24 +59,6 @@ def random_generic(dtype, name, shape):
             values[i] = s
 
     return values
-
-
-def generate_table():
-
-    table = atpy.Table(name='atpy_test')
-
-    for dtype in numpy_types:
-
-        try:
-            name = dtype.__name__
-        except:
-            name = dtype.type.__name__
-
-        values = random_generic(dtype, name, SIZE)
-
-        table.add_column('col_'+name, values, dtype=dtype)
-
-    return table
 
 
 def generate_simple_table(dtype, shape):
@@ -133,7 +96,7 @@ class DefaultTestCase():
         else:
             for i in range(before.shape[0]):
                 for j in range(before.shape[1]):
-                    self.assertEqual(before[i,j], after[i,j])
+                    self.assertEqual(before[i, j], after[i, j])
 
     def test_uint8(self):
         self.integer_test(np.uint8)
@@ -179,15 +142,15 @@ class DefaultTestCase():
         else:
             for i in range(before.shape[0]):
                 for j in range(before.shape[1]):
-                    if(np.isnan(before[i,j])):
-                        self.failUnless(np.isnan(after[i,j]))
-                    elif(np.isinf(before[i,j])):
-                        self.failUnless(np.isinf(after[i,j]))
+                    if(np.isnan(before[i, j])):
+                        self.failUnless(np.isnan(after[i, j]))
+                    elif(np.isinf(before[i, j])):
+                        self.failUnless(np.isinf(after[i, j]))
                     else:
                         if significant:
-                            self.assertAlmostEqualSig(before[i,j], after[i,j], significant=significant)
+                            self.assertAlmostEqualSig(before[i, j], after[i, j], significant=significant)
                         else:
-                            self.assertEqual(before[i,j], after[i,j])
+                            self.assertEqual(before[i, j], after[i, j])
 
     def test_float32(self):
         if self.format == 'mysql':
