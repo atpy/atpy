@@ -83,6 +83,12 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
 
         if attribute == 'names':
             return self.__dict__['data'].dtype.names
+        elif attribute == 'columns':
+            return self.__dict__['columns']
+        elif attribute == 'keywords':
+            return self.__dict__['keywords']
+        elif attribute == 'comments':
+            return self.__dict__['comments']
         elif attribute == 'units':
             print "WARNING: Table.units is depracated - use Table.columns to access this information"
             return dict([(name, self.columns[name].unit) for name in self.names])
