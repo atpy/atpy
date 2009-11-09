@@ -216,11 +216,15 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
             data = np.array(data, dtype='|%iS' % longest)
             dtype = data.dtype
 
-        if len(self.columns) > 0:
+        if data.ndim > 1:
+            newdtype = (name, data.dtype, data.shape[1])
+        else:
             newdtype = (name, data.dtype)
+
+        if len(self.columns) > 0:
             self.data = rec.append_field(self.data, data, dtype=newdtype)
         else:
-            self.data = np.rec.fromarrays([data], dtype=[(name, dtype)])
+            self.data = np.rec.fromarrays([data], dtype=[newdtype])
 
         if not format:
             format = default_format[dtype.type]
