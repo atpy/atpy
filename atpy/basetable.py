@@ -52,6 +52,30 @@ class ColumnHeader(object):
             s +=", description=%s" % self.description
         return s
 
+    def __eq__(self, other):
+        if self.dtype <> other.dtype:
+            print self.dtype, other.dtype
+            return False
+        if self.unit <> other.unit:
+            print self.unit, other.unit
+            return False
+        if self.description <> other.description:
+            print self.description, other.description
+            return False
+        if self.null <> other.null:
+            if np.isnan(self.null):
+                if not np.isnan(self.null):
+                    return False
+            else:
+                return False
+        if self.format <> other.format:
+            print self.format, other.format
+            return False
+        return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
 
 class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
 
@@ -108,9 +132,15 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         else:
             raise AttributeError(attribute)
 
+    def append(self, table):
+        for colname in self.columns:
+            if self.columns[colname] <> table.columns[colname]:
+                raise Exception("Columns do not match")
+        self.data = np.hstack((self.data, table.data))
+
     def __setattr__(self, attribute, value):
         if 'data' in self.__dict__:
-            if isinstance(self.data,np.recarray):
+            if isinstance(self.data, np.recarray):
                 if attribute in self.data.dtype.names:
                     self.data[attribute] = value
                     return
@@ -172,7 +202,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
                 The format to use for ASCII printing
         '''
         data = np.zeros(self.__len__(), dtype=dtype)
-        
+
         self.add_column(name, data, unit=unit, null=null, \
             description=description, format=format)
 
@@ -393,7 +423,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
 
             A new table instance, containing only the rows selected
         '''
-        return self.where(np.array(row_ids,dtype=int))
+        return self.where(np.array(row_ids, dtype=int))
 
     def where(self, mask):
         '''
