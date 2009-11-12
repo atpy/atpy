@@ -334,7 +334,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
             raise Exception("Column " + old_name + " not found")
 
         pos = self.names.index(old_name)
-        self.names = self.names[:pos] + (new_name, ) + self.names[pos+1:]
+        self.data.dtype.names = self.names[:pos] + (new_name, ) + self.names[pos+1:]
 
         self.columns[new_name] = self.columns[old_name]
         del self.columns[old_name]
