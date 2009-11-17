@@ -173,7 +173,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         return
 
     def add_empty_column(self, name, dtype, unit='', null='', \
-        description='', format=None):
+        description='', format=None, shape=None):
         '''
         Add an empty column to the table. This only works if there
         are already existing columns in the table.
@@ -201,7 +201,12 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
             *format*: [ string ]
                 The format to use for ASCII printing
         '''
-        data = np.zeros(self.__len__(), dtype=dtype)
+        if shape:
+            data = np.zeros(shape, dtype=dtype)
+        elif self.__len__() > 0:
+            data = np.zeros(self.__len__(), dtype=dtype)
+        else:
+            raise Exception("Table is empty, you need to use the shape= argument to specify the dimensions of the first column")
 
         self.add_column(name, data, unit=unit, null=null, \
             description=description, format=format)
