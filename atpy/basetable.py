@@ -389,6 +389,20 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
 
         return
 
+    def sort(self, keys):
+        '''
+        Sort the table according to one or more keys. This operates
+        on the existing table (and does not return a new table).
+
+        Required arguments:
+
+            *keys*: [ string | list of strings ]
+                The key(s) to order by
+        '''
+        if not type(keys) == list:
+            keys = [keys]
+        self.data.sort(order=keys)
+
     def row(self, row_number, python_types=False):
         '''
         Returns a single row
