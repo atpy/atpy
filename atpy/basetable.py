@@ -554,6 +554,9 @@ class TableSet(FITSSetMethods, SQLSetMethods, VOSetMethods, AutoMethods):
 
         return
 
+    def __getitem__(self, item):
+        return self.tables[item]
+
     def __getattr__(self, attribute):
 
         for table in self.tables:
