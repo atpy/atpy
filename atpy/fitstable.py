@@ -242,7 +242,18 @@ class FITSSetMethods(object):
 
         _check_pyfits_installed()
 
-        hdulist = [pyfits.PrimaryHDU()]
+        primary = pyfits.PrimaryHDU()
+        for key in self.keywords:
+            if len(key) > 8:
+                keyname = "hierarch " + key
+            else:
+                keyname = key
+            primary.header.update(keyname, self.keywords[key])
+
+        for comment in self.comments:
+            primary.header.add_comment(comment)
+        
+        hdulist = [primary]
         for i, table in enumerate(self.tables):
             hdulist.append(table._to_hdu())
         hdulist = pyfits.HDUList(hdulist)

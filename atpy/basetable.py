@@ -534,6 +534,8 @@ class TableSet(FITSSetMethods, SQLSetMethods, VOSetMethods, AutoMethods):
         '''
 
         self.tables = []
+        self.keywords = {}
+        self.comments = []
 
         if len(args) == 1:
 
@@ -586,4 +588,35 @@ class TableSet(FITSSetMethods, SQLSetMethods, VOSetMethods, AutoMethods):
         '''
         for table in self.tables:
             table.describe()
+        return
+
+    def add_comment(self, comment):
+        '''
+        Add a comment to the table set
+
+        Required Argument:
+
+            *comment*: [ string ]
+                The comment to add to the table
+        '''
+
+        self.comments.append(comment.strip())
+        return
+
+    def add_keyword(self, key, value):
+        '''
+        Add a keyword/value pair to the table set
+
+        Required Arguments:
+
+            *key*: [ string ]
+                The name of the keyword
+
+            *value*: [ string | float | integer | bool ]
+                The value of the keyword
+        '''
+
+        if type(value) == str:
+            value = value.strip()
+        self.keywords[key.strip()] = value
         return
