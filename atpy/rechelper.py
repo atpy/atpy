@@ -1,8 +1,13 @@
 import numpy as np
 
 
-def append_field(rec, data, dtype=None):
-    newdtype = np.dtype(rec.dtype.descr + [dtype])
+def append_field(rec, data, dtype=None, position='undefined'):
+    newdtype = rec.dtype.descr
+    if position == 'undefined':
+        newdtype.append(dtype)
+    else:
+        newdtype.insert(position, dtype)
+    newdtype = np.dtype(newdtype)
     newrec = np.recarray(rec.shape, dtype=newdtype)
     for field in rec.dtype.fields:
         newrec[field] = rec[field]
@@ -18,7 +23,7 @@ def drop_fields(rec, names):
                        if name not in names])
 
     newrec = np.recarray(rec.shape, dtype=newdtype)
-    
+
     for field in newdtype.fields:
         newrec[field] = rec[field]
 

@@ -173,7 +173,8 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         return
 
     def add_empty_column(self, name, dtype, unit='', null='', \
-        description='', format=None, shape=None):
+        description='', format=None, shape=None, before=None, after=None, \
+        position=None):
         '''
         Add an empty column to the table. This only works if there
         are already existing columns in the table.
@@ -200,6 +201,16 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
 
             *format*: [ string ]
                 The format to use for ASCII printing
+
+            *before*: [ string ]
+                Column before which the new column should be inserted
+
+            *after*: [ string ]
+                Column after which the new column should be inserted
+
+            *position*: [ integer ]
+                Position at which the new column should be inserted (0 = first
+                column)
         '''
         if shape:
             data = np.zeros(shape, dtype=dtype)
@@ -209,10 +220,11 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
             raise Exception("Table is empty, you need to use the shape= argument to specify the dimensions of the first column")
 
         self.add_column(name, data, unit=unit, null=null, \
-            description=description, format=format)
+            description=description, format=format, before=before, \
+            after=after, position=position)
 
     def add_column(self, name, data, unit='', null='', description='', \
-        format=None, dtype=None):
+        format=None, dtype=None, before=None, after=None, position=None):
         '''
         Add a column to the table
 
@@ -241,6 +253,16 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
             *dtype*: [ numpy type ]
                 Numpy type to convert the data to. This is the equivalent to
                 the dtype= argument in numpy.array
+
+            *before*: [ string ]
+                Column before which the new column should be inserted
+
+            *after*: [ string ]
+                Column after which the new column should be inserted
+
+            *position*: [ integer ]
+                Position at which the new column should be inserted (0 = first
+                column)
         '''
 
         data = np.array(data, dtype=dtype)
@@ -257,7 +279,11 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
             newdtype = (name, data.dtype)
 
         if len(self.columns) > 0:
-            self.data = rec.append_field(self.data, data, dtype=newdtype)
+            if before:
+                position = self.names.index(before)
+            elif after:
+                position = self.names.index(after) + 1
+            self.data = rec.append_field(self.data, data, dtype=newdtype, position=position)
         else:
             self.data = np.rec.fromarrays([data], dtype=[newdtype])
 
