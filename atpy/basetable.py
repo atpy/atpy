@@ -421,9 +421,6 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
 
         if python_types:
             row_data = list(self.data[row_number].tolist())
-            for i, elem in enumerate(row_data):
-                if elem <> elem:
-                    row_data[i] = None
             return row_data
         else:
             return self.data[row_number]

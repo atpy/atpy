@@ -6,6 +6,18 @@ import sqlhelper as sql
 
 from exceptions import TableException, ExistingTableException
 
+invalid = {}
+invalid[np.uint8] = np.iinfo(np.uint8).min
+invalid[np.uint16] = np.iinfo(np.uint16).min
+invalid[np.uint32] = np.iinfo(np.uint32).min
+invalid[np.uint64] = np.iinfo(np.uint64).min
+invalid[np.int8] = np.iinfo(np.int8).min
+invalid[np.int16] = np.iinfo(np.int16).min
+invalid[np.int32] = np.iinfo(np.int32).min
+invalid[np.int64] = np.iinfo(np.int64).min
+invalid[np.float32] = np.float32(np.nan)
+invalid[np.float64] = np.float64(np.nan)
+
 
 class SQLMethods(object):
     '''
@@ -136,7 +148,13 @@ class SQLMethods(object):
                         names = column_names)
 
         for i, column in enumerate(results.dtype.names):
-            self.add_column(column, results[column], dtype=column_types[i])
+            if column_types[i] in invalid:
+                null = invalid[column_types[i]]
+                results[column][np.equal(results[column], None)] = null
+            else:
+                null = 'None'
+
+            self.add_column(column, results[column], dtype=column_types[i], null=null)
 
         self.table_name = table_name
 
@@ -180,10 +198,21 @@ class SQLMethods(object):
                                             for name in self.names]
         sql.create_table(cursor, dbtype, table_name, columns)
 
+
         # Insert row
+        float_column = [self.columns[name].dtype.type in [np.float32, np.float64] for name in self.names]
+
         for i in range(self.__len__()):
-            sql.insert_row(cursor, dbtype, table_name, \
-                self.row(i, python_types=True))
+            row = []
+            row_orig = self.row(i, python_types=True)
+            for j, name in enumerate(self.names):
+                item = row_orig[j]
+                if (float_column[j] and np.isnan(item)) or item == self.columns[name].null:
+                    item = None
+                row.append(item)
+            row = tuple(row)
+
+            sql.insert_row(cursor, dbtype, table_name, row)
 
         # Close connection
         connection.commit()
