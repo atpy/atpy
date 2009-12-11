@@ -88,9 +88,9 @@ class FITSMethods(object):
         columns = hdu.columns
 
         for i, name in enumerate(columns.names):
-            
+
             format, bzero = hdu.columns[i].format[-1], hdu.columns[i].bzero
-                        
+
             if bzero and format in ['B','I','J']:
                 data = pyfits.rec.recarray.field(hdu.data, i)
                 if format == 'B' and bzero == -128:
@@ -103,9 +103,9 @@ class FITSMethods(object):
                     data = table.field(name)
             else:
                 data = table.field(name)
-                
+
             self.add_column(name, data, unit=columns.units[i], \
-                null=columns.nulls[i])                    
+                null=columns.nulls[i])
 
         for key in header.keys():
             if not key[:4] in ['TFOR', 'TDIS', 'TDIM', 'TTYP', 'TUNI'] and \
@@ -220,6 +220,18 @@ class FITSSetMethods(object):
 
         self.tables = []
 
+        # Read in primary header
+        header = pyfits.getheader(filename, 0)
+
+        for key in header.keys():
+            if not key[:4] in ['TFOR', 'TDIS', 'TDIM', 'TTYP', 'TUNI'] and \
+                not key in standard_keys:
+                self.add_keyword(key, header[key])
+
+        for comment in header.get_comment():
+            self.add_comment(comment)
+
+        # Read in tables one by one
         for hdu in _list_tables(filename):
             table = self._single_table_class()
             table.fits_read(filename, hdu=hdu, verbose=verbose)
@@ -252,7 +264,7 @@ class FITSSetMethods(object):
 
         for comment in self.comments:
             primary.header.add_comment(comment)
-        
+
         hdulist = [primary]
         for i, table in enumerate(self.tables):
             hdulist.append(table._to_hdu())
