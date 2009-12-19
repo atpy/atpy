@@ -4,6 +4,7 @@ import os
 import string
 import random
 import getpass
+import sys
 
 import atpy
 import numpy as np
@@ -77,6 +78,63 @@ def generate_simple_table(dtype, shape):
     return table
 
 
+class ColumnsDefaultTestCase():
+    
+    def test_uint8(self):
+        self.generic_test(np.uint8)
+
+    def test_uint16(self):
+        self.generic_test(np.uint16)
+
+    def test_uint32(self):
+        self.generic_test(np.uint32)
+
+    def test_uint64(self):
+        self.generic_test(np.uint64)
+
+    def test_int8(self):
+        self.generic_test(np.int8)
+
+    def test_int16(self):
+        self.generic_test(np.int16)
+
+    def test_int32(self):
+        self.generic_test(np.int32)
+
+    def test_int64(self):
+        self.generic_test(np.int64)
+        
+    def test_float32(self):
+        self.generic_test(np.float32)
+
+    def test_float64(self):
+        self.generic_test(np.float64)
+        
+    def test_string(self):
+        self.generic_test(np.dtype('|S100'))
+        
+class EmptyColumnsTestCase(unittest.TestCase, ColumnsDefaultTestCase):
+    
+    def generic_test(self, dtype):
+        try:
+            t = atpy.Table()
+            t.add_empty_column('a', dtype, shape=shape)
+            t.add_empty_column('b', dtype)
+            t.add_empty_column('c', dtype)
+        except:
+            self.fail(sys.exc_info()[1])
+
+class EmptyVectorColumnsTestCase(unittest.TestCase, ColumnsDefaultTestCase):
+
+    def generic_test(self, dtype):
+        try:
+            t = atpy.Table()
+            t.add_empty_column('a', dtype, shape=shape_vector)
+            t.add_empty_column('b', dtype)
+            t.add_empty_column('c', dtype, shape=shape_vector)
+        except:
+            self.fail(sys.exc_info()[1])
+        
 class DefaultTestCase():
 
     def assertAlmostEqualSig(test, first, second, significant=7, msg=None):
