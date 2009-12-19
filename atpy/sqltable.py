@@ -36,6 +36,11 @@ class SQLMethods(object):
             *table*: [ string ]
                 The name of the table to read from the database (this is only
                 required if there are more than one table in the database)
+                
+            *query*: [ string ]
+                An arbitrary SQL query to construct a table from. This can be
+                any valid SQL command provided that the result is a single
+                table.
 
         The remaining arguments depend on the database type:
 
