@@ -201,6 +201,12 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
 
             *format*: [ string ]
                 The format to use for ASCII printing
+                
+            *shape*: [ tuple ]
+                Tuple describing the shape of the empty column that is to be
+                added. If a one element tuple is specified, it is the number
+                of rows. If a two element tuple is specified, the first is the
+                number of rows, and the second is the width of the column.
 
             *before*: [ string ]
                 Column before which the new column should be inserted
