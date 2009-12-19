@@ -36,7 +36,7 @@ class SQLMethods(object):
             *table*: [ string ]
                 The name of the table to read from the database (this is only
                 required if there are more than one table in the database)
-                
+
             *query*: [ string ]
                 An arbitrary SQL query to construct a table from. This can be
                 any valid SQL command provided that the result is a single
@@ -149,8 +149,13 @@ class SQLMethods(object):
 
             cursor.execute('select * from ' + table_name)
 
-        results = np.rec.fromrecords(list(cursor.fetchall()), \
-                        names = column_names)
+        results = cursor.fetchall()
+
+        if results:
+            results = np.rec.fromrecords(list(results), \
+                            names = column_names)
+        else:
+            raise Exception("SQL query did not return any records")
 
         for i, column in enumerate(results.dtype.names):
             if column_types[i] in invalid:
