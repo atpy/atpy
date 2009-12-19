@@ -279,7 +279,6 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
             newdtype = (name, data.dtype)
 
         if len(self.columns) > 0:
-            position = 'undefined'
             if before:
                 position = self.names.index(before)
             elif after:

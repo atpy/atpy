@@ -1,9 +1,9 @@
 import numpy as np
 
 
-def append_field(sta, data, dtype=None, position='undefined'):
+def append_field(sta, data, dtype=None, position=None):
     newdtype = sta.dtype.descr
-    if position == 'undefined':
+    if np.equal(position,None):
         newdtype.append(dtype)
     else:
         newdtype.insert(position, dtype)
