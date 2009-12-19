@@ -251,11 +251,6 @@ def column_info_desc(dbtype, description, column_types_dict):
             names.append(column[0])
             types.append(numpy_type(column[1]))
     return names, types
-    
-    for column in description:
-        names.append(column[0])
-        types.append(column_types_dict[column[0]])
-    return names, types
 
 
 def connect_database(dbtype, *args, **kwargs):
