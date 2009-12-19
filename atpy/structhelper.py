@@ -1,5 +1,4 @@
 import numpy as np
-import numpy.ma as ma
 
 
 def append_field(sta, data, dtype=None, position='undefined'):
@@ -9,7 +8,7 @@ def append_field(sta, data, dtype=None, position='undefined'):
     else:
         newdtype.insert(position, dtype)
     newdtype = np.dtype(newdtype)
-    newsta = ma.empty(sta.shape, dtype=newdtype)
+    newsta = np.empty(sta.shape, dtype=newdtype)
     for field in sta.dtype.fields:
         newsta[field] = sta[field]
     newsta[dtype[0]] = data
@@ -22,7 +21,7 @@ def drop_fields(sta, names):
     newdtype = np.dtype([(name, sta.dtype[name]) for name in sta.dtype.names
                        if name not in names])
 
-    newsta = ma.empty(sta.shape, dtype=newdtype)
+    newsta = np.empty(sta.shape, dtype=newdtype)
     
     for field in newdtype.fields:
         newsta[field] = sta[field]
