@@ -11,7 +11,7 @@ from autotable import AutoMethods
 
 from exceptions import VectorException
 
-import rechelper as rec
+import structhelper as sta
 
 default_format = {}
 default_format[None.__class__] = 16, '.9e'
@@ -140,7 +140,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
 
     def __setattr__(self, attribute, value):
         if 'data' in self.__dict__:
-            if isinstance(self.data, np.recarray):
+            if isinstance(self.data, np.ndarray):
                 if attribute in self.data.dtype.names:
                     self.data[attribute] = value
                     return
@@ -279,13 +279,14 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
             newdtype = (name, data.dtype)
 
         if len(self.columns) > 0:
+            position = 'undefined'
             if before:
                 position = self.names.index(before)
             elif after:
                 position = self.names.index(after) + 1
-            self.data = rec.append_field(self.data, data, dtype=newdtype, position=position)
+            self.data = sta.append_field(self.data, data, dtype=newdtype, position=position)
         else:
-            self.data = np.rec.fromarrays([data], dtype=[newdtype])
+            self.data = np.array(zip(data), dtype=[newdtype])
 
         if not format:
             format = default_format[dtype.type]
@@ -318,7 +319,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         for remove_name in remove_names:
             self.columns.pop(remove_name)
 
-        self.data = rec.drop_fields(self.data, remove_names)
+        self.data = sta.drop_fields(self.data, remove_names)
 
         return
 
