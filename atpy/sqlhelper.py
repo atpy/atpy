@@ -238,6 +238,20 @@ def column_info(cursor, dbtype, table_name):
 def column_info_desc(dbtype, description, column_types_dict):
 
     names, types = [], []
+    if dbtype=='sqlite':
+        for column in description:
+            names.append(column[0])
+            types.append(column_types_dict[column[0]])
+    elif dbtype=='mysql':
+        for column in description:
+            names.append(column[0])
+            types.append(numpy_type(mysql_types[column[1]]))
+    elif dbtype=='postgres':
+        for column in description:
+            names.append(column[0])
+            types.append(numpy_type(column[1]))
+    return names, types
+    
     for column in description:
         names.append(column[0])
         types.append(column_types_dict[column[0]])
