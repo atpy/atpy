@@ -1,20 +1,22 @@
 # NOTE: docstring is long and so only written once!
 #       It is copied for the other routines
 
+import warnings
+
 import numpy as np
 import sqlhelper as sql
 
 from exceptions import TableException, ExistingTableException
 
 invalid = {}
-invalid[np.uint8] = np.iinfo(np.uint8).min
-invalid[np.uint16] = np.iinfo(np.uint16).min
-invalid[np.uint32] = np.iinfo(np.uint32).min
-invalid[np.uint64] = np.iinfo(np.uint64).min
-invalid[np.int8] = np.iinfo(np.int8).min
-invalid[np.int16] = np.iinfo(np.int16).min
-invalid[np.int32] = np.iinfo(np.int32).min
-invalid[np.int64] = np.iinfo(np.int64).min
+invalid[np.uint8] = np.iinfo(np.uint8).max
+invalid[np.uint16] = np.iinfo(np.uint16).max
+invalid[np.uint32] = np.iinfo(np.uint32).max
+invalid[np.uint64] = np.iinfo(np.int64).max
+invalid[np.int8] = np.iinfo(np.int8).max
+invalid[np.int16] = np.iinfo(np.int16).max
+invalid[np.int32] = np.iinfo(np.int32).max
+invalid[np.int64] = np.iinfo(np.int64).max
 invalid[np.float32] = np.float32(np.nan)
 invalid[np.float64] = np.float64(np.nan)
 
@@ -130,7 +132,7 @@ class SQLMethods(object):
             table_name = table_names[table]
 
         # Find overall names and types for the table
-        column_names, column_types = sql.column_info(cursor, dbtype, \
+        column_names, column_types, primary_keys = sql.column_info(cursor, dbtype, \
             table_name)
 
         if query:
@@ -167,6 +169,12 @@ class SQLMethods(object):
             self.add_column(column, results[column], dtype=column_types[i], null=null)
 
         self.table_name = table_name
+
+        # Set primary key if present
+        if len(primary_keys) == 1:
+            self.set_primary_key(primary_keys[0])
+        elif len(primary_keys) > 1:
+            warnings.warn("ATpy does not yet support multiple primary keys in a single table - ignoring primary key information")
 
     def sql_write(self, dbtype, *args, **kwargs):
 

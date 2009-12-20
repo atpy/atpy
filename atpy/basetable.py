@@ -160,6 +160,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         self.comments = []
         self.columns = {}
         self.data = None
+        self._primary_key = None
         return
 
     def _raise_vector_columns(self):

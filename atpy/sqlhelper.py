@@ -213,7 +213,7 @@ def column_info(cursor, dbtype, table_name):
         *table_name*: [ string ]
             The name of the table to get column information about
     '''
-    names, types = [], []
+    names, types, primary_keys = [], [], []
     if dbtype=='sqlite':
         for column in cursor.execute('pragma table_info(' + \
             table_name + ')').fetchall():
@@ -222,17 +222,21 @@ def column_info(cursor, dbtype, table_name):
                 types.append(np.int64)
             else:
                 types.append(numpy_type(column[2]))
+            if column[5] == 1:
+                primary_keys.append(str(column[1]))
     elif dbtype=='mysql':
         cursor.execute('DESCRIBE ' + table_name)
         for column in cursor:
             types.append(numpy_type(column[1]))
             names.append(str(column[0]))
+            if column[3] == 'PRI':
+                primary_keys.append(str(column[0]))
     elif dbtype=='postgres':
         cursor.execute('SELECT * FROM ' + table_name + ' WHERE 1=0')
         for column in cursor.description:
             types.append(numpy_type(column[1]))
             names.append(str(column[0]))
-    return names, types
+    return names, types, primary_keys
 
 
 def column_info_desc(dbtype, description, column_types_dict):
