@@ -206,7 +206,7 @@ class SQLMethods(object):
         # Create table
         columns = [(name, self.columns[name].dtype.type) \
                                             for name in self.names]
-        sql.create_table(cursor, dbtype, table_name, columns)
+        sql.create_table(cursor, dbtype, table_name, columns, primary_key=self._primary_key)
 
 
         # Insert row

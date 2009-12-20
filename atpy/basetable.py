@@ -201,7 +201,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
 
             *format*: [ string ]
                 The format to use for ASCII printing
-                
+
             *shape*: [ tuple ]
                 Tuple describing the shape of the empty column that is to be
                 added. If a one element tuple is specified, it is the number
@@ -326,6 +326,10 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
 
         self.data = sta.drop_fields(self.data, remove_names)
 
+        # Remove primary key if needed
+        if self._primary_key in remove_names:
+            self._primary_key = None
+
         return
 
     def keep_columns(self, keep_names):
@@ -375,6 +379,10 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
 
         self.columns[new_name] = self.columns[old_name]
         del self.columns[old_name]
+
+        # Update primary key if needed
+        if self._primary_key == old_name:
+            self._primary_key = new_name
 
         return
 
@@ -539,6 +547,31 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         if type(value) == str:
             value = value.strip()
         self.keywords[key.strip()] = value
+        return
+
+    def set_primary_key(self, key):
+        '''
+        Set the name of the table column that should be used as a unique
+        identifier for the record. This is the same as primary keys in SQL
+        databases. A primary column cannot contain NULLs and must contain only
+        unique quantities.
+
+        Required Arguments:
+
+            *key*: [ string ]
+                The column to use as a primary key
+        '''
+
+        if not key in self.names:
+            raise Exception("No such column: %s" % key)
+        else:
+            if np.any(self.data[key] == self.columns[key].null):
+                raise Exception("Primary key column cannot contain null values")
+            elif len(np.unique(self.data[key])) <> len(self.data[key]):
+                raise Exception("Primary key column cannot contain duplicate values")
+            else:
+                self._primary_key = key
+
         return
 
 

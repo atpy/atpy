@@ -298,7 +298,7 @@ def drop_table(cursor, table_name):
     return
 
 
-def create_table(cursor, dbtype, table_name, columns):
+def create_table(cursor, dbtype, table_name, columns, primary_key=None):
     '''
     Create a table in an SQL database
 
@@ -313,11 +313,13 @@ def create_table(cursor, dbtype, table_name, columns):
         *table_name*: [ string ]
             The name of the table to get column information about
 
-        *column_names*: [ list of strings ]
-            The names of all the columns
+        *columns*: [ list of tuples ]
+            The names and types of all the columns
 
-        *column_types*: [list of type objects ]
-            The numpy types of all the columns
+    Optional Arguments:
+
+        *primary_key* [ string ]
+            The column to use as a primary key
     '''
 
     query = 'create table ' + table_name + ' ('
@@ -360,6 +362,9 @@ def create_table(cursor, dbtype, table_name, columns):
 
         query += quote[dbtype] + column_name + quote[dbtype] + " " + \
             column_type
+
+    if primary_key:
+        query += ", PRIMARY KEY (%s)" % primary_key
 
     query += ")"
 
