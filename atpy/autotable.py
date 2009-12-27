@@ -1,3 +1,5 @@
+import warnings
+
 def _determine_type(string, verbose):
 
     s = string.lower()
@@ -61,24 +63,31 @@ class AutoMethods(object):
             verbose = kwargs['verbose']
         else:
             verbose = True
-
+         
         if 'type' in kwargs:
             table_type = kwargs.pop('type').lower()
         elif type(args[0]) == str:
             table_type = _determine_type(args[0], verbose)
         else:
             raise Exception('Could not determine input type')
+        
+        with warnings.catch_warnings():
 
-        if table_type == 'fits':
-            self.fits_read(*args, **kwargs)
-        elif table_type == 'vo':
-            self.vo_read(*args, **kwargs)
-        elif table_type == 'ipac':
-            self.ipac_read(*args, **kwargs)
-        elif table_type == 'sql':
-            self.sql_read(*args, **kwargs)
-        else:
-            raise Exception("Unknown table type: " + table_type)
+            if verbose:
+                warnings.simplefilter("always")
+            else:
+                warnings.simplefilter("ignore")
+
+            if table_type == 'fits':
+                self.fits_read(*args, **kwargs)
+            elif table_type == 'vo':
+                self.vo_read(*args, **kwargs)
+            elif table_type == 'ipac':
+                self.ipac_read(*args, **kwargs)
+            elif table_type == 'sql':
+                self.sql_read(*args, **kwargs)
+            else:
+                raise Exception("Unknown table type: " + table_type)
 
         return
 
@@ -117,15 +126,22 @@ class AutoMethods(object):
         else:
             raise Exception('Could not determine input type')
 
-        if table_type == 'fits':
-            self.fits_write(*args, **kwargs)
-        elif table_type == 'vo':
-            self.vo_write(*args, **kwargs)
-        elif table_type == 'ipac':
-            self.ipac_write(*args, **kwargs)
-        elif table_type == 'sql':
-            self.sql_write(*args, **kwargs)
-        else:
-            raise Exception("Unknown table type: " + table_type)
+        with warnings.catch_warnings():
+
+            if verbose:
+                warnings.simplefilter("always")
+            else:
+                warnings.simplefilter("ignore")
+                
+            if table_type == 'fits':
+                self.fits_write(*args, **kwargs)
+            elif table_type == 'vo':
+                self.vo_write(*args, **kwargs)
+            elif table_type == 'ipac':
+                self.ipac_write(*args, **kwargs)
+            elif table_type == 'sql':
+                self.sql_write(*args, **kwargs)
+            else:
+                raise Exception("Unknown table type: " + table_type)
 
         return
