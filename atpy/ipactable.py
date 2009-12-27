@@ -263,7 +263,7 @@ class IPACMethods(object):
 
                 # If max integer is larger than 2**63 then use uint64
                 if dtype == np.int64:
-                    if long(max(array[name])) > 2**63:
+                    if max([long(x) for x in array[name]]) > 2**63:
                         dtype = np.uint64
                         warnings.warn("using type uint64 for column %s" % name)
 
