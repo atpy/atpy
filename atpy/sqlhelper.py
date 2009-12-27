@@ -113,6 +113,7 @@ type_dict_rev['varchar'] = np.str
 type_dict_rev['blob'] = np.str
 type_dict_rev['timestamp'] = np.str
 type_dict_rev['date'] = np.str
+type_dict_rev['var_string'] = np.str
 
 
 # Define symbol to use in insert statement
