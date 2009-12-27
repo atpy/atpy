@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.ma as ma
 
 from copy import copy
 import string
@@ -64,7 +65,7 @@ class ColumnHeader(object):
             return False
         if self.null <> other.null:
             if np.isnan(self.null):
-                if not np.isnan(self.null):
+                if not np.isnan(other.null):
                     return False
             else:
                 return False
@@ -89,6 +90,16 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
 
             If one or more arguments are given they are passed to the
             Table.read() method.
+
+        Optional Keyword Arguments (independent of table type):
+
+            *name*: [ string ]
+                The table name
+
+            *masked*: [ True | False ]
+                Whether to use masked arrays. WARNING: this feature is
+                experimental and will only work correctly with the svn version
+                of numpy post-revision 8025.
         '''
 
         self.reset()
@@ -97,6 +108,11 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
             self.table_name = kwargs.pop('name')
         else:
             self.table_name = None
+
+        if 'masked' in kwargs:
+            self._masked = kwargs.pop('masked')
+        else:
+            self._masked = False
 
         if len(args) + len(kwargs) > 0:
             self.read(*args, **kwargs)
@@ -231,7 +247,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
             after=after, position=position)
 
     def add_column(self, name, data, unit='', null='', description='', \
-        format=None, dtype=None, before=None, after=None, position=None):
+        format=None, dtype=None, before=None, after=None, position=None, mask=None):
         '''
         Add a column to the table
 
@@ -271,13 +287,24 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
                 Position at which the new column should be inserted (0 = first
                 column)
         '''
+ 
+        if self._masked:
+            if null:
+                warnings.warn("null= argument can only be used if Table does not use masked arrays (ignored)")
+            data = ma.array(data, dtype=dtype, mask=mask)
+        else:
+            if np.any(mask):
+                warnings.warn("mask= argument can only be used if Table uses masked arrays (ignored)")
+            data = np.array(data, dtype=dtype)
 
-        data = np.array(data, dtype=dtype)
         dtype = data.dtype
-
+                
         if dtype.type == np.object_:
             longest = len(max(data, key=len))
-            data = np.array(data, dtype='|%iS' % longest)
+            if self._masked:
+                data = ma.array(data, dtype='|%iS' % longest)
+            else:
+                data = np.array(data, dtype='|%iS' % longest)
             dtype = data.dtype
 
         if data.ndim > 1:
@@ -290,9 +317,12 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
                 position = self.names.index(before)
             elif after:
                 position = self.names.index(after) + 1
-            self.data = sta.append_field(self.data, data, dtype=newdtype, position=position)
+            self.data = sta.append_field(self.data, data, dtype=newdtype, position=position, masked=self._masked)
         else:
-            self.data = np.array(zip(data), dtype=[newdtype])
+            if self._masked:
+                self.data = ma.array(zip(data), dtype=[newdtype], mask=zip(data.mask))
+            else:
+                self.data = np.array(zip(data), dtype=[newdtype])
 
         if not format:
             format = default_format[dtype.type]
@@ -325,7 +355,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         for remove_name in remove_names:
             self.columns.pop(remove_name)
 
-        self.data = sta.drop_fields(self.data, remove_names)
+        self.data = sta.drop_fields(self.data, remove_names, masked=self._masked)
 
         # Remove primary key if needed
         if self._primary_key in remove_names:
@@ -461,8 +491,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         '''
 
         if python_types:
-            row_data = list(self.data[row_number].tolist())
-            return row_data
+            return list(self.data[row_number].tolist())
         else:
             return self.data[row_number]
 
@@ -566,8 +595,9 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         if not key in self.names:
             raise Exception("No such column: %s" % key)
         else:
-            if np.any(self.data[key] == self.columns[key].null):
-                raise Exception("Primary key column cannot contain null values")
+            if self.columns[key].null <> '':
+                if np.any(np.self.data[key] == self.columns[key].null):
+                    raise Exception("Primary key column cannot contain null values")
             elif len(np.unique(self.data[key])) <> len(self.data[key]):
                 raise Exception("Primary key column cannot contain duplicate values")
             else:
@@ -593,6 +623,13 @@ class TableSet(FITSSetMethods, SQLSetMethods, VOSetMethods, AutoMethods):
 
             If one or more arguments are present, they are passed to the read
             method
+
+        Optional Keyword Arguments (independent of table type):
+
+            *masked*: [ True | False ]
+                Whether to use masked arrays. WARNING: this feature is
+                experimental and will only work correctly with the svn version
+                of numpy post-revision 8025.
 
         '''
 

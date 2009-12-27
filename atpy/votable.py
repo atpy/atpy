@@ -1,3 +1,4 @@
+import os
 from distutils import version
 import numpy as np
 import warnings
@@ -90,8 +91,12 @@ class VOMethods(object):
 
         for field in table.fields:
 
-            self.add_column(field.name, table.array[field.name], \
-                unit=field.unit)
+            if self._masked:
+                self.add_column(field.name, table.array[field.name], \
+                    unit=field.unit, mask=table.mask[field.name])
+            else:
+                self.add_column(field.name, table.array[field.name], \
+                    unit=field.unit)
 
     def _to_table(self, VOTable):
         '''
@@ -162,18 +167,24 @@ class VOMethods(object):
 
             if dtype.type == np.string_:
                 table.array[name] = self.data[name].astype(np.object_)
-                table.mask[name] = (self.data[name] == \
-                            self.columns[name].null).astype(np.object_)
+                if self._masked:
+                    table.mask[name] = self.data[name].mask.astype(np.object_)
+                else:
+                    table.mask[name] = (self.data[name] == \
+                                self.columns[name].null).astype(np.object_)
             else:
                 table.array[name] = self.data[name]
-                table.mask[name] = self.data[name] == \
-                            self.columns[name].null
+                if self._masked:
+                    table.mask[name] = self.data[name].mask
+                else:
+                    table.mask[name] = self.data[name] == \
+                                self.columns[name].null
 
         table.name = self.table_name
 
         return table
 
-    def vo_write(self, filename, votype='ascii'):
+    def vo_write(self, filename, votype='ascii', overwrite=False):
         '''
         Write the table to a VOT file
 
@@ -189,6 +200,12 @@ class VOMethods(object):
         '''
 
         _check_vo_installed()
+
+        if os.path.exists(filename):
+            if overwrite:
+                os.remove(filename)
+            else:
+                raise Exception("File exists: %s" % filename)
 
         VOTable = VOTableFile()
         resource = Resource()
@@ -231,7 +248,7 @@ class VOSetMethods(object):
             t.vo_read(filename, tid=tid, verbose=verbose, pedantic=pedantic)
             self.tables.append(t)
 
-    def vo_write(self, filename, votype='ascii'):
+    def vo_write(self, filename, votype='ascii', overwrite=False):
         '''
         Write all tables to a VOT file
 
@@ -247,6 +264,12 @@ class VOSetMethods(object):
         '''
 
         _check_vo_installed()
+        
+        if os.path.exists(filename):
+            if overwrite:
+                os.remove(filename)
+            else:
+                raise Exception("File exists: %s" % filename)
 
         VOTable = VOTableFile()
         resource = Resource()

@@ -1,3 +1,4 @@
+import os
 from distutils import version
 import numpy as np
 
@@ -104,8 +105,15 @@ class FITSMethods(object):
             else:
                 data = table.field(name)
 
-            self.add_column(name, data, unit=columns.units[i], \
-                null=columns.nulls[i])
+            # pyfits uses chararrays - need to make sure we are using normal numpy arrays
+            # data = np.array(data)
+
+            if self._masked:
+                self.add_column(name, data, unit=columns.units[i], \
+                    null=columns.nulls[i], mask=data==columns.nulls[i])
+            else:
+                self.add_column(name, data, unit=columns.units[i], \
+                    null=columns.nulls[i])
 
         for key in header.keys():
             if not key[:4] in ['TFOR', 'TDIS', 'TDIM', 'TTYP', 'TUNI'] and \
@@ -127,9 +135,14 @@ class FITSMethods(object):
 
         for name in self.names:
 
-            data = self.data[name]
+            if self._masked:
+                data = self.data[name].filled()
+                null = self.data[name].fill_value
+            else:
+                data = self.data[name]
+                null = self.columns[name].null
+
             unit = self.columns[name].unit
-            null = self.columns[name].null
             dtype = self.columns[name].dtype
             elemwidth = None
 
@@ -196,11 +209,16 @@ class FITSMethods(object):
 
         _check_pyfits_installed()
 
+        if os.path.exists(filename):
+            if overwrite:
+                os.remove(filename)
+            else:
+                raise Exception("File exists: %s" % filename)
+
         try:
-            self._to_hdu().writeto(filename, clobber=overwrite)
+            self._to_hdu().writeto(filename)
         except:
-            self._to_hdu().writeto(filename, clobber=overwrite, \
-                                            output_verify='silentfix')
+            self._to_hdu().writeto(filename, output_verify='silentfix')
 
 
 class FITSSetMethods(object):
@@ -254,6 +272,12 @@ class FITSSetMethods(object):
 
         _check_pyfits_installed()
 
+        if os.path.exists(filename):
+            if overwrite:
+                os.remove(filename)
+            else:
+                raise Exception("File exists: %s" % filename)
+
         primary = pyfits.PrimaryHDU()
         for key in self.keywords:
             if len(key) > 8:
@@ -269,4 +293,4 @@ class FITSSetMethods(object):
         for i, table in enumerate(self.tables):
             hdulist.append(table._to_hdu())
         hdulist = pyfits.HDUList(hdulist)
-        hdulist.writeto(filename, clobber=overwrite)
+        hdulist.writeto(filename)

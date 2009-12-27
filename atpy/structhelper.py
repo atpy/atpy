@@ -1,27 +1,35 @@
 import numpy as np
+import numpy.ma as ma
 
-
-def append_field(sta, data, dtype=None, position=None):
+def append_field(sta, data, dtype=None, position=None, masked=False):
     newdtype = sta.dtype.descr
     if np.equal(position,None):
         newdtype.append(dtype)
     else:
         newdtype.insert(position, dtype)
     newdtype = np.dtype(newdtype)
-    newsta = np.empty(sta.shape, dtype=newdtype)
+    
+    if masked:
+        newsta = ma.empty(sta.shape, dtype=newdtype)
+    else:
+        newsta = np.empty(sta.shape, dtype=newdtype)
+
     for field in sta.dtype.fields:
         newsta[field] = sta[field]
     newsta[dtype[0]] = data
     return newsta
 
-def drop_fields(sta, names):
+def drop_fields(sta, names, masked=False):
 
     names = set(names)
 
     newdtype = np.dtype([(name, sta.dtype[name]) for name in sta.dtype.names
                        if name not in names])
 
-    newsta = np.empty(sta.shape, dtype=newdtype)
+    if masked:
+        newsta = ma.empty(sta.shape, dtype=newdtype)
+    else:
+        newsta = np.empty(sta.shape, dtype=newdtype)
     
     for field in newdtype.fields:
         newsta[field] = sta[field]

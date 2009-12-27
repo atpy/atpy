@@ -124,7 +124,9 @@ class SQLMethods(object):
         table_names = sql.list_tables(cursor, dbtype)
 
         if table==None:
-            if len(table_names) == 1:
+            if len(table_names) == 0:
+                raise Exception("No table in selected database")
+            elif len(table_names) == 1:
                 table_name = table_names.keys()[0]
             else:
                 raise TableException(table_names, 'table')
@@ -160,13 +162,30 @@ class SQLMethods(object):
             raise Exception("SQL query did not return any records")
 
         for i, column in enumerate(results.dtype.names):
-            if column_types[i] in invalid:
-                null = invalid[column_types[i]]
-                results[column][np.equal(results[column], None)] = null
-            else:
-                null = 'None'
 
-            self.add_column(column, results[column], dtype=column_types[i], null=null)
+            if self._masked:
+
+                if results[column].dtype.type == np.object_:
+                    mask = np.equal(results[column], None)
+                    if column_types[i] == np.str:
+                        results[column][mask] = "NULL"
+                    else:
+                        results[column][mask] = 0.
+                    mask = mask.astype(np.object_)
+                else:
+                    mask = None
+
+                self.add_column(column, results[column], dtype=column_types[i], mask=mask)
+
+            else:
+
+                if column_types[i] in invalid:
+                    null = invalid[column_types[i]]
+                    results[column][np.equal(results[column], None)] = null
+                else:
+                    null = 'None'
+
+                self.add_column(column, results[column], dtype=column_types[i], null=null)
 
         self.table_name = table_name
 
@@ -224,10 +243,7 @@ class SQLMethods(object):
             row = []
             row_orig = self.row(i, python_types=True)
             for j, name in enumerate(self.names):
-                item = row_orig[j]
-                if (float_column[j] and np.isnan(item)) or item == self.columns[name].null:
-                    item = None
-                row.append(item)
+                row.append(row_orig[j])
             row = tuple(row)
 
             sql.insert_row(cursor, dbtype, table_name, row)
