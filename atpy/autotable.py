@@ -63,15 +63,22 @@ class AutoMethods(object):
             verbose = kwargs['verbose']
         else:
             verbose = True
-         
+
         if 'type' in kwargs:
             table_type = kwargs.pop('type').lower()
         elif type(args[0]) == str:
             table_type = _determine_type(args[0], verbose)
         else:
             raise Exception('Could not determine input type')
-        
-        with warnings.catch_warnings():
+
+        original_filters = warnings.filters[:]
+
+        if verbose:
+            warnings.simplefilter("always")
+        else:
+            warnings.simplefilter("ignore")
+
+        try:
 
             if verbose:
                 warnings.simplefilter("always")
@@ -88,6 +95,9 @@ class AutoMethods(object):
                 self.sql_read(*args, **kwargs)
             else:
                 raise Exception("Unknown table type: " + table_type)
+
+        finally:
+            warnings.filters = original_filters
 
         return
 
@@ -126,13 +136,15 @@ class AutoMethods(object):
         else:
             raise Exception('Could not determine input type')
 
-        with warnings.catch_warnings():
+        original_filters = warnings.filters[:]
 
-            if verbose:
-                warnings.simplefilter("always")
-            else:
-                warnings.simplefilter("ignore")
-                
+        if verbose:
+            warnings.simplefilter("always")
+        else:
+            warnings.simplefilter("ignore")
+
+        try:
+
             if table_type == 'fits':
                 self.fits_write(*args, **kwargs)
             elif table_type == 'vo':
@@ -143,5 +155,8 @@ class AutoMethods(object):
                 self.sql_write(*args, **kwargs)
             else:
                 raise Exception("Unknown table type: " + table_type)
+
+        finally:
+            warnings.filters = original_filters
 
         return
