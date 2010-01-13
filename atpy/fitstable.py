@@ -21,7 +21,7 @@ def _check_pyfits_installed():
             pyfits_minimum_version.vstring + " or later required")
 
 standard_keys = ['XTENSION', 'NAXIS', 'NAXIS1', 'NAXIS2', 'TFIELDS', \
-    'PCOUNT', 'GCOUNT', 'BITPIX']
+    'PCOUNT', 'GCOUNT', 'BITPIX', 'EXTNAME']
 
 # Define type conversion dictionary
 type_dict = {}
