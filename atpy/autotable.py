@@ -41,17 +41,24 @@ class AutoMethods(object):
         '''
         Read in a table or table set from a file/database.
 
-        This method attempts to automatically guess the file/database format
-        based on the arguments supplied. The type can be overridden by
-        specifying type=string where string can be one of:
+        Optional Keyword Arguments (independent of table type):
 
-            * ``fits``
-            * ``ipac``
-            * ``sql``
-            * ``vo``
+            *verbose*: [ True | False ]
+                Whether to print out warnings when reading (default is True)
 
-        The arguments to supply to ``read()`` depend on the type of the input.
-        For more information, see the help pages for the following methods:
+            *type*: [ string ]
+                The read method attempts to automatically guess the
+                file/database format based on the arguments supplied. The type
+                can be overridden by setting this argument to one of:
+
+                    * ``fits``
+                    * ``ipac``
+                    * ``sql``
+                    * ``vo``
+
+        The remaining arguments to supply to ``read()`` depend on the type of
+        the input. For more information, see the help pages for the following
+        methods:
 
            * ``fits_read``
            * ``ipac_read``
@@ -105,17 +112,23 @@ class AutoMethods(object):
         '''
         Write out a table or table set to a file/database.
 
-        This method attempts to automatically guess the file/database format
-        based on the arguments supplied. The type can be overridden by
-        specifying type=string where string can be one of:
+        Optional Keyword Arguments (independent of table type):
 
-            * ``fits``
-            * ``ipac``
-            * ``sql``
-            * ``vo``
+            *verbose*: [ True | False ]
+                Whether to print out warnings when writing (default is True)
 
-        The arguments to supply to ``write()`` depend on the type of the
-        output. For more information, see the help pages for the following
+            *type*: [ string ]
+                The write method attempts to automatically guess the
+                file/database format based on the arguments supplied. The type
+                can be overridden by setting this argument to one of:
+
+                    * ``fits``
+                    * ``ipac``
+                    * ``sql``
+                    * ``vo``
+
+        The remaining arguments to supply to ``write()`` depend on the type of
+        the output. For more information, see the help pages for the following
         methods:
 
            * ``fits_write``
