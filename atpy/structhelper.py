@@ -8,7 +8,7 @@ def append_field(sta, data, dtype=None, position=None, masked=False):
     else:
         newdtype.insert(position, dtype)
     newdtype = np.dtype(newdtype)
-    
+
     if masked:
         newsta = ma.empty(sta.shape, dtype=newdtype)
     else:
@@ -26,11 +26,14 @@ def drop_fields(sta, names, masked=False):
     newdtype = np.dtype([(name, sta.dtype[name]) for name in sta.dtype.names
                        if name not in names])
 
-    if masked:
-        newsta = ma.empty(sta.shape, dtype=newdtype)
+    if newdtype:
+        if masked:
+            newsta = ma.empty(sta.shape, dtype=newdtype)
+        else:
+            newsta = np.empty(sta.shape, dtype=newdtype)
     else:
-        newsta = np.empty(sta.shape, dtype=newdtype)
-    
+        return None
+
     for field in newdtype.fields:
         newsta[field] = sta[field]
 
