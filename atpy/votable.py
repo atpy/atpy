@@ -62,7 +62,7 @@ class VOMethods(object):
                 The ID of the table to read from the VO file (this is
                 only required if there are more than one table in the VO file)
 
-            *pendantic*: [ True | False ]
+            *pedantic*: [ True | False ]
                 When *pedantic* is True, raise an error when the file violates
                 the VO Table specification, otherwise issue a warning.
         '''
@@ -234,7 +234,7 @@ class VOSetMethods(object):
 
         Optional Keyword Arguments:
 
-            *pendantic*: [ True | False ]
+            *pedantic*: [ True | False ]
                 When *pedantic* is True, raise an error when the file violates
                 the VO Table specification, otherwise issue a warning.
         '''
