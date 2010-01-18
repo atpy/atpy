@@ -91,11 +91,19 @@ class VOMethods(object):
 
         for field in table.fields:
 
-            if self._masked:
-                self.add_column(field.name, table.array[field.name], \
-                    unit=field.unit, mask=table.mask[field.name])
+            if type(field.name) == str:
+                colname = field.name
             else:
-                self.add_column(field.name, table.array[field.name], \
+                if type(field._ID) == str:
+                    colname = field._ID
+                else:
+                    raise Exception("Error reading in the VO table: no name or ID for field")
+
+            if self._masked:
+                self.add_column(colname, table.array[colname], \
+                    unit=field.unit, mask=table.mask[colname])
+            else:
+                self.add_column(colname, table.array[colname], \
                     unit=field.unit)
 
     def _to_table(self, VOTable):
@@ -264,7 +272,7 @@ class VOSetMethods(object):
         '''
 
         _check_vo_installed()
-        
+
         if os.path.exists(filename):
             if overwrite:
                 os.remove(filename)
