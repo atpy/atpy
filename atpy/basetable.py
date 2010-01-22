@@ -596,7 +596,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
             raise Exception("No such column: %s" % key)
         else:
             if self.columns[key].null <> '':
-                if np.any(np.self.data[key] == self.columns[key].null):
+                if np.any(self.data[key] == self.columns[key].null):
                     raise Exception("Primary key column cannot contain null values")
             elif len(np.unique(self.data[key])) <> len(self.data[key]):
                 raise Exception("Primary key column cannot contain duplicate values")
