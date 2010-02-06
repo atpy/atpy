@@ -8,6 +8,7 @@ import sys
 
 import atpy
 import numpy as np
+np.seterr(all='ignore')
 
 # Size of the test table
 shape = (100, )

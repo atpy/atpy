@@ -5,6 +5,8 @@ import warnings
 
 from exceptions import TableException
 
+import atpy
+
 vo_minimum_version = version.LooseVersion('0.3')
 
 try:
@@ -44,250 +46,247 @@ def _list_tables(filename, pedantic=False):
     return tables
 
 
-class VOMethods(object):
-    ''' A class for reading and writing a single VO table.'''
+def read(self, filename, pedantic=False, tid=-1, verbose=True):
+    '''
+    Read a table from a VOT file
 
-    def vo_read(self, filename, pedantic=False, tid=-1, verbose=True):
-        '''
-        Read a table from a VOT file
+    Required Arguments:
 
-        Required Arguments:
+        *filename*: [ string ]
+            The VOT file to read the table from
 
-            *filename*: [ string ]
-                The VOT file to read the table from
+    Optional Keyword Arguments:
 
-        Optional Keyword Arguments:
+        *tid*: [ integer ]
+            The ID of the table to read from the VO file (this is
+            only required if there are more than one table in the VO file)
 
-            *tid*: [ integer ]
-                The ID of the table to read from the VO file (this is
-                only required if there are more than one table in the VO file)
+        *pedantic*: [ True | False ]
+            When *pedantic* is True, raise an error when the file violates
+            the VO Table specification, otherwise issue a warning.
+    '''
 
-            *pedantic*: [ True | False ]
-                When *pedantic* is True, raise an error when the file violates
-                the VO Table specification, otherwise issue a warning.
-        '''
+    _check_vo_installed()
 
-        _check_vo_installed()
+    self.reset()
 
-        self.reset()
+    # If no table is requested, check that there is only one table
+    if tid==-1:
+        tables = _list_tables(filename, pedantic=pedantic)
+        if len(tables) == 1:
+            tid = 0
+        else:
+            raise TableException(tables, 'tid')
 
-        # If no table is requested, check that there is only one table
-        if tid==-1:
-            tables = _list_tables(filename, pedantic=pedantic)
-            if len(tables) == 1:
-                tid = 0
+    votable = parse(filename, pedantic=pedantic)
+    for id, table in enumerate(votable.iter_tables()):
+        if id==tid:
+            break
+
+    if table.ID:
+        self.table_name = table.ID
+    elif table.name:
+        self.table_name = table.name
+
+    for field in table.fields:
+
+        if type(field.name) == str:
+            colname = field.name
+        else:
+            if type(field._ID) == str:
+                colname = field._ID
             else:
-                raise TableException(tables, 'tid')
+                raise Exception("Error reading in the VO table: no name or ID for field")
 
-        votable = parse(filename, pedantic=pedantic)
-        for id, table in enumerate(votable.iter_tables()):
-            if id==tid:
-                break
+        if self._masked:
+            self.add_column(colname, table.array[colname], \
+                unit=field.unit, mask=table.mask[colname])
+        else:
+            self.add_column(colname, table.array[colname], \
+                unit=field.unit)
 
-        if table.ID:
-            self.table_name = table.ID
-        elif table.name:
-            self.table_name = table.name
 
-        for field in table.fields:
+def _to_table(self, VOTable):
+    '''
+    Return the current table as a VOT object
+    '''
 
-            if type(field.name) == str:
-                colname = field.name
-            else:
-                if type(field._ID) == str:
-                    colname = field._ID
-                else:
-                    raise Exception("Error reading in the VO table: no name or ID for field")
+    table = Table(VOTable)
 
+    # Define some fields
+
+    n_rows = len(self)
+
+    fields = []
+    for i, name in enumerate(self.names):
+
+        data = self.data[name]
+        unit = self.columns[name].unit
+        dtype = self.columns[name].dtype
+
+        if data.ndim > 1:
+            arraysize = str(data.shape[1])
+        else:
+            arraysize = None
+
+        if dtype.type in type_dict:
+            datatype = type_dict[dtype.type]
+        elif dtype.type == np.int8:
+            warnings.warn("int8 unsupported - converting to int16")
+            datatype = type_dict[np.int16]
+        elif dtype.type == np.uint16:
+            warnings.warn("uint16 unsupported - converting to int32")
+            datatype = type_dict[np.int32]
+        elif dtype.type == np.uint32:
+            warnings.warn("uint32 unsupported - converting to int64")
+            datatype = type_dict[np.int64]
+        elif dtype.type == np.uint64:
+            raise Exception("uint64 unsupported")
+        else:
+            raise Exception("cannot use numpy type " + str(dtype.type))
+
+        if dtype.type == np.float32:
+            precision = 'F9'
+        elif dtype.type == np.float64:
+            precision = 'F17'
+        else:
+            precision = None
+
+        fields.append(Field(VOTable, ID="col" + str(i), name=name, \
+                datatype=datatype, unit=unit, arraysize=arraysize, \
+                precision=precision))
+
+    table.fields.extend(fields)
+
+    table.create_arrays(n_rows)
+
+    # Character columns are stored as object columns in the VOTable
+    # instance. Leaving the type as string should work, but causes
+    # a segmentation fault on MacOS X with Python 2.6 64-bit so
+    # we force the conversion to object type columns.
+
+    for name in self.names:
+
+        dtype = self.columns[name].dtype
+
+        # Add data to the table
+        # At the moment, null values in VO table are dealt with via a
+        # 'mask' record array
+
+        if dtype.type == np.string_:
+            table.array[name] = self.data[name].astype(np.object_)
             if self._masked:
-                self.add_column(colname, table.array[colname], \
-                    unit=field.unit, mask=table.mask[colname])
+                table.mask[name] = self.data[name].mask.astype(np.object_)
             else:
-                self.add_column(colname, table.array[colname], \
-                    unit=field.unit)
-
-    def _to_table(self, VOTable):
-        '''
-        Return the current table as a VOT object
-        '''
-
-        table = Table(VOTable)
-
-        # Define some fields
-
-        n_rows = len(self)
-
-        fields = []
-        for i, name in enumerate(self.names):
-
-            data = self.data[name]
-            unit = self.columns[name].unit
-            dtype = self.columns[name].dtype
-
-            if data.ndim > 1:
-                arraysize = str(data.shape[1])
+                table.mask[name] = (self.data[name] == \
+                            self.columns[name].null).astype(np.object_)
+        else:
+            table.array[name] = self.data[name]
+            if self._masked:
+                table.mask[name] = self.data[name].mask
             else:
-                arraysize = None
+                table.mask[name] = self.data[name] == \
+                            self.columns[name].null
 
-            if dtype.type in type_dict:
-                datatype = type_dict[dtype.type]
-            elif dtype.type == np.int8:
-                warnings.warn("int8 unsupported - converting to int16")
-                datatype = type_dict[np.int16]
-            elif dtype.type == np.uint16:
-                warnings.warn("uint16 unsupported - converting to int32")
-                datatype = type_dict[np.int32]
-            elif dtype.type == np.uint32:
-                warnings.warn("uint32 unsupported - converting to int64")
-                datatype = type_dict[np.int64]
-            elif dtype.type == np.uint64:
-                raise Exception("uint64 unsupported")
-            else:
-                raise Exception("cannot use numpy type " + str(dtype.type))
+    table.name = self.table_name
 
-            if dtype.type == np.float32:
-                precision = 'F9'
-            elif dtype.type == np.float64:
-                precision = 'F17'
-            else:
-                precision = None
-
-            fields.append(Field(VOTable, ID="col" + str(i), name=name, \
-                    datatype=datatype, unit=unit, arraysize=arraysize, \
-                    precision=precision))
-
-        table.fields.extend(fields)
-
-        table.create_arrays(n_rows)
-
-        # Character columns are stored as object columns in the VOTable
-        # instance. Leaving the type as string should work, but causes
-        # a segmentation fault on MacOS X with Python 2.6 64-bit so
-        # we force the conversion to object type columns.
-
-        for name in self.names:
-
-            dtype = self.columns[name].dtype
-
-            # Add data to the table
-            # At the moment, null values in VO table are dealt with via a
-            # 'mask' record array
-
-            if dtype.type == np.string_:
-                table.array[name] = self.data[name].astype(np.object_)
-                if self._masked:
-                    table.mask[name] = self.data[name].mask.astype(np.object_)
-                else:
-                    table.mask[name] = (self.data[name] == \
-                                self.columns[name].null).astype(np.object_)
-            else:
-                table.array[name] = self.data[name]
-                if self._masked:
-                    table.mask[name] = self.data[name].mask
-                else:
-                    table.mask[name] = self.data[name] == \
-                                self.columns[name].null
-
-        table.name = self.table_name
-
-        return table
-
-    def vo_write(self, filename, votype='ascii', overwrite=False):
-        '''
-        Write the table to a VOT file
-
-        Required Arguments:
-
-            *filename*: [ string ]
-                The VOT file to write the table to
-
-        Optional Keyword Arguments:
-
-            *votype*: [ 'ascii' | 'binary' ]
-                Whether to write the table as ASCII or binary
-        '''
-
-        _check_vo_installed()
-
-        if os.path.exists(filename):
-            if overwrite:
-                os.remove(filename)
-            else:
-                raise Exception("File exists: %s" % filename)
-
-        VOTable = VOTableFile()
-        resource = Resource()
-        VOTable.resources.append(resource)
-
-        resource.tables.append(self._to_table(VOTable))
-
-        if votype is 'binary':
-            VOTable.get_first_table().format = 'binary'
-            VOTable.set_all_tables_format('binary')
-
-        VOTable.to_xml(filename)
+    return table
 
 
-class VOSetMethods(object):
-    ''' A class for reading and writing a set of VO tables.'''
+def write(self, filename, votype='ascii', overwrite=False):
+    '''
+    Write the table to a VOT file
 
-    def vo_read(self, filename, pedantic=False, verbose=True):
-        '''
-        Read all tables from a VOT file
+    Required Arguments:
 
-        Required Arguments:
+        *filename*: [ string ]
+            The VOT file to write the table to
 
-            *filename*: [ string ]
-                The VOT file to read the tables from
+    Optional Keyword Arguments:
 
-        Optional Keyword Arguments:
+        *votype*: [ 'ascii' | 'binary' ]
+            Whether to write the table as ASCII or binary
+    '''
 
-            *pedantic*: [ True | False ]
-                When *pedantic* is True, raise an error when the file violates
-                the VO Table specification, otherwise issue a warning.
-        '''
+    _check_vo_installed()
 
-        _check_vo_installed()
+    if os.path.exists(filename):
+        if overwrite:
+            os.remove(filename)
+        else:
+            raise Exception("File exists: %s" % filename)
 
-        self.tables = []
+    VOTable = VOTableFile()
+    resource = Resource()
+    VOTable.resources.append(resource)
 
-        for tid in _list_tables(filename, pedantic=pedantic):
-            t = self._single_table_class()
-            t.vo_read(filename, tid=tid, verbose=verbose, pedantic=pedantic)
-            self.tables.append(t)
+    resource.tables.append(_to_table(self, VOTable))
 
-    def vo_write(self, filename, votype='ascii', overwrite=False):
-        '''
-        Write all tables to a VOT file
+    if votype is 'binary':
+        VOTable.get_first_table().format = 'binary'
+        VOTable.set_all_tables_format('binary')
 
-        Required Arguments:
+    VOTable.to_xml(filename)
 
-            *filename*: [ string ]
-                The VOT file to write the tables to
 
-        Optional Keyword Arguments:
+def read_set(self, filename, pedantic=False, verbose=True):
+    '''
+    Read all tables from a VOT file
 
-            *votype*: [ 'ascii' | 'binary' ]
-                Whether to write the tables as ASCII or binary tables
-        '''
+    Required Arguments:
 
-        _check_vo_installed()
+        *filename*: [ string ]
+            The VOT file to read the tables from
 
-        if os.path.exists(filename):
-            if overwrite:
-                os.remove(filename)
-            else:
-                raise Exception("File exists: %s" % filename)
+    Optional Keyword Arguments:
 
-        VOTable = VOTableFile()
-        resource = Resource()
-        VOTable.resources.append(resource)
+        *pedantic*: [ True | False ]
+            When *pedantic* is True, raise an error when the file violates
+            the VO Table specification, otherwise issue a warning.
+    '''
 
-        for table in self.tables:
-            resource.tables.append(table._to_table(VOTable))
+    _check_vo_installed()
 
-        if votype is 'binary':
-            VOTable.get_first_table().format = 'binary'
-            VOTable.set_all_tables_format('binary')
+    self.tables = []
 
-        VOTable.to_xml(filename)
+    for tid in _list_tables(filename, pedantic=pedantic):
+        t = atpy.Table()
+        read(t, filename, tid=tid, verbose=verbose, pedantic=pedantic)
+        self.tables.append(t)
+
+
+def write_set(self, filename, votype='ascii', overwrite=False):
+    '''
+    Write all tables to a VOT file
+
+    Required Arguments:
+
+        *filename*: [ string ]
+            The VOT file to write the tables to
+
+    Optional Keyword Arguments:
+
+        *votype*: [ 'ascii' | 'binary' ]
+            Whether to write the tables as ASCII or binary tables
+    '''
+
+    _check_vo_installed()
+
+    if os.path.exists(filename):
+        if overwrite:
+            os.remove(filename)
+        else:
+            raise Exception("File exists: %s" % filename)
+
+    VOTable = VOTableFile()
+    resource = Resource()
+    VOTable.resources.append(resource)
+
+    for table in self.tables:
+        resource.tables.append(_to_table(table, VOTable))
+
+    if votype is 'binary':
+        VOTable.get_first_table().format = 'binary'
+        VOTable.set_all_tables_format('binary')
+
+    VOTable.to_xml(filename)

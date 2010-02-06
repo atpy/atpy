@@ -1,16 +1,13 @@
+# Need to depracate fits_read, etc.
+
 import warnings
+import atpy
 
 import numpy as np
 import numpy.ma as ma
 
 from copy import copy
 import string
-
-from fitstable import FITSMethods, FITSSetMethods
-from sqltable import SQLMethods, SQLSetMethods
-from votable import VOMethods, VOSetMethods
-from ipactable import IPACMethods
-from autotable import AutoMethods
 
 from exceptions import VectorException
 
@@ -80,7 +77,39 @@ class ColumnHeader(object):
         return not self.__eq__(other)
 
 
-class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
+class Table(object):
+
+    def fits_read(self, *args, **kwargs):
+        warnings.warn("WARNING: fits_read is deprecated; use read instead")
+        self.read(*args, type='fits', **kwargs)
+
+    def vo_read(self, *args, **kwargs):
+        warnings.warn("WARNING: vo_read is deprecated; use read instead")
+        self.read(*args, type='vo', **kwargs)
+
+    def sql_read(self, *args, **kwargs):
+        warnings.warn("WARNING: sql_read is deprecated; use read instead")
+        self.read(*args, type='sql', **kwargs)
+
+    def ipac_read(self, *args, **kwargs):
+        warnings.warn("WARNING: ipac_read is deprecated; use read instead")
+        self.read(*args, type='ipac', **kwargs)
+
+    def fits_write(self, *args, **kwargs):
+        warnings.warn("WARNING: fits_write is deprecated; use write instead")
+        self.write(*args, type='fits', **kwargs)
+
+    def vo_write(self, *args, **kwargs):
+        warnings.warn("WARNING: vo_write is deprecated; use write instead")
+        self.write(*args, type='vo', **kwargs)
+
+    def sql_write(self, *args, **kwargs):
+        warnings.warn("WARNING: sql_write is deprecated; use write instead")
+        self.write(*args, type='sql', **kwargs)
+
+    def ipac_write(self, *args, **kwargs):
+        warnings.warn("WARNING: ipac_write is deprecated; use write instead")
+        self.write(*args, type='ipac', **kwargs)
 
     def __init__(self, *args, **kwargs):
         '''
@@ -121,6 +150,103 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
 
         return
 
+    def read(self, *args, **kwargs):
+        '''
+        Read in a table from a file/database.
+
+        Optional Keyword Arguments (independent of table type):
+
+            *verbose*: [ True | False ]
+                Whether to print out warnings when reading (default is True)
+
+            *type*: [ string ]
+                The read method attempts to automatically guess the
+                file/database format based on the arguments supplied. The type
+                can be overridden by setting this argument.
+        '''
+
+        if 'verbose' in kwargs:
+            verbose = kwargs['verbose']
+        else:
+            verbose = True
+
+        if 'type' in kwargs:
+            table_type = kwargs.pop('type').lower()
+        elif type(args[0]) == str:
+            table_type = atpy._determine_type(args[0], verbose)
+        else:
+            raise Exception('Could not determine input type')
+
+        original_filters = warnings.filters[:]
+
+        if verbose:
+            warnings.simplefilter("always")
+        else:
+            warnings.simplefilter("ignore")
+
+        try:
+
+            if verbose:
+                warnings.simplefilter("always")
+            else:
+                warnings.simplefilter("ignore")
+
+            if table_type in atpy._readers:
+                atpy._readers[table_type](self, *args, **kwargs)
+            else:
+                raise Exception("Unknown table type: " + table_type)
+
+        finally:
+            warnings.filters = original_filters
+
+        return
+
+    def write(self, *args, **kwargs):
+        '''
+        Write out a table to a file/database.
+
+        Optional Keyword Arguments (independent of table type):
+
+            *verbose*: [ True | False ]
+                Whether to print out warnings when writing (default is True)
+
+            *type*: [ string ]
+                The read method attempts to automatically guess the
+                file/database format based on the arguments supplied. The type
+                can be overridden by setting this argument.
+        '''
+
+        if 'verbose' in kwargs:
+            verbose = kwargs.pop('verbose')
+        else:
+            verbose = True
+
+        if 'type' in kwargs:
+            table_type = kwargs['type'].lower()
+        elif type(args[0]) == str:
+            table_type = atpy._determine_type(args[0], verbose)
+        else:
+            raise Exception('Could not determine input type')
+
+        original_filters = warnings.filters[:]
+
+        if verbose:
+            warnings.simplefilter("always")
+        else:
+            warnings.simplefilter("ignore")
+
+        try:
+
+            if table_type in atpy._writers:
+                atpy._writers[table_type](self, *args, **kwargs)
+            else:
+                raise Exception("Unknown table type: " + table_type)
+
+        finally:
+            warnings.filters = original_filters
+
+        return
+
     def __getattr__(self, attribute):
 
         if attribute == 'names':
@@ -145,10 +271,11 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
             return dict([(name, self.columns[name].format) for name in self.names])
         elif attribute == 'shape':
             return (len(self.data), len(self.names))
-        elif attribute in self.names:
-            return self.__dict__['data'][attribute]
         else:
-            raise AttributeError(attribute)
+            try:
+                return self.__dict__['data'][attribute]
+            except:
+                raise AttributeError(attribute)
 
     def append(self, table):
         for colname in self.columns:
@@ -289,7 +416,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
                 Position at which the new column should be inserted (0 = first
                 column)
         '''
- 
+
         if self._masked:
             if null:
                 warnings.warn("null= argument can only be used if Table does not use masked arrays (ignored)")
@@ -300,7 +427,7 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
             data = np.array(data, dtype=dtype)
 
         dtype = data.dtype
-                
+
         if dtype.type == np.object_:
             longest = len(max(data, key=len))
             if self._masked:
@@ -608,9 +735,39 @@ class Table(FITSMethods, IPACMethods, SQLMethods, VOMethods, AutoMethods):
         return
 
 
-class TableSet(FITSSetMethods, SQLSetMethods, VOSetMethods, AutoMethods):
+class TableSet(object):
 
-    _single_table_class = Table
+    def fits_read(self, *args, **kwargs):
+        warnings.warn("WARNING: fits_read is deprecated; use read instead")
+        self.read(*args, type='fits', **kwargs)
+
+    def vo_read(self, *args, **kwargs):
+        warnings.warn("WARNING: vo_read is deprecated; use read instead")
+        self.read(*args, type='vo', **kwargs)
+
+    def sql_read(self, *args, **kwargs):
+        warnings.warn("WARNING: sql_read is deprecated; use read instead")
+        self.read(*args, type='sql', **kwargs)
+
+    def ipac_read(self, *args, **kwargs):
+        warnings.warn("WARNING: ipac_read is deprecated; use read instead")
+        self.read(*args, type='ipac', **kwargs)
+
+    def fits_write(self, *args, **kwargs):
+        warnings.warn("WARNING: fits_write is deprecated; use write instead")
+        self.write(*args, type='fits', **kwargs)
+
+    def vo_write(self, *args, **kwargs):
+        warnings.warn("WARNING: vo_write is deprecated; use write instead")
+        self.write(*args, type='vo', **kwargs)
+
+    def sql_write(self, *args, **kwargs):
+        warnings.warn("WARNING: sql_write is deprecated; use write instead")
+        self.write(*args, type='sql', **kwargs)
+
+    def ipac_write(self, *args, **kwargs):
+        warnings.warn("WARNING: ipac_write is deprecated; use write instead")
+        self.write(*args, type='ipac', **kwargs)
 
     def __init__(self, *args, **kwargs):
         '''
@@ -655,6 +812,106 @@ class TableSet(FITSSetMethods, SQLSetMethods, VOSetMethods, AutoMethods):
 
             # Pass arguments to read
             self.read(*args, **kwargs)
+
+        return
+
+    def read(self, *args, **kwargs):
+        '''
+        Read in a table set from a file/database.
+
+        Optional Keyword Arguments (independent of table type):
+
+            *verbose*: [ True | False ]
+                Whether to print out warnings when reading (default is True)
+
+            *type*: [ string ]
+                The read method attempts to automatically guess the
+                file/database format based on the arguments supplied. The type
+                can be overridden by setting this argument.
+        '''
+
+        if 'verbose' in kwargs:
+            verbose = kwargs['verbose']
+        else:
+            verbose = True
+
+        if 'type' in kwargs:
+            table_type = kwargs.pop('type').lower()
+        elif type(args[0]) == str:
+            table_type = atpy._determine_type(args[0], verbose)
+        else:
+            raise Exception('Could not determine input type')
+
+        print args
+        print kwargs
+
+        original_filters = warnings.filters[:]
+
+        if verbose:
+            warnings.simplefilter("always")
+        else:
+            warnings.simplefilter("ignore")
+
+        try:
+
+            if verbose:
+                warnings.simplefilter("always")
+            else:
+                warnings.simplefilter("ignore")
+
+            if table_type in atpy._set_readers:
+                atpy._set_readers[table_type](self, *args, **kwargs)
+            else:
+                raise Exception("Unknown table type: " + table_type)
+
+        finally:
+            warnings.filters = original_filters
+
+        return
+
+    def write(self, *args, **kwargs):
+        '''
+        Write out a table set to a file/database.
+
+        Optional Keyword Arguments (independent of table type):
+
+            *verbose*: [ True | False ]
+                Whether to print out warnings when writing (default is True)
+
+            *type*: [ string ]
+                The read method attempts to automatically guess the
+                file/database format based on the arguments supplied. The type
+                can be overridden by setting this argument.
+        '''
+
+        if 'verbose' in kwargs:
+            verbose = kwargs.pop('verbose')
+        else:
+            verbose = True
+
+        if 'type' in kwargs:
+            table_type = kwargs['type'].lower()
+        elif type(args[0]) == str:
+            table_type = atpy._determine_type(args[0], verbose)
+        else:
+            raise Exception('Could not determine input type')
+
+        original_filters = warnings.filters[:]
+
+        if verbose:
+            warnings.simplefilter("always")
+        else:
+            warnings.simplefilter("ignore")
+
+        try:
+
+            if table_type in atpy._set_writers:
+                atpy._set_writers[table_type](self, *args, **kwargs)
+            else:
+                raise Exception("Unknown table type: " + table_type)
+
+        finally:
+            warnings.filters = original_filters
 
         return
 
