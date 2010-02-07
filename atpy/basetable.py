@@ -44,7 +44,6 @@ class ColumnHeader(object):
         self.format = format
 
     def __setattr__(self, attribute, value):
-        print attribute, value
         if attribute in ['unit', 'description', 'format']:
             self.__dict__[attribute] = value
         elif attribute in ['null', 'dtype']:
