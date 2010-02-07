@@ -110,7 +110,7 @@ def read(self, filename, hdu=None, verbose=True):
 
         if self._masked:
             self.add_column(name, data, unit=columns.units[i], \
-                null=columns.nulls[i], mask=data==columns.nulls[i])
+                mask=data==columns.nulls[i])
         else:
             self.add_column(name, data, unit=columns.units[i], \
                 null=columns.nulls[i])
