@@ -12,6 +12,7 @@ import string
 from exceptions import VectorException
 
 import structhelper as sta
+from odict import odict
 
 default_format = {}
 default_format[None.__class__] = 16, '.9e'
@@ -36,14 +37,23 @@ default_format[np.unicode_] = 0, 's'
 class ColumnHeader(object):
 
     def __init__(self, dtype, unit=None, description=None, null=None, format=None):
-        self.dtype = dtype
+        self.__dict__['dtype'] = dtype
         self.unit = unit
         self.description = description
-        self.null = null
+        self.__dict__['null'] = null
         self.format = format
 
+    def __setattr__(self, attribute, value):
+        print attribute, value
+        if attribute in ['unit', 'description', 'format']:
+            self.__dict__[attribute] = value
+        elif attribute in ['null', 'dtype']:
+            raise Exception("Cannot change %s through the columns object" % attribute)
+        else:
+            raise AttributeError(attribute)
+
     def __repr__(self):
-        s = "%s" % str(self.dtype)
+        s = "type=%s" % str(self.dtype)
         if self.unit:
             s += ", unit=%s" % str(self.unit)
         if self.null:
@@ -54,13 +64,10 @@ class ColumnHeader(object):
 
     def __eq__(self, other):
         if self.dtype <> other.dtype:
-            print self.dtype, other.dtype
             return False
         if self.unit <> other.unit:
-            print self.unit, other.unit
             return False
         if self.description <> other.description:
-            print self.description, other.description
             return False
         if self.null <> other.null:
             if np.isnan(self.null):
@@ -69,7 +76,6 @@ class ColumnHeader(object):
             else:
                 return False
         if self.format <> other.format:
-            print self.format, other.format
             return False
         return True
 
@@ -251,12 +257,6 @@ class Table(object):
 
         if attribute == 'names':
             return self.__dict__['data'].dtype.names
-        elif attribute == 'columns':
-            return self.__dict__['columns']
-        elif attribute == 'keywords':
-            return self.__dict__['keywords']
-        elif attribute == 'comments':
-            return self.__dict__['comments']
         elif attribute == 'units':
             print "WARNING: Table.units is depracated - use Table.columns to access this information"
             return dict([(name, self.columns[name].unit) for name in self.names])
@@ -303,7 +303,7 @@ class Table(object):
         '''
         self.keywords = {}
         self.comments = []
-        self.columns = {}
+        self.columns = odict()
         self.data = None
         self._primary_key = None
         return
@@ -441,11 +441,18 @@ class Table(object):
         else:
             newdtype = (name, data.dtype)
 
-        if len(self.columns) > 0:
-            if before:
+        if before:
+            try:
                 position = self.names.index(before)
-            elif after:
+            except:
+                raise Exception("Column %s does not exist" % before)
+        elif after:
+            try:
                 position = self.names.index(after) + 1
+            except:
+                raise Exception("Column %s does not exist" % before)
+
+        if len(self.columns) > 0:
             self.data = sta.append_field(self.data, data, dtype=newdtype, position=position, masked=self._masked)
         else:
             if self._masked:
@@ -459,7 +466,12 @@ class Table(object):
         if format[1] == 's':
             format = data.itemsize, 's'
 
-        self.columns[name] = ColumnHeader(dtype, unit=unit, description=description, null=null, format=format)
+        column = ColumnHeader(dtype, unit=unit, description=description, null=null, format=format)
+
+        if not np.equal(position, None):
+            self.columns.insert(position, name, column)
+        else:
+            self.columns[name] = column
 
         return
 
@@ -537,8 +549,7 @@ class Table(object):
         pos = self.names.index(old_name)
         self.data.dtype.names = self.names[:pos] + (new_name, ) + self.names[pos+1:]
 
-        self.columns[new_name] = self.columns[old_name]
-        del self.columns[old_name]
+        self.columns.rename(old_name, new_name)
 
         # Update primary key if needed
         if self._primary_key == old_name:
@@ -841,9 +852,6 @@ class TableSet(object):
             table_type = atpy._determine_type(args[0], verbose)
         else:
             raise Exception('Could not determine input type')
-
-        print args
-        print kwargs
 
         original_filters = warnings.filters[:]
 
