@@ -254,13 +254,9 @@ def write(self, dbtype, *args, **kwargs):
     float_column = [self.columns[name].dtype.type in [np.float32, np.float64] for name in self.names]
 
     for i in range(self.__len__()):
-        row = []
-        row_orig = self.row(i, python_types=True)
-        for j, name in enumerate(self.names):
-            row.append(row_orig[j])
-        row = tuple(row)
+        row = self.row(i, python_types=True)
 
-        sql.insert_row(cursor, dbtype, table_name, row)
+        sql.insert_row(cursor, dbtype, table_name, row, fixnan=not self._masked)
 
     # Close connection
     connection.commit()

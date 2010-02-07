@@ -1,6 +1,7 @@
 from distutils import version
 import numpy as np
 import warnings
+import math
 
 # SQLite
 
@@ -379,7 +380,7 @@ def create_table(cursor, dbtype, table_name, columns, primary_key=None):
     return
 
 
-def insert_row(cursor, dbtype, table_name, row):
+def insert_row(cursor, dbtype, table_name, row, fixnan=False):
     '''
     Insert a row into an SQL database (assumes all columns are specified)
 
@@ -400,5 +401,18 @@ def insert_row(cursor, dbtype, table_name, row):
     query = 'insert into ' + table_name + ' values ('
     query += (insert_symbol[dbtype] + ', ') * (len(row) - 1)
     query += insert_symbol[dbtype] + ")"
+
+    if fixnan:
+        if dbtype=='postgres':
+            for i,e in enumerate(row):
+                if type(e) == float:
+                    if math.isnan(e):
+                        row[i] = str(e)
+        elif dbtype=='mysql':
+            for i,e in enumerate(row):
+                if type(e) == float:
+                    if math.isnan(e):
+                        row[i] = None
+
     cursor.execute(query, row)
     return
