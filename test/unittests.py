@@ -366,7 +366,7 @@ try:
 
             self.table_orig = generate_simple_table(dtype, shape)
             self.table_orig.write('mysql', db='python', overwrite=True, verbose=False, user=username, passwd=password)
-            self.table_new = atpy.Table('mysql', db='python', verbose=False, user=username, passwd=password, table='atpy_test', query='select * from atpy_test')
+            self.table_new = atpy.Table('mysql', db='python', verbose=False, user=username, passwd=password, query='select * from atpy_test')
 
 except:
     pass
@@ -396,7 +396,7 @@ try:
 
             self.table_orig = generate_simple_table(dtype, shape)
             self.table_orig.write('postgres', database='python', overwrite=True, verbose=False, user=username, password=password)
-            self.table_new = atpy.Table('postgres', database='python', verbose=False, user=username, password=password, table='atpy_test', query='select * from atpy_test')
+            self.table_new = atpy.Table('postgres', database='python', verbose=False, user=username, password=password, query='select * from atpy_test')
 
 
 except:
