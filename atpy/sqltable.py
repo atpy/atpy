@@ -8,6 +8,8 @@ import sqlhelper as sql
 
 from exceptions import TableException, ExistingTableException
 
+import atpy
+
 invalid = {}
 invalid[np.uint8] = np.iinfo(np.uint8).max
 invalid[np.uint16] = np.iinfo(np.uint16).max
