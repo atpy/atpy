@@ -32,7 +32,9 @@ def read(self, dbtype, *args, **kwargs):
 
         *table*: [ string ]
             The name of the table to read from the database (this is only
-            required if there are more than one table in the database)
+            required if there are more than one table in the database). This
+            is not required if the query= argument is specified, except if
+            using an SQLite database.
 
         *query*: [ string ]
             An arbitrary SQL query to construct a table from. This can be
@@ -118,26 +120,42 @@ def read(self, dbtype, *args, **kwargs):
 
     table_names = sql.list_tables(cursor, dbtype)
 
-    if table==None:
-        if len(table_names) == 0:
-            raise Exception("No table in selected database")
-        elif len(table_names) == 1:
-            table_name = table_names.keys()[0]
-        else:
-            raise TableException(table_names, 'table')
-    else:
-        table_name = table_names[table]
+    if len(table_names) == 0:
+        raise Exception("No table in selected database")
 
-    # Find overall names and types for the table
-    column_names, column_types, primary_keys = sql.column_info(cursor, dbtype, \
-        table_name)
+    if not query or dbtype == 'sqlite':
+
+        if table==None:
+            if len(table_names) == 1:
+                table_name = table_names.keys()[0]
+            else:
+                raise TableException(table_names, 'table')
+        else:
+            table_name = table_names[table]
+
+        # Find overall names and types for the table
+        column_names, column_types, primary_keys = sql.column_info(cursor, dbtype, \
+            table_name)
+
+        self.table_name = table_name
+
+    else:
+
+        column_names = []
+        column_types = []
+        primary_keys = []
+
+        self.table_name = "sql_query"
 
     if query:
 
         # Execute the query
         cursor.execute(query)
 
-        column_types_dict = dict(zip(column_names, column_types))
+        if dbtype == 'sqlite':
+            column_types_dict = dict(zip(column_names, column_types))
+        else:
+            column_types_dict = None
 
         # Override column names and types
         column_names, column_types = sql.column_info_desc(dbtype, cursor.description, column_types_dict)
@@ -181,8 +199,6 @@ def read(self, dbtype, *args, **kwargs):
                 null = 'None'
 
             self.add_column(column, results[column], dtype=column_types[i], null=null)
-
-    self.table_name = table_name
 
     # Set primary key if present
     if len(primary_keys) == 1:
