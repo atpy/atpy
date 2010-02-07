@@ -2,6 +2,8 @@ import os
 import numpy as np
 import warnings
 
+from basetable import smart_mask
+
 # Define type conversion from IPAC table to numpy arrays
 type_dict = {}
 type_dict['i'] = np.int64
@@ -270,8 +272,13 @@ def read(self, filename, definition=3, verbose=True, smart_typing=False):
             if np.min(array) >= 0 and np.max(array) <= 1:
                 array = array == 1
 
-        self.add_column(name, array[name], \
-            null=nulls[name], unit=units[name])
+        if self._masked:
+            self.add_column(name, array[name], \
+                mask=smart_mask(array[name], nulls[name]), unit=units[name], \
+                fill=nulls[name])
+        else:
+            self.add_column(name, array[name], \
+                null=nulls[name], unit=units[name])
 
 
 def write(self, filename, overwrite=False):

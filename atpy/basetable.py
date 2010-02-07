@@ -33,6 +33,14 @@ default_format[np.uint8] = 0, 's'
 default_format[str] = 0, 's'
 default_format[np.unicode_] = 0, 's'
 
+def smart_mask(array, null):
+    if type(null) in [np.float32, np.float64]:
+        if np.isnan(null):
+            return np.isnan(array)
+        else:
+            return array == null
+    else:
+        return array == null
 
 class ColumnHeader(object):
 
@@ -375,7 +383,7 @@ class Table(object):
             after=after, position=position)
 
     def add_column(self, name, data, unit='', null='', description='', \
-        format=None, dtype=None, before=None, after=None, position=None, mask=None):
+        format=None, dtype=None, before=None, after=None, position=None, mask=None, fill=None):
         '''
         Add a column to the table
 
@@ -414,12 +422,20 @@ class Table(object):
             *position*: [ integer ]
                 Position at which the new column should be inserted (0 = first
                 column)
+
+            *mask*: [ numpy array ]
+                An array of booleans, with the same dimensions as the data,
+                indicating whether or not to mask values.
+
+            *fill*: [ value ]
+                If masked arrays are used, this value is used as the fill
+                value in the numpy masked array.
         '''
 
         if self._masked:
             if null:
                 warnings.warn("null= argument can only be used if Table does not use masked arrays (ignored)")
-            data = ma.array(data, dtype=dtype, mask=mask)
+            data = ma.array(data, dtype=dtype, mask=mask, fill_value=fill)
         else:
             if np.any(mask):
                 warnings.warn("mask= argument can only be used if Table uses masked arrays (ignored)")
@@ -455,7 +471,7 @@ class Table(object):
             self.data = sta.append_field(self.data, data, dtype=newdtype, position=position, masked=self._masked)
         else:
             if self._masked:
-                self.data = ma.array(zip(data), dtype=[newdtype], mask=zip(data.mask))
+                self.data = ma.array(zip(data), dtype=[newdtype], mask=zip(data.mask), fill_value=data.fill_value)
             else:
                 self.data = np.array(zip(data), dtype=[newdtype])
 
@@ -547,6 +563,9 @@ class Table(object):
 
         pos = self.names.index(old_name)
         self.data.dtype.names = self.names[:pos] + (new_name, ) + self.names[pos+1:]
+
+        if self._masked:
+            self.data.mask.dtype.names = self.data.dtype.names[:]
 
         self.columns.rename(old_name, new_name)
 

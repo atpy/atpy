@@ -16,7 +16,12 @@ def append_field(sta, data, dtype=None, position=None, masked=False):
 
     for field in sta.dtype.fields:
         newsta[field] = sta[field]
+        if masked:
+            newsta[field].set_fill_value(sta[field].fill_value)
     newsta[dtype[0]] = data
+    if masked:
+        newsta[dtype[0]].set_fill_value(data.fill_value)
+
     return newsta
 
 def drop_fields(sta, names, masked=False):
@@ -36,5 +41,7 @@ def drop_fields(sta, names, masked=False):
 
     for field in newdtype.fields:
         newsta[field] = sta[field]
+        if masked:
+            newsta[field].set_fill_value(sta[field].fill_value)
 
     return newsta

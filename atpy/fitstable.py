@@ -6,6 +6,8 @@ from exceptions import TableException
 
 import atpy
 
+from basetable import smart_mask
+
 pyfits_minimum_version = version.LooseVersion('2.1')
 
 try:
@@ -110,7 +112,8 @@ def read(self, filename, hdu=None, verbose=True):
 
         if self._masked:
             self.add_column(name, data, unit=columns.units[i], \
-                mask=data==columns.nulls[i])
+                mask=smart_mask(data, columns.nulls[i]), \
+                fill=columns.nulls[i])
         else:
             self.add_column(name, data, unit=columns.units[i], \
                 null=columns.nulls[i])
