@@ -369,7 +369,8 @@ def create_table(cursor, dbtype, table_name, columns, primary_key=None):
             column_type
 
     if primary_key:
-        query += ", PRIMARY KEY (%s)" % primary_key
+        query += ", PRIMARY KEY (%s%s%s)" % \
+                 (quote[dbtype],primary_key,quote[dbtype])
 
     query += ")"
 
