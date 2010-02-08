@@ -294,6 +294,6 @@ def write_set(self, filename, overwrite=False):
 
     hdulist = [primary]
     for i, table in enumerate(self.tables):
-        hdulist.append(_to_hdu())
+        hdulist.append(_to_hdu(table))
     hdulist = pyfits.HDUList(hdulist)
     hdulist.writeto(filename)
