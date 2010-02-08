@@ -1,9 +1,11 @@
 import numpy as np
 import numpy.ma as ma
 
+
 def append_field(sta, data, dtype=None, position=None, masked=False):
+
     newdtype = sta.dtype.descr
-    if np.equal(position,None):
+    if np.equal(position, None):
         newdtype.append(dtype)
     else:
         newdtype.insert(position, dtype)
@@ -18,11 +20,13 @@ def append_field(sta, data, dtype=None, position=None, masked=False):
         newsta[field] = sta[field]
         if masked:
             newsta[field].set_fill_value(sta[field].fill_value)
+
     newsta[dtype[0]] = data
     if masked:
         newsta[dtype[0]].set_fill_value(data.fill_value)
 
     return newsta
+
 
 def drop_fields(sta, names, masked=False):
 

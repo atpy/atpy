@@ -327,7 +327,11 @@ def write(self, filename, overwrite=False):
 
         coltype = type_rev_dict[dtype.type]
         colunit = self.columns[name].unit
-        colnull = self.columns[name].null
+
+        if self._masked:
+            colnull = self.data[name].fill_value
+        else:
+            colnull = self.columns[name].null
 
         if colnull:
             colnull = ("%" + self.format(name)) % colnull
