@@ -142,6 +142,8 @@ def _to_hdu(self):
         if self._masked:
             data = self.data[name].filled()
             null = self.data[name].fill_value
+            if data.ndim > 1:
+                null = null[0]
         else:
             data = self.data[name]
             null = self.columns[name].null
