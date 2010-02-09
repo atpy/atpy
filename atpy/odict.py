@@ -29,7 +29,7 @@ class odict(object):
         else:
             raise Exception("Wrong type for key: %s" % type(key))
 
-    def __str__(self):
+    def __repr__(self):
         string = "{"
         for i, key in enumerate(self.keys):
             if i > 0:
