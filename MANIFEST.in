@@ -1,2 +1,2 @@
-include CHANGES INSTALL LICENSE README
+include CHANGES INSTALL LICENSE README test/unittests.py
 recursive-include examples *
