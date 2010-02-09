@@ -1,18 +1,91 @@
 CHANGES
 --------
 
-Version 0.9.2 (under development)
+Version 0.9.2
+
+    The main change in this version is that internal data storage is now done
+    using NumPy structured arrays (and optionally NumPy masked structured
+    arrays). We have worked on preventing precision loss and improving
+    conservation of column types when reading/writing to files/databases.
+    Finally, we have re-vamped the documentation.
 
     New Features
     ~~~~~~~~~~~~
-    
-    API changes
-    ~~~~~~~~~~~
+
+    - tables are now stored as structured arrays
+
+    - new masked= argument during Table initialization (default is False).
+      Allows masked arrays to be used. To use this feature, it is preferable
+      to be using a recent svn NumPy version.
+
+    - full SQL queries for MySQL, PostGreSQL, and SQLite
+
+    - access column information through Table.columns, indexed either by
+      column name or number. Supports iteration.
+
+    - verbose argument for read/write
+
+    - new Table.rows() method to select specific rows
+
+    - new Table.add_empty_column() method
+
+    - new Table.append() method to combine two tables
+
+    - new Table.sort() method
+
+    - added comments/keywords for TableSet() class as a whole
+
+    - new before=/after=/position= arguments for Table.add_column() and
+      Table.add_empty_column()
+
+    - new smart_typing= argument for IPAC tables (see docstring)
+
+    - raise Exception if SQL query returns no results
+
+    - basic support for primary keys
+
+    - added 'overwrite' argument for all types
+
+    API/Internal changes
+    ~~~~~~~~~~~~~~~~~~~~
+
+    - fits_read, vo_read, ipac_read, sql_read, and equivalent methods are now
+      depracated - use read(...) instead and specify type= if necessary.
+
+    - Table.units, Table.types, Table.nulls, and Table.formats are deprecated.
+      Use Table.columns instead.
+
+    - Read/Write methods are now 'registered' with ATpy, rather than being
+      inherited by the Table class. This allows users to write their own
+      readers/writers and register them with atpy.register_reader,
+      atpy.register_writer, atpy.register_set_reader, and
+      atpy.register_set_writer
+
+    - Allow users to specify new extensions to associate with different table
+      types via atpy.register_extensions
     
     Bug fixes
     ~~~~~~~~~
-    
+
+    - fixed a bug that meant that values could not be assigned when accessing
+      a column via attributes (e.g. t.column_name[1] = 1)
+
+    - fixed a bug with creating empty table sets
+
+    - fixed a bug with pedantic= option for VO tables
+
     - fixed a bug that prevented lists from being passed to add_column
+
+    - fixed float precision for IPAC and VO tables
+
+    - better handling of the different integer types (unsigned/signed 8, 16,
+      32, 64-bit) for VO tables, FITS tbales, and SQL databases
+
+    - fixed bug when writing strings to FITS files
+
+    - fixed issues when reading strings from SQL databases
+
+    - new unittest.py
 
 Version 0.9.1
 
