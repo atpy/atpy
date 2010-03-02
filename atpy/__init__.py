@@ -1,5 +1,5 @@
 from basetable import Table, TableSet, VectorException
-__version__ = '0.9.2'
+__version__ = '0.9.3'
 
 _readers = {}
 _writers = {}

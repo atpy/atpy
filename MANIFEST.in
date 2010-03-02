@@ -1,2 +1,1 @@
-include CHANGES INSTALL LICENSE README test/unittests.py
-recursive-include examples *
+include CHANGES INSTALL LICENSE README test/unittests.py examples/2mass.tbl examples/3000030_1_sed.fits.gz examples/aj285677t3_votable.xml examples/catalog_1.fits.gz

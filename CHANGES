@@ -1,6 +1,10 @@
 CHANGES
 --------
 
+Version 0.9.3
+
+    Restores compatibility with Python 2.5
+
 Version 0.9.2
 
     The main change in this version is that internal data storage is now done
