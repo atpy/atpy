@@ -778,35 +778,43 @@ class TableSet(object):
 
     def fits_read(self, *args, **kwargs):
         warnings.warn("WARNING: fits_read is deprecated; use read instead")
-        self.read(*args, type='fits', **kwargs)
+        kwargs['type'] = 'fits'
+        self.read(*args, **kwargs)
 
     def vo_read(self, *args, **kwargs):
         warnings.warn("WARNING: vo_read is deprecated; use read instead")
-        self.read(*args, type='vo', **kwargs)
+        kwargs['type'] = 'vo'
+        self.read(*args, **kwargs)
 
     def sql_read(self, *args, **kwargs):
         warnings.warn("WARNING: sql_read is deprecated; use read instead")
-        self.read(*args, type='sql', **kwargs)
+        kwargs['type'] = 'sql'
+        self.read(*args, **kwargs)
 
     def ipac_read(self, *args, **kwargs):
         warnings.warn("WARNING: ipac_read is deprecated; use read instead")
-        self.read(*args, type='ipac', **kwargs)
+        kwargs['type'] = 'ipac'
+        self.read(*args, **kwargs)
 
     def fits_write(self, *args, **kwargs):
         warnings.warn("WARNING: fits_write is deprecated; use write instead")
-        self.write(*args, type='fits', **kwargs)
+        kwargs['type'] = 'fits'
+        self.write(*args, **kwargs)
 
     def vo_write(self, *args, **kwargs):
         warnings.warn("WARNING: vo_write is deprecated; use write instead")
-        self.write(*args, type='vo', **kwargs)
+        kwargs['type'] = 'vo'
+        self.write(*args, **kwargs)
 
     def sql_write(self, *args, **kwargs):
         warnings.warn("WARNING: sql_write is deprecated; use write instead")
-        self.write(*args, type='sql', **kwargs)
+        kwargs['type'] = 'sql'
+        self.write(*args, **kwargs)
 
     def ipac_write(self, *args, **kwargs):
         warnings.warn("WARNING: ipac_write is deprecated; use write instead")
-        self.write(*args, type='ipac', **kwargs)
+        kwargs['type'] = 'ipac'
+        self.write(*args, **kwargs)
 
     def __init__(self, *args, **kwargs):
         '''
