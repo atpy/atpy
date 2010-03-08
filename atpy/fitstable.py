@@ -49,8 +49,7 @@ def _list_tables(filename):
     hdulist = pyfits.open(filename)
     tables = {}
     for i, hdu in enumerate(hdulist[1:]):
-        if hdu.header['XTENSION'] == 'BINTABLE' or \
-            hdu.header['XTENSION'] == 'ASCIITABLE':
+        if hdu.header['XTENSION'] in ['BINTABLE', 'ASCIITABLE', 'TABLE']:
             tables[i + 1] = hdu.name
     return tables
 
