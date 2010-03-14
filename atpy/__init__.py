@@ -1,4 +1,6 @@
+import atpy
 from basetable import Table, TableSet, VectorException
+
 __version__ = '0.9.3'
 
 _readers = {}
@@ -6,6 +8,10 @@ _writers = {}
 _set_readers = {}
 _set_writers = {}
 _extensions = {}
+
+def set_masked_default(choice):
+    'Set whether tables should be masked or not by default (True or False)'
+    atpy.__masked__ = choice
 
 def register_reader(ttype, function, override=False):
     '''
@@ -184,3 +190,5 @@ register_writer('sql', sqltable.write)
 register_set_reader('sql', sqltable.read_set)
 register_set_writer('sql', sqltable.write_set)
 register_extensions('sql', ['sqlite', 'postgres', 'mysql', 'db'])
+
+set_masked_default(False)

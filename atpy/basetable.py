@@ -153,7 +153,8 @@ class Table(object):
             *masked*: [ True | False ]
                 Whether to use masked arrays. WARNING: this feature is
                 experimental and will only work correctly with the svn version
-                of numpy post-revision 8025.
+                of numpy post-revision 8025. Note that this overrides the
+                default set by atpy.set_masked_default.
         '''
 
         self.reset()
@@ -166,7 +167,7 @@ class Table(object):
         if 'masked' in kwargs:
             self._masked = kwargs.pop('masked')
         else:
-            self._masked = False
+            self._masked = atpy.__masked__
 
         if len(args) + len(kwargs) > 0:
             self.read(*args, **kwargs)
@@ -835,7 +836,9 @@ class TableSet(object):
             *masked*: [ True | False ]
                 Whether to use masked arrays. WARNING: this feature is
                 experimental and will only work correctly with the svn version
-                of numpy post-revision 8025.
+                of numpy post-revision 8025. Note that this overrides the
+                default set by atpy.set_masked_default.
+                
 
         '''
 
