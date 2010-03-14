@@ -857,8 +857,9 @@ class TableSet(object):
                     self.tables.append(table)
                     return
 
-            # Pass arguments to read
-            self.read(*args, **kwargs)
+        # Pass arguments to read
+        if len(args) + len(kwargs) > 0:
+            self.read(*args, **kwargs)            
 
         return
 
