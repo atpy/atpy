@@ -196,7 +196,7 @@ def read(self, dbtype, *args, **kwargs):
 
             if column_types[i] in invalid:
                 null = invalid[column_types[i]]
-                results[column][np.equal(results[column], None)] = null
+                results[column][np.equal(np.array(results[column], dtype=np.object), None)] = null
             else:
                 null = 'None'
 
