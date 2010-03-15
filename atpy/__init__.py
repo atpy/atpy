@@ -1,3 +1,7 @@
+import os
+import warnings
+from ConfigParser import SafeConfigParser
+
 import atpy
 from basetable import Table, TableSet, VectorException
 
@@ -9,9 +13,11 @@ _set_readers = {}
 _set_writers = {}
 _extensions = {}
 
+
 def set_masked_default(choice):
     'Set whether tables should be masked or not by default (True or False)'
     atpy.__masked__ = choice
+
 
 def register_reader(ttype, function, override=False):
     '''
@@ -37,6 +43,7 @@ def register_reader(ttype, function, override=False):
     else:
         raise Exception("Type %s is already defined" % ttype)
 
+
 def register_writer(ttype, function, override=False):
     '''
     Register a table writer function.
@@ -60,6 +67,7 @@ def register_writer(ttype, function, override=False):
         _writers[ttype] = function
     else:
         raise Exception("Type %s is already defined" % ttype)
+
 
 def register_set_reader(ttype, function, override=False):
     '''
@@ -85,6 +93,7 @@ def register_set_reader(ttype, function, override=False):
     else:
         raise Exception("Type %s is already defined" % ttype)
 
+
 def register_set_writer(ttype, function, override=False):
     '''
     Register a table set writer function.
@@ -108,6 +117,7 @@ def register_set_writer(ttype, function, override=False):
         _set_writers[ttype] = function
     else:
         raise Exception("Type %s is already defined" % ttype)
+
 
 def register_extensions(ttype, extensions, override=False):
     '''
@@ -140,6 +150,7 @@ def register_extensions(ttype, extensions, override=False):
             _extensions[extension] = ttype
         else:
             raise Exception("Extension %s is already defined" % extension)
+
 
 def _determine_type(string, verbose):
 
@@ -191,4 +202,16 @@ register_set_reader('sql', sqltable.read_set)
 register_set_writer('sql', sqltable.write_set)
 register_extensions('sql', ['sqlite', 'postgres', 'mysql', 'db'])
 
-set_masked_default(False)
+filename = os.path.expanduser('~/.atpyrc')
+config = SafeConfigParser()
+config.read(filename)
+if config.has_option('general', 'masked_default'):
+    if config.getboolean('general', 'masked_default'):
+        warnings.warn("Masked arrays are ON by default (based on .atpyrc file)")
+        set_masked_default(True)
+    else:
+        warnings.warn("Masked arrays are OFF by default (based on .atpyrc file)")
+        set_masked_default(False)
+else:
+    warnings.warn("Masked arrays are OFF by default")
+    set_masked_default(False)
