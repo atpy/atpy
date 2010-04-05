@@ -469,12 +469,12 @@ class Table(object):
 
         if before:
             try:
-                position = self.names.index(before)
+                position = list(self.names).index(before)
             except:
                 raise Exception("Column %s does not exist" % before)
         elif after:
             try:
-                position = self.names.index(after) + 1
+                position = list(self.names).index(after) + 1
             except:
                 raise Exception("Column %s does not exist" % before)
 
@@ -572,7 +572,8 @@ class Table(object):
         if not old_name in self.names:
             raise Exception("Column " + old_name + " not found")
 
-        pos = self.names.index(old_name)
+        # tuple.index was only introduced in Python 2.6, so need to use list()
+        pos = list(self.names).index(old_name)
         self.data.dtype.names = self.names[:pos] + (new_name, ) + self.names[pos+1:]
 
         if self._masked:
