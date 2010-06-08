@@ -202,6 +202,18 @@ register_set_reader('sql', sqltable.read_set)
 register_set_writer('sql', sqltable.write_set)
 register_extensions('sql', ['sqlite', 'postgres', 'mysql', 'db'])
 
+import asciitables
+
+register_reader('cds', asciitables.read_cds)
+register_reader('mrt', asciitables.read_cds)
+
+register_reader('rdb', asciitables.read_rdb)
+register_extensions('rdb', ['rdb'])
+
+register_reader('daophot', asciitables.read_daophot)
+
+register_reader('ascii', asciitables.read_ascii)
+
 filename = os.path.expanduser('~/.atpyrc')
 config = SafeConfigParser()
 config.read(filename)
