@@ -6,7 +6,7 @@ import atpy
 import numpy as np
 import numpy.ma as ma
 
-from copy import copy
+from copy import deepcopy
 import string
 
 from exceptions import VectorException
@@ -697,11 +697,11 @@ class Table(object):
 
         new_table = self.__class__()
 
-        new_table.table_name = copy(self.table_name)
+        new_table.table_name = deepcopy(self.table_name)
 
-        new_table.columns = copy(self.columns)
-        new_table.keywords = copy(self.keywords)
-        new_table.comments = copy(self.comments)
+        new_table.columns = deepcopy(self.columns)
+        new_table.keywords = deepcopy(self.keywords)
+        new_table.comments = deepcopy(self.comments)
 
         new_table.data = self.data[mask]
 
