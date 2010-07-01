@@ -214,6 +214,12 @@ register_reader('daophot', asciitables.read_daophot)
 
 register_reader('ascii', asciitables.read_ascii)
 
+import hdf5table
+
+register_writer('hdf5', hdf5table.write)
+register_set_writer('hdf5', hdf5table.write_set)
+register_extensions('hdf5', ['hdf5', 'h5'])
+
 filename = os.path.expanduser('~/.atpyrc')
 config = SafeConfigParser()
 config.read(filename)
