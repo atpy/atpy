@@ -134,6 +134,10 @@ class Table(object):
         kwargs['type'] = 'ipac'
         self.write(*args, **kwargs)
 
+    def __repr__(self):
+        s = "<Table name='%s' rows=%i fields=%i>" % (self.table_name, self.__len__(), len(self.columns))
+        return s
+
     def __init__(self, *args, **kwargs):
         '''
         Create a table instance
