@@ -1,4 +1,9 @@
 import os
+import numpy as np
+
+from exceptions import TableException
+
+import atpy
 
 
 try:
@@ -32,6 +37,80 @@ def _get_group(filename, group="", append=False):
         g = f
 
     return f, g
+
+
+def _list_tables(filename):
+    f = h5py.File(filename)
+    list_of_names = []
+    f.visit(list_of_names.append)
+    tables = {}
+    for item in list_of_names:
+        if isinstance(f[item], h5py.highlevel.Dataset):
+            if f[item].dtype.names:
+                tables[item] = item
+    return tables
+
+
+def read(self, filename, table=None, verbose=True):
+    '''
+    Read a table from an HDF5 file
+
+    Required Arguments:
+
+        *filename*: [ string ]
+            The FITS file to read the table from
+
+    Optional Keyword Arguments:
+
+        *table*: [ string ]
+            The name of the table to read from the HDF5 file (this is only
+            required if there are more than one table in the file)
+    '''
+
+    _check_h5py_installed()
+
+    self.reset()
+
+    # If no table is requested, check that there is only one table
+    if table is None:
+        tables = _list_tables(filename)
+        if len(tables) == 1:
+            table = tables.keys()[0]
+        else:
+            raise TableException(tables, 'table')
+
+    # Set the table name
+    self.table_name = table
+
+    # Open HDF5 file
+    f = h5py.File(filename)
+
+    # Convert table to numpy array
+    table = np.array(f[table])
+
+    # Add columns to table
+    for name in table.dtype.names:
+        self.add_column(name, table[name])
+
+
+def read_set(self, filename, pedantic=False, verbose=True):
+    '''
+    Read all tables from an HDF5 file
+
+    Required Arguments:
+
+        *filename*: [ string ]
+            The HDF5 file to read the tables from
+    '''
+
+    _check_h5py_installed()
+
+    self.tables = []
+
+    for table in _list_tables(filename):
+        t = atpy.Table()
+        read(t, filename, table=table, verbose=verbose)
+        self.tables.append(t)
 
 
 def write(self, filename, compression=False, group="", append=False,

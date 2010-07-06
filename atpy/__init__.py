@@ -216,6 +216,8 @@ register_reader('ascii', asciitables.read_ascii)
 
 import hdf5table
 
+register_reader('hdf5', hdf5table.read)
+register_set_reader('hdf5', hdf5table.read_set)
 register_writer('hdf5', hdf5table.write)
 register_set_writer('hdf5', hdf5table.write_set)
 register_extensions('hdf5', ['hdf5', 'h5'])
