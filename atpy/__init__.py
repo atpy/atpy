@@ -154,6 +154,9 @@ def register_extensions(ttype, extensions, override=False):
 
 def _determine_type(string, verbose):
 
+    if type(string) <> str:
+        raise Exception('Could not determine input type (non-string input)')
+
     s = string.lower()
 
     if not '.' in s:
