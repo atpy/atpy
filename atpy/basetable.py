@@ -858,7 +858,7 @@ class TableSet(object):
             if type(arg) == list:
                 for table in arg:
                     self.tables.append(table)
-                    return
+                return
 
             elif isinstance(arg, TableSet):
                 for table in arg.tables:
