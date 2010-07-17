@@ -35,7 +35,7 @@ default_format[np.unicode_] = 0, 's'
 
 
 def smart_mask(array, null):
-    if type(null) in [np.float32, np.float64]:
+    if type(null) in [float, np.float32, np.float64]:
         if np.isnan(null):
             return np.isnan(array)
         else:
@@ -339,6 +339,39 @@ class Table(object):
             names = string.join(names, ", ")
             raise VectorException(names)
         return
+
+    def _setup_table(self, n_rows, dtype, units=None, descriptions=None, formats=None, nulls=None):
+
+        if self._masked:
+            self.data = ma.zeros(n_rows, dtype=dtype)
+        else:
+            self.data = np.zeros(n_rows, dtype=dtype)
+
+        for i in range(len(dtype)):
+
+            if units is None:
+                unit = None
+            else:
+                unit = units[i]
+
+            if descriptions is None:
+                description = None
+            else:
+                description = descriptions[i]
+
+            if formats is None:
+                format = None
+            else:
+                format = formats[i]
+
+            if nulls is None:
+                null = None
+            else:
+                null = nulls[i]
+
+            column = ColumnHeader(dtype[i], unit=unit, description=description, null=null, format=format)
+
+            self.columns[dtype.names[i]] = column
 
     def add_empty_column(self, name, dtype, unit='', null='', \
         description='', format=None, shape=None, before=None, after=None, \
@@ -843,7 +876,7 @@ class TableSet(object):
                 experimental and will only work correctly with the svn version
                 of numpy post-revision 8025. Note that this overrides the
                 default set by atpy.set_masked_default.
-                
+
 
         '''
 
@@ -867,7 +900,7 @@ class TableSet(object):
 
         # Pass arguments to read
         if len(args) + len(kwargs) > 0:
-            self.read(*args, **kwargs)            
+            self.read(*args, **kwargs)
 
         return
 

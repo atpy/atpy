@@ -88,6 +88,42 @@ def read(self, filename, hdu=None, verbose=True):
     header = hdu.header
     columns = hdu.columns
 
+    # Construct dtype for table
+
+    dtype = []
+
+    for i in range(len(hdu.data.dtype)):
+
+        name = hdu.data.dtype.names[i]
+        type = hdu.data.dtype[name]
+        if type.subdtype:
+            type, shape = type.subdtype
+        else:
+            shape = ()
+
+        format, bzero = hdu.columns[i].format[-1], hdu.columns[i].bzero
+
+        if bzero and format in ['B', 'I', 'J']:
+            if format == 'B' and bzero == -128:
+                dtype.append((name, np.int8, shape))
+            elif format == 'I' and bzero == - np.iinfo(np.int16).min:
+                dtype.append((name, np.uint16, shape))
+            elif format == 'J' and bzero == - np.iinfo(np.int32).min:
+                dtype.append((name, np.uint32, shape))
+            else:
+                dtype.append((name, type, shape))
+        else:
+            dtype.append((name, type, shape))
+
+    dtype = np.dtype(dtype)
+
+    if self._masked:
+        self._setup_table(len(hdu.data), dtype, units=columns.units)
+    else:
+        self._setup_table(len(hdu.data), dtype, units=columns.units, nulls=columns.nulls)
+
+    # Populate the table
+
     for i, name in enumerate(columns.names):
 
         format, bzero = hdu.columns[i].format[-1], hdu.columns[i].bzero
@@ -105,17 +141,17 @@ def read(self, filename, hdu=None, verbose=True):
         else:
             data = table.field(name)
 
-        # pyfits uses chararrays - need to make sure we are using normal
-        # numpy arrays
-        # data = np.array(data)
+        self.data[name][:] = data[:]
 
         if self._masked:
-            self.add_column(name, data, unit=columns.units[i], \
-                mask=smart_mask(data, columns.nulls[i]), \
-                fill=columns.nulls[i])
-        else:
-            self.add_column(name, data, unit=columns.units[i], \
-                null=columns.nulls[i])
+            if columns.nulls[i] == 'NAN.0':
+                null = np.nan
+            elif columns.nulls[i] == 'INF.0':
+                null = np.inf
+            else:
+                null = columns.nulls[i]
+            self.data[name].mask = smart_mask(data, null)
+            self.data[name].set_fill_value(null)
 
     for key in header.keys():
         if not key[:4] in ['TFOR', 'TDIS', 'TDIM', 'TTYP', 'TUNI'] and \
