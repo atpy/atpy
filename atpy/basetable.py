@@ -360,9 +360,12 @@ class Table(object):
                 description = descriptions[i]
 
             if formats is None:
-                format = None
+                format = default_format[dtype[i].type]
             else:
                 format = formats[i]
+
+            if format[1] == 's':
+                format = self.data.itemsize, 's'
 
             if nulls is None:
                 null = None
