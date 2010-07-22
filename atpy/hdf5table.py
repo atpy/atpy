@@ -1,4 +1,6 @@
 import os
+import warnings
+
 import numpy as np
 
 from exceptions import TableException
@@ -70,6 +72,9 @@ def read(self, filename, table=None, verbose=True):
     _check_h5py_installed()
 
     self.reset()
+
+    if not os.path.exists(filename):
+        raise Exception("File not found: %s" % filename)
 
     # If no table is requested, check that there is only one table
     if table is None:
@@ -158,6 +163,9 @@ def write(self, filename, compression=False, group="", append=False,
 
     if self.table_name:
         name = self.table_name
+        if '/' in name:
+            warnings.warn("'/' character removed from table name")
+            name = name.replace('/', '-')
     else:
         name = "Table"
 
