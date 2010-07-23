@@ -360,7 +360,10 @@ class Table(object):
                 description = descriptions[i]
 
             if formats is None:
-                format = default_format[dtype[i].type]
+                if dtype[i].subdtype:
+                    format = default_format[dtype[i].subdtype[0].type]
+                else:
+                    format = default_format[dtype[i].type]
             else:
                 format = formats[i]
 

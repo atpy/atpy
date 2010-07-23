@@ -80,7 +80,7 @@ def generate_simple_table(dtype, shape):
 
 
 class ColumnsDefaultTestCase():
-    
+
     def test_uint8(self):
         self.generic_test(np.uint8)
 
@@ -104,18 +104,18 @@ class ColumnsDefaultTestCase():
 
     def test_int64(self):
         self.generic_test(np.int64)
-        
+
     def test_float32(self):
         self.generic_test(np.float32)
 
     def test_float64(self):
         self.generic_test(np.float64)
-        
+
     def test_string(self):
         self.generic_test(np.dtype('|S100'))
-        
+
 class EmptyColumnsTestCase(unittest.TestCase, ColumnsDefaultTestCase):
-    
+
     def generic_test(self, dtype):
         try:
             t = atpy.Table()
@@ -135,7 +135,7 @@ class EmptyVectorColumnsTestCase(unittest.TestCase, ColumnsDefaultTestCase):
             t.add_empty_column('c', dtype, shape=shape_vector)
         except:
             self.fail(sys.exc_info()[1])
-        
+
 class DefaultTestCase():
 
     def assertAlmostEqualSig(test, first, second, significant=7, msg=None):
@@ -269,6 +269,36 @@ except:
     pass
 
 try:
+    import h5py
+
+    class HDF5TestCase(unittest.TestCase, DefaultTestCase):
+
+        format = 'hdf5'
+
+        def writeread(self, dtype):
+
+            self.table_orig = generate_simple_table(dtype, shape)
+            self.table_orig.write('test_atpy.hdf5', verbose=False, overwrite=True)
+            self.table_new = atpy.Table('test_atpy.hdf5', verbose=False)
+            os.remove('test_atpy.hdf5')
+
+    class HDF5TestCaseVector(unittest.TestCase, DefaultTestCase):
+
+        format = 'hdf5'
+
+        test_string = None # unsupported
+
+        def writeread(self, dtype):
+
+            self.table_orig = generate_simple_table(dtype, shape_vector)
+            self.table_orig.write('test_atpy.hdf5', verbose=False, overwrite=True)
+            self.table_new = atpy.Table('test_atpy.hdf5', verbose=False)
+            os.remove('test_atpy.hdf5')
+
+except:
+    pass
+
+try:
     import vo
 
     class VOTestCase(unittest.TestCase, DefaultTestCase):
@@ -328,7 +358,7 @@ try:
             self.table_orig.write('sqlite', 'test_atpy.db', verbose=False, overwrite=True)
             self.table_new = atpy.Table('sqlite', 'test_atpy.db', verbose=False)
             os.remove('test_atpy.db')
-            
+
     class SQLiteTestCaseQuery(unittest.TestCase, DefaultTestCase):
 
         format = 'sqlite'
