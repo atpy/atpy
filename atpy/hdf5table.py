@@ -95,12 +95,11 @@ def read(self, filename, table=None, verbose=True):
     # Set the table name
     self.table_name = table
 
-    # Convert table to numpy array
-    table = np.array(f[table])
+    self._setup_table(len(f[table]), f[table].dtype)
 
     # Add columns to table
-    for name in table.dtype.names:
-        self.add_column(name, table[name])
+    for name in f[table].dtype.names:
+        self.data[name][:] = f[table][name][:]
 
 
 def read_set(self, filename, pedantic=False, verbose=True):
@@ -157,6 +156,11 @@ def write(self, filename, compression=False, group="", append=False,
 
     if isinstance(filename, h5py.highlevel.File) or isinstance(filename, h5py.highlevel.Group):
         f, g = None, filename
+        if group:
+            if group in g:
+                g = g[group]
+            else:
+                g = g.create_group(group)
     else:
         if os.path.exists(filename) and not append:
             if overwrite:
