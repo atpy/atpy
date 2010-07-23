@@ -41,14 +41,13 @@ def _get_group(filename, group="", append=False):
     return f, g
 
 
-def _list_tables(filename):
-    f = h5py.File(filename)
+def _list_tables(file_handle):
     list_of_names = []
-    f.visit(list_of_names.append)
+    file_handle.visit(list_of_names.append)
     tables = {}
     for item in list_of_names:
-        if isinstance(f[item], h5py.highlevel.Dataset):
-            if f[item].dtype.names:
+        if isinstance(file_handle[item], h5py.highlevel.Dataset):
+            if file_handle[item].dtype.names:
                 tables[item] = item
     return tables
 
@@ -60,7 +59,12 @@ def read(self, filename, table=None, verbose=True):
     Required Arguments:
 
         *filename*: [ string ]
-            The FITS file to read the table from
+            The HDF5 file to read the table from
+
+          OR
+
+        *file or group handle*: [ h5py.highlevel.File | h5py.highlevel.Group ]
+            The HDF5 file handle or group handle to read the table from
 
     Optional Keyword Arguments:
 
@@ -73,12 +77,16 @@ def read(self, filename, table=None, verbose=True):
 
     self.reset()
 
-    if not os.path.exists(filename):
-        raise Exception("File not found: %s" % filename)
+    if isinstance(filename, h5py.highlevel.File) or isinstance(filename, h5py.highlevel.Group):
+        f = filename
+    else:
+        if not os.path.exists(filename):
+            raise Exception("File not found: %s" % filename)
+        f = h5py.File(filename)
 
     # If no table is requested, check that there is only one table
     if table is None:
-        tables = _list_tables(filename)
+        tables = _list_tables(f)
         if len(tables) == 1:
             table = tables.keys()[0]
         else:
@@ -86,9 +94,6 @@ def read(self, filename, table=None, verbose=True):
 
     # Set the table name
     self.table_name = table
-
-    # Open HDF5 file
-    f = h5py.File(filename)
 
     # Convert table to numpy array
     table = np.array(f[table])
@@ -112,7 +117,7 @@ def read_set(self, filename, pedantic=False, verbose=True):
 
     self.tables = []
 
-    for table in _list_tables(filename):
+    for table in _list_tables(h5py.File(filename)):
         t = atpy.Table()
         read(t, filename, table=table, verbose=verbose)
         self.tables.append(t)
