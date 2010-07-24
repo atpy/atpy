@@ -230,11 +230,8 @@ config = SafeConfigParser()
 config.read(filename)
 if config.has_option('general', 'masked_default'):
     if config.getboolean('general', 'masked_default'):
-        warnings.warn("Masked arrays are ON by default (based on .atpyrc file)")
+        warnings.warn(".atpyrc file found - masked arrays are ON by default")
         set_masked_default(True)
     else:
-        warnings.warn("Masked arrays are OFF by default (based on .atpyrc file)")
+        warnings.warn(".atpyrc file found - masked arrays are OFF by default")
         set_masked_default(False)
-else:
-    warnings.warn("Masked arrays are OFF by default")
-    set_masked_default(False)

@@ -310,7 +310,7 @@ try:
         def writeread(self, dtype):
 
             self.table_orig = generate_simple_table(dtype, shape)
-            self.table_orig.write('test_atpy.xml', verbose=False)
+            self.table_orig.write('test_atpy.xml', verbose=False, overwrite=True)
             self.table_new = atpy.Table('test_atpy.xml', verbose=False)
             os.remove('test_atpy.xml')
 
@@ -324,7 +324,7 @@ try:
         def writeread(self, dtype):
 
             self.table_orig = generate_simple_table(dtype, shape_vector)
-            self.table_orig.write('test_atpy.xml', verbose=False)
+            self.table_orig.write('test_atpy.xml', verbose=False, overwrite=True)
             self.table_new = atpy.Table('test_atpy.xml', verbose=False)
             os.remove('test_atpy.xml')
 
