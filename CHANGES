@@ -1,6 +1,43 @@
 CHANGES
 --------
 
+Version 0.9.4
+
+    New Features
+    ~~~~~~~~~~~~
+
+    - specify whether to used masked arrays by default via an .atpyrc file
+      and/or via a set_masked_default function.
+
+    - added support for the asciitable module, which opens up support to read
+      in arbitrary ASCII tables. Formats supported by default include CDS
+      format (aka Machine Readable Tables), RDB, and DAOphot tables. In
+      addition, the full asciitable API is available.
+
+    - added support for reading/writing Table and TableSet to HDF5 files. This
+      includes appending to existing files, and reading from/writing to
+      groups.
+
+    - improved output when doing 'print table' where table is a Table
+      instance.
+
+    API/Internal changes
+    ~~~~~~~~~~~~~~~~~~~~
+
+    - significant speedup for reading large FITS tables
+
+    Bug fixes
+    ~~~~~~~~~
+
+    - fixed a bug that prevented ASCII FITS tables from being read in
+
+    - fixed a bug that meant that only the first table in a list was used when
+      creating a TableSet from a list of Tables.
+
+    - fixed copy() method for Table
+
+    - fixed several other minor bugs
+
 Version 0.9.3
 
     Restores compatibility with Python 2.5
