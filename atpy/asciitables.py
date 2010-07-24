@@ -60,20 +60,20 @@ def read_ascii(self, filename, **kwargs):
 
     Optional Keyword Arguments:
 
-        Reader – Reader class (default= BasicReader )
-        Inputter – Inputter class
-        delimiter – column delimiter string
-        comment – regular expression defining a comment line in table
-        quotechar – one-character string to quote fields containing special characters
-        header_start – line index for the header line not counting comment lines
-        data_start – line index for the start of data not counting comment lines
-        data_end – line index for the end of data (can be negative to count from end)
-        converters – dict of converters
-        data_Splitter – Splitter class to split data columns
-        header_Splitter – Splitter class to split header columns
-        names – list of names corresponding to each data column
-        include_names – list of names to include in output (default=None selects all names)
-        exclude_names – list of names to exlude from output (applied after include_names)
+        Reader - Reader class (default= BasicReader )
+        Inputter - Inputter class
+        delimiter - column delimiter string
+        comment - regular expression defining a comment line in table
+        quotechar - one-character string to quote fields containing special characters
+        header_start - line index for the header line not counting comment lines
+        data_start - line index for the start of data not counting comment lines
+        data_end - line index for the end of data (can be negative to count from end)
+        converters - dict of converters
+        data_Splitter - Splitter class to split data columns
+        header_Splitter - Splitter class to split header columns
+        names - list of names corresponding to each data column
+        include_names - list of names to include in output (default=None selects all names)
+        exclude_names - list of names to exlude from output (applied after include_names)
 
     Note that the Outputter and numpy arguments are not passed to asciitable.
 
