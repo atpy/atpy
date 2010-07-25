@@ -20,6 +20,8 @@ Version 0.9.4
 
     - improved output when doing 'print table' where table is a Table
       instance.
+      
+    - added support for Python 3
 
     API/Internal changes
     ~~~~~~~~~~~~~~~~~~~~
