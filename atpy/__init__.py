@@ -225,6 +225,8 @@ register_writer('hdf5', hdf5table.write)
 register_set_writer('hdf5', hdf5table.write_set)
 register_extensions('hdf5', ['hdf5', 'h5'])
 
+set_masked_default(False)
+
 filename = os.path.expanduser('~/.atpyrc')
 config = SafeConfigParser()
 config.read(filename)
