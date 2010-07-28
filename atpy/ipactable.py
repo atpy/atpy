@@ -2,7 +2,7 @@ import os
 import numpy as np
 import warnings
 
-from basetable import smart_mask
+from helpers import smart_mask
 
 # Define type conversion from IPAC table to numpy arrays
 type_dict = {}

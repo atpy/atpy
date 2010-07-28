@@ -1,8 +1,6 @@
 import os
 import warnings
 
-import numpy as np
-
 from exceptions import TableException
 
 import atpy
@@ -114,12 +112,12 @@ def read_set(self, filename, pedantic=False, verbose=True):
 
     _check_h5py_installed()
 
-    self.tables = []
+    self.reset()
 
     for table in _list_tables(h5py.File(filename)):
         t = atpy.Table()
         read(t, filename, table=table, verbose=verbose)
-        self.tables.append(t)
+        self.append(t)
 
 
 def write(self, filename, compression=False, group="", append=False,
@@ -228,19 +226,19 @@ def write_set(self, filename, compression=False, group="", append=False,
     for keyword in self.keywords:
         g.attrs[keyword] = self.keywords[keyword]
 
-    for i, table in enumerate(self.tables):
+    for i, table_key in enumerate(self.tables):
 
-        if table.table_name:
-            name = table.table_name
+        if self.tables[table_key].table_name:
+            name = self.tables[table_key].table_name
         else:
             name = "Table_%02i" % i
 
         if name in g.keys():
             raise Exception("Table %s/%s already exists" % (group, name))
 
-        dset = g.create_dataset(name, data=table.data, compression=compression)
+        dset = g.create_dataset(name, data=self.tables[table_key].data, compression=compression)
 
-        for keyword in table.keywords:
-            dset.attrs[keyword] = table.keywords[keyword]
+        for keyword in self.tables[table_key].keywords:
+            dset.attrs[keyword] = self.tables[table_key].keywords[keyword]
 
     f.close()

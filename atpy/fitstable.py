@@ -3,10 +3,10 @@ from distutils import version
 import numpy as np
 
 from exceptions import TableException
+from helpers import smart_dtype, smart_mask
 
 import atpy
 
-from basetable import smart_mask
 
 pyfits_minimum_version = version.LooseVersion('2.1')
 
@@ -193,24 +193,26 @@ def _to_hdu(self):
         if data.ndim > 1:
             elemwidth = str(data.shape[1])
 
-        if dtype.type == np.string_:
+        column_type = smart_dtype(dtype)
+
+        if column_type == np.string_:
             elemwidth = dtype.itemsize
 
-        if dtype.type in type_dict:
+        if column_type in type_dict:
             if elemwidth:
-                format = str(elemwidth) + type_dict[dtype.type]
+                format = str(elemwidth) + type_dict[column_type]
             else:
-                format = type_dict[dtype.type]
+                format = type_dict[column_type]
         else:
-            raise Exception("cannot use numpy type " + str(dtype.type))
+            raise Exception("cannot use numpy type " + str(column_type))
 
-        if dtype.type == np.uint16:
+        if column_type == np.uint16:
             bzero = - np.iinfo(np.int16).min
-        elif dtype.type == np.uint32:
+        elif column_type == np.uint32:
             bzero = - np.iinfo(np.int32).min
-        elif dtype.type == np.uint64:
+        elif column_type == np.uint64:
             raise Exception("uint64 unsupported")
-        elif dtype.type == np.int8:
+        elif column_type == np.int8:
             bzero = -128
         else:
             bzero = None
@@ -275,7 +277,7 @@ def read_set(self, filename, verbose=True):
 
     _check_pyfits_installed()
 
-    self.tables = []
+    self.reset()
 
     # Read in primary header
     header = pyfits.getheader(filename, 0)
@@ -292,7 +294,7 @@ def read_set(self, filename, verbose=True):
     for hdu in _list_tables(filename):
         table = atpy.Table()
         read(table, filename, hdu=hdu, verbose=verbose)
-        self.tables.append(table)
+        self.append(table)
 
 
 def write_set(self, filename, overwrite=False):
@@ -330,7 +332,7 @@ def write_set(self, filename, overwrite=False):
         primary.header.add_comment(comment)
 
     hdulist = [primary]
-    for i, table in enumerate(self.tables):
-        hdulist.append(_to_hdu(table))
+    for table_key in self.tables:
+        hdulist.append(_to_hdu(self.tables[table_key]))
     hdulist = pyfits.HDUList(hdulist)
     hdulist.writeto(filename)

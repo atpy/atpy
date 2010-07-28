@@ -267,7 +267,7 @@ write.__doc__ = read.__doc__
 
 def read_set(self, dbtype, *args, **kwargs):
 
-    self.tables = []
+    self.reset()
 
     connection, cursor = sql.connect_database(dbtype, *args, **kwargs)
     table_names = sql.list_tables(cursor, dbtype)
@@ -277,14 +277,14 @@ def read_set(self, dbtype, *args, **kwargs):
         kwargs['table'] = table
         table = atpy.Table()
         read(table, dbtype, *args, **kwargs)
-        self.tables.append(table)
+        self.append(table)
 
 read_set.__doc__ = read.__doc__
 
 
 def write_set(self, dbtype, *args, **kwargs):
 
-    for i, table in enumerate(self.tables):
-        write(table, dbtype, *args, **kwargs)
+    for table_key in self.tables:
+        write(self.tables[table_key], dbtype, *args, **kwargs)
 
 write_set.__doc__ = write.__doc__

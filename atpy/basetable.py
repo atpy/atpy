@@ -34,16 +34,6 @@ default_format[str] = 0, 's'
 default_format[np.unicode_] = 0, 's'
 
 
-def smart_mask(array, null):
-    if type(null) in [float, np.float32, np.float64]:
-        if np.isnan(null):
-            return np.isnan(array)
-        else:
-            return array == null
-    else:
-        return array == null
-
-
 class ColumnHeader(object):
 
     def __init__(self, dtype, unit=None, description=None, null=None, format=None):
@@ -860,6 +850,15 @@ class TableSet(object):
         warnings.warn("WARNING: ipac_write is deprecated; use write instead")
         kwargs['type'] = 'ipac'
         self.write(*args, **kwargs)
+        
+    def reset(self):
+        '''
+        Empty the table set
+        '''
+        self.tables = odict()
+        self.keywords = {}
+        self.comments = []
+        return
 
     def __init__(self, *args, **kwargs):
         '''
@@ -886,9 +885,7 @@ class TableSet(object):
 
         '''
 
-        self.tables = []
-        self.keywords = {}
-        self.comments = []
+        self.reset()
 
         if len(args) == 1:
 
@@ -896,20 +893,20 @@ class TableSet(object):
 
             if type(arg) == list:
                 for table in arg:
-                    self.tables.append(table)
+                    self.append(table)
                 return
 
             elif isinstance(arg, TableSet):
                 for table in arg.tables:
-                    self.tables.append(table)
-                    return
+                    self.append(table)
+                return
 
         # Pass arguments to read
         if len(args) + len(kwargs) > 0:
             self.read(*args, **kwargs)
 
         return
-
+        
     def read(self, *args, **kwargs):
         '''
         Read in a table set from a file/database.
@@ -1013,8 +1010,8 @@ class TableSet(object):
     def __getattr__(self, attribute):
 
         for table in self.tables:
-            if attribute == table.table_name:
-                return table
+            if attribute == self.tables[table].table_name:
+                return self.tables[table]
 
         raise AttributeError(attribute)
 
@@ -1030,7 +1027,23 @@ class TableSet(object):
                 a single VOTable to a FITSTableSet will convert the VOTable
                 to a FITSTable inside the set)
         '''
-        self.tables.append(table)
+        
+        table_key = table.table_name
+        
+        if table_key in self.tables:
+            for i in range(1,10001):
+                if not "%s.%05i" % (table_key, i) in self.tables:
+                    table_key = "%s.%05i" % (table_key, i)
+                    warnings.warn("There is already a table named %s in the TableSet. Renaming to %s" % (table.table_name, table_key))
+                    break
+        elif table_key is None:
+            for i in range(1,10001):
+                if not "Untitled.%05i" % i in self.tables:
+                    table_key = "Untitled.%05i" % i
+                    warnings.warn("Table has no name. Setting to %s" % table_key)
+                    break
+        
+        self.tables[table_key] = table
         return
 
     def describe(self):

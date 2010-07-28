@@ -141,8 +141,7 @@ class DefaultTestCase():
     def assertAlmostEqualSig(test, first, second, significant=7, msg=None):
         ratio = first / second
         if np.abs(ratio - 1.) > 10.**(-significant+1):
-            raise test.failureException, \
-            (msg or '%r != %r within %r significant digits' % (first, second, significant))
+            raise unittest.TestCase.failureException(msg or '%r != %r within %r significant digits' % (first, second, significant))
 
     def integer_test(self, dtype):
         colname = 'col_%s' % dtype.__name__
