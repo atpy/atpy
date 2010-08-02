@@ -979,7 +979,7 @@ class TableSet(object):
             verbose = True
 
         if 'type' in kwargs:
-            table_type = kwargs['type'].lower()
+            table_type = kwargs.pop('type').lower()
         elif type(args[0]) == str:
             table_type = atpy._determine_type(args[0], verbose)
         else:
