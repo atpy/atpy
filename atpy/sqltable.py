@@ -226,7 +226,7 @@ def write(self, dbtype, *args, **kwargs):
     if not self.table_name:
         raise Exception("Table name is not set")
     else:
-        table_name = self.table_name
+        table_name = str(self.table_name)
 
     # Check that table name is ok
     # todo

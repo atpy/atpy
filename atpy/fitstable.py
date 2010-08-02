@@ -162,7 +162,7 @@ def read(self, filename, hdu=None, verbose=True):
         self.add_comment(comment)
 
     if hdu.name:
-        self.table_name = hdu.name
+        self.table_name = str(hdu.name)
 
 
 def _to_hdu(self):

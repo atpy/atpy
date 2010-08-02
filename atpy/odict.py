@@ -1,3 +1,5 @@
+import numpy as np
+
 class odict(object):
 
     def __init__(self):
@@ -10,7 +12,7 @@ class odict(object):
                 raise Exception("Element %i does not exist" % key)
             else:
                 self.values[key] = value
-        elif type(key) == str:
+        elif type(key) in [str, np.string_]:
             if key in self.keys:
                 index = self.keys.index(key)
                 self.values[index] = value
@@ -23,7 +25,7 @@ class odict(object):
     def __getitem__(self, key):
         if type(key) == int:
             return self.values[key]
-        elif type(key) == str:
+        elif type(key) in [str, np.string_]:
             index = self.keys.index(key)
             return self.values[index]
         else:

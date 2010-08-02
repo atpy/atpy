@@ -91,7 +91,7 @@ def read(self, filename, table=None, verbose=True):
             raise TableException(tables, 'table')
 
     # Set the table name
-    self.table_name = table
+    self.table_name = str(table)
 
     self._setup_table(len(f[table]), f[table].dtype)
 

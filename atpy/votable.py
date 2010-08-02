@@ -86,9 +86,9 @@ def read(self, filename, pedantic=False, tid=-1, verbose=True):
             break
 
     if table.ID:
-        self.table_name = table.ID
+        self.table_name = str(table.ID)
     elif table.name:
-        self.table_name = table.name
+        self.table_name = str(table.name)
 
     for field in table.fields:
 
