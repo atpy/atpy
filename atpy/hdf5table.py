@@ -39,6 +39,18 @@ def _get_group(filename, group="", append=False):
     return f, g
 
 
+def _create_required_groups(g, path):
+    '''
+    Given a file or group handle, and a path, make sure that the specified
+    path exists and create if necessary.
+    '''
+    for dirname in path.split('/'):
+        if not dirname in g:
+            g = g.create_group(dirname)
+        else:
+            g = g[dirname]
+
+
 def _list_tables(file_handle):
     list_of_names = []
     file_handle.visit(list_of_names.append)
@@ -121,7 +133,7 @@ def read_set(self, filename, pedantic=False, verbose=True):
 
 
 def write(self, filename, compression=False, group="", append=False,
-          overwrite=False):
+          overwrite=False, ignore_groups=False):
     '''
     Write the table to an HDF5 file
 
@@ -148,6 +160,12 @@ def write(self, filename, compression=False, group="", append=False,
 
         *overwrite*: [ True | False ]
             Whether to overwrite any existing file without warning
+
+        *ignore_groups*: [ True | False ]
+            With this option set to True, groups are removed from table names.
+            With this option set to False, tables are placed in groups that
+            are present in the table name, and the groups are created if
+            necessary.
     '''
 
     _check_h5py_installed()
@@ -170,11 +188,15 @@ def write(self, filename, compression=False, group="", append=False,
 
     if self.table_name:
         name = self.table_name
-        if '/' in name:
-            warnings.warn("'/' character removed from table name")
-            name = name.replace('/', '-')
     else:
         name = "Table"
+
+    if ignore_groups:
+        name = os.path.basename(name)
+    else:
+        path = os.path.dirname(name)
+        if path:
+            _create_required_groups(g, path)
 
     if name in g.keys():
         raise Exception("Table %s/%s already exists" % (group, name))
@@ -189,7 +211,7 @@ def write(self, filename, compression=False, group="", append=False,
 
 
 def write_set(self, filename, compression=False, group="", append=False,
-              overwrite=False, **kwargs):
+              overwrite=False, ignore_groups=False, **kwargs):
     '''
     Write the tables to an HDF5 file
 
@@ -211,6 +233,12 @@ def write_set(self, filename, compression=False, group="", append=False,
 
         *overwrite*: [ True | False ]
             Whether to overwrite any existing file without warning
+
+        *ignore_groups*: [ True | False ]
+            With this option set to True, groups are removed from table names.
+            With this option set to False, tables are placed in groups that
+            are present in the table name, and the groups are created if
+            necessary.
     '''
 
     _check_h5py_installed()
@@ -232,6 +260,13 @@ def write_set(self, filename, compression=False, group="", append=False,
             name = self.tables[table_key].table_name
         else:
             name = "Table_%02i" % i
+
+        if ignore_groups:
+            name = os.path.basename(name)
+        else:
+            path = os.path.dirname(name)
+            if path:
+                _create_required_groups(g, path)
 
         if name in g.keys():
             raise Exception("Table %s/%s already exists" % (group, name))
