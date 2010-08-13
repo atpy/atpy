@@ -101,7 +101,19 @@ def read(self, filename, hdu=None, verbose=True):
         else:
             shape = ()
 
-        format, bzero = hdu.columns[i].format[-1], hdu.columns[i].bzero
+        # Get actual FITS format and zero-point
+        format, bzero = hdu.columns[i].format, hdu.columns[i].bzero
+
+        # Remove numbers from format, to find just type
+        format = format.strip("1234567890.")
+
+        if type.type is np.string_ and format in ['I','F','E','D']:
+            if format == 'I':
+                type = np.int64
+            elif format in ['F','E']:
+                type = np.float32
+            elif format == 'D':
+                type = np.float64
 
         if bzero and format in ['B', 'I', 'J']:
             if format == 'B' and bzero == -128:
