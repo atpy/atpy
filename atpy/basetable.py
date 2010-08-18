@@ -289,6 +289,12 @@ class Table(object):
             except:
                 raise AttributeError(attribute)
 
+    def __getitem__(self, item):
+        return self.data[item]
+
+    def keys(self):
+        return self.data.dtype.names
+
     def append(self, table):
         for colname in self.columns:
             if self.columns[colname] <> table.columns[colname]:
@@ -850,7 +856,7 @@ class TableSet(object):
         warnings.warn("WARNING: ipac_write is deprecated; use write instead")
         kwargs['type'] = 'ipac'
         self.write(*args, **kwargs)
-        
+
     def reset(self):
         '''
         Empty the table set
@@ -906,7 +912,7 @@ class TableSet(object):
             self.read(*args, **kwargs)
 
         return
-        
+
     def read(self, *args, **kwargs):
         '''
         Read in a table set from a file/database.
@@ -1027,22 +1033,22 @@ class TableSet(object):
                 a single VOTable to a FITSTableSet will convert the VOTable
                 to a FITSTable inside the set)
         '''
-        
+
         table_key = table.table_name
-        
+
         if table_key in self.tables:
-            for i in range(1,10001):
+            for i in range(1, 10001):
                 if not "%s.%05i" % (table_key, i) in self.tables:
                     table_key = "%s.%05i" % (table_key, i)
                     warnings.warn("There is already a table named %s in the TableSet. Renaming to %s" % (table.table_name, table_key))
                     break
         elif table_key is None:
-            for i in range(1,10001):
+            for i in range(1, 10001):
                 if not "Untitled.%05i" % i in self.tables:
                     table_key = "Untitled.%05i" % i
                     warnings.warn("Table has no name. Setting to %s" % table_key)
                     break
-        
+
         self.tables[table_key] = table
         return
 
