@@ -51,6 +51,7 @@ def _list_tables(filename):
     for i, hdu in enumerate(hdulist[1:]):
         if hdu.header['XTENSION'] in ['BINTABLE', 'ASCIITABLE', 'TABLE']:
             tables[i + 1] = hdu.name
+    hdulist.close()
     return tables
 
 
@@ -82,7 +83,8 @@ def read(self, filename, hdu=None, verbose=True):
         else:
             raise TableException(tables, 'hdu')
 
-    hdu = pyfits.open(filename)[hdu]
+    hdulist = pyfits.open(filename)
+    hdu = hdulist[hdu]
 
     table = hdu.data
     header = hdu.header
@@ -175,6 +177,10 @@ def read(self, filename, hdu=None, verbose=True):
 
     if hdu.name:
         self.table_name = str(hdu.name)
+
+    hdulist.close()
+
+    return
 
 
 def _to_hdu(self):
