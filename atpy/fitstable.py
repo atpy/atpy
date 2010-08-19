@@ -78,7 +78,9 @@ def read(self, filename, hdu=None, verbose=True):
     # If no hdu is requested, check that there is only one table
     if not hdu:
         tables = _list_tables(filename)
-        if len(tables) == 1:
+        if len(tables) == 0:
+            raise Exception("No tables in file")
+        elif len(tables) == 1:
             hdu = tables.keys()[0]
         else:
             raise TableException(tables, 'hdu')
