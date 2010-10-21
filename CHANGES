@@ -29,6 +29,8 @@ Version 0.9.4
     - significant speedup for reading large FITS tables
     
     - table columns can now be accessed using the item notation, t['column']
+    
+    - table can now be accessed by name in table sets, via ts['table_name']
         
     Bug fixes
     ~~~~~~~~~
