@@ -88,15 +88,16 @@ def read(self, filename, table=None, verbose=True):
     self.reset()
 
     if isinstance(filename, h5py.highlevel.File) or isinstance(filename, h5py.highlevel.Group):
-        f = filename
+        f, g = None, filename
     else:
         if not os.path.exists(filename):
             raise Exception("File not found: %s" % filename)
         f = h5py.File(filename)
+        g = f['/']
 
     # If no table is requested, check that there is only one table
     if table is None:
-        tables = _list_tables(f)
+        tables = _list_tables(g)
         if len(tables) == 1:
             table = tables.keys()[0]
         else:
@@ -105,11 +106,14 @@ def read(self, filename, table=None, verbose=True):
     # Set the table name
     self.table_name = str(table)
 
-    self._setup_table(len(f[table]), f[table].dtype)
+    self._setup_table(len(g[table]), g[table].dtype)
 
     # Add columns to table
-    for name in f[table].dtype.names:
-        self.data[name][:] = f[table][name][:]
+    for name in g[table].dtype.names:
+        self.data[name][:] = g[table][name][:]
+
+    if f is not None:
+        f.close()
 
 
 def read_set(self, filename, pedantic=False, verbose=True):
@@ -206,7 +210,7 @@ def write(self, filename, compression=False, group="", append=False,
     for keyword in self.keywords:
         dset.attrs[keyword] = self.keywords[keyword]
 
-    if f:
+    if f is not None:
         f.close()
 
 
