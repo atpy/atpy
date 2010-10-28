@@ -319,7 +319,7 @@ class Table(object):
         '''
         Empty the table
         '''
-        self.keywords = {}
+        self.keywords = odict()
         self.comments = []
         self.columns = odict()
         self.data = None
