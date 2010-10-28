@@ -130,6 +130,11 @@ def read_set(self, filename, pedantic=False, verbose=True):
 
     self.reset()
 
+    f = h5py.File(filename, 'r')
+    for keyword in f.attrs:
+        self.keywords[keyword] = f.attrs[keyword]
+    f.close()
+
     for table in _list_tables(h5py.File(filename)):
         t = atpy.Table()
         read(t, filename, table=table, verbose=verbose)
