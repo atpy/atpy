@@ -1,3 +1,5 @@
+import os
+
 # Thanks to Moritz Guenther for providing the initial code used to create this file
 
 try:
@@ -14,7 +16,7 @@ def _check_asciitable_installed():
 
 def read_cds(self, filename, **kwargs):
     '''
-    Read a table from a CDS table (also called Machine Readable Tables) file
+    Read data from a CDS table (also called Machine Readable Tables) file
 
         Required Arguments:
 
@@ -28,7 +30,7 @@ def read_cds(self, filename, **kwargs):
 
 def read_daophot(self, filename, **kwargs):
     '''
-    Read a table from a DAOphot table
+    Read data from a DAOphot table
 
         Required Arguments:
 
@@ -42,7 +44,7 @@ def read_daophot(self, filename, **kwargs):
 
 def read_rdb(self, filename, **kwargs):
     '''
-    Read a table from a RDB table
+    Read data from an RDB table
 
         Required Arguments:
 
@@ -52,6 +54,20 @@ def read_rdb(self, filename, **kwargs):
         Keyword Arguments are passed to asciitable
     '''
     read_ascii(self, filename, Reader=asciitable.RdbReader, **kwargs)
+
+
+def write_rdb(self, filename, **kwargs):
+    '''
+    Write data to an RDB table
+
+        Required Arguments:
+
+            *filename*: [ string ]
+                The file to write the table to
+
+        Keyword Arguments are passed to asciitable
+    '''
+    write_ascii(self, filename, Writer=asciitable.Rdb, **kwargs)
 
 
 def read_ascii(self, filename, **kwargs):
@@ -87,7 +103,41 @@ def read_ascii(self, filename, **kwargs):
     kwargs['numpy'] = True
     if 'Outputter' in kwargs:
         kwargs.pop('Outputter')
-    table=asciitable.read(filename, **kwargs)
+    table = asciitable.read(filename, **kwargs)
 
     for name in table.dtype.names:
         self.add_column(name, table[name])
+
+
+def write_ascii(self, filename, **kwargs):
+    '''
+    Read a table from an ASCII file using asciitable
+
+    Optional Keyword Arguments:
+
+        Writer – Writer class (default= Basic)
+        delimiter – column delimiter string
+        write_comment – string defining a comment line in table
+        quotechar – one-character string to quote fields containing special characters
+        formats – dict of format specifiers or formatting functions
+        names – list of names corresponding to each data column
+        include_names – list of names to include in output (default=None selects all names)
+        exclude_names – list of names to exlude from output (applied after include_names)
+
+    See the asciitable documentation at http://cxc.harvard.edu/contrib/asciitable/ for more details.
+    '''
+
+    _check_asciitable_installed()
+
+    if 'overwrite' in kwargs:
+        overwrite = kwargs.pop('overwrite')
+    else:
+        overwrite = False
+
+    if type(filename) is str and os.path.exists(filename):
+        if overwrite:
+            os.remove(filename)
+        else:
+            raise Exception("File exists: %s" % filename)
+
+    asciitable.write(self.data, filename, **kwargs)

@@ -154,7 +154,7 @@ def register_extensions(ttype, extensions, override=False):
 
 def _determine_type(string, verbose):
 
-    if type(string) <> str:
+    if type(string) != str:
         raise Exception('Could not determine input type (non-string input)')
 
     s = string.lower()
@@ -211,11 +211,13 @@ register_reader('cds', asciitables.read_cds)
 register_reader('mrt', asciitables.read_cds)
 
 register_reader('rdb', asciitables.read_rdb)
+register_writer('rdb', asciitables.write_rdb)
 register_extensions('rdb', ['rdb'])
 
 register_reader('daophot', asciitables.read_daophot)
 
 register_reader('ascii', asciitables.read_ascii)
+register_writer('ascii', asciitables.write_ascii)
 
 import hdf5table
 
