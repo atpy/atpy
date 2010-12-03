@@ -115,14 +115,14 @@ def write_ascii(self, filename, **kwargs):
 
     Optional Keyword Arguments:
 
-        Writer – Writer class (default= Basic)
-        delimiter – column delimiter string
-        write_comment – string defining a comment line in table
-        quotechar – one-character string to quote fields containing special characters
-        formats – dict of format specifiers or formatting functions
-        names – list of names corresponding to each data column
-        include_names – list of names to include in output (default=None selects all names)
-        exclude_names – list of names to exlude from output (applied after include_names)
+        Writer - Writer class (default= Basic)
+        delimiter - column delimiter string
+        write_comment - string defining a comment line in table
+        quotechar - one-character string to quote fields containing special characters
+        formats - dict of format specifiers or formatting functions
+        names - list of names corresponding to each data column
+        include_names - list of names to include in output (default=None selects all names)
+        exclude_names - list of names to exlude from output (applied after include_names)
 
     See the asciitable documentation at http://cxc.harvard.edu/contrib/asciitable/ for more details.
     '''
