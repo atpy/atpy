@@ -58,7 +58,7 @@ class ColumnHeader(object):
         if self.null:
             s += ", null=%s" % str(self.null)
         if self.description:
-            s +=", description=%s" % self.description
+            s += ", description=%s" % self.description
         return s
 
     def __eq__(self, other):
@@ -651,7 +651,7 @@ class Table(object):
 
         # tuple.index was only introduced in Python 2.6, so need to use list()
         pos = list(self.names).index(old_name)
-        self.data.dtype.names = self.names[:pos] + (new_name, ) + self.names[pos+1:]
+        self.data.dtype.names = self.names[:pos] + (new_name, ) + self.names[pos + 1:]
 
         if self._masked:
             self.data.mask.dtype.names = self.data.dtype.names[:]
@@ -695,15 +695,15 @@ class Table(object):
         len_tot = len_name_max + len_unit_max + len_datatype_max + \
             len_formats_max + 13
 
-        print "-"*len_tot
+        print "-" * len_tot
         print format % ("Name", "Unit", "Type", "Format")
-        print "-"*len_tot
+        print "-" * len_tot
 
         for name in self.names:
             print format % (name, str(self.columns[name].unit), \
                 str(self.columns[name].dtype), self.format(name))
 
-        print "-"*len_tot
+        print "-" * len_tot
 
         return
 
