@@ -2,6 +2,7 @@ import os
 from distutils import version
 import numpy as np
 import warnings
+import re
 
 from exceptions import TableException
 
@@ -99,6 +100,13 @@ def read(self, filename, pedantic=False, tid=-1, verbose=True):
                 colname = field._ID
             else:
                 raise Exception("Error reading in the VO table: no name or ID for field")
+
+        # Ensure that colname is a valid python variable name (i.e. contains
+        # no non-allowed chars). The following will replace any invalid chars
+        # with underscores, and/or prepend an initial underscore to names
+        # that begin with a digit (patch provided by Marshall Perrin)
+        clean = lambda varStr: re.sub('\W|^(?=\d)', '_', varStr)
+        colname = clean(colname)
 
         if self._masked:
             self.add_column(colname, table.array[colname], \
