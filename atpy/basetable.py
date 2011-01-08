@@ -376,7 +376,7 @@ class Table(object):
             self.columns[dtype.names[i]] = column
 
     def add_empty_column(self, name, dtype, unit='', null='', \
-        description='', format=None, shape=None, before=None, after=None, \
+        description='', format=None, column_header=None, shape=None, before=None, after=None, \
         position=None):
         '''
         Add an empty column to the table. This only works if there
@@ -405,6 +405,14 @@ class Table(object):
             *format*: [ string ]
                 The format to use for ASCII printing
 
+            *column_header*: [ ColumnHeader ]
+                The metadata from an existing column to copy over. Metadata
+                includes the unit, null value, description, format, and dtype.
+                For example, to create a column 'b' with identical metadata to
+                column 'a' in table 't', use:
+
+                    >>> t.add_column('b', column_header=t.columns[a])
+
             *shape*: [ tuple ]
                 Tuple describing the shape of the empty column that is to be
                 added. If a one element tuple is specified, it is the number
@@ -429,11 +437,11 @@ class Table(object):
             raise Exception("Table is empty, you need to use the shape= argument to specify the dimensions of the first column")
 
         self.add_column(name, data, unit=unit, null=null, \
-            description=description, format=format, before=before, \
+            description=description, format=format, column_header=column_header, before=before, \
             after=after, position=position)
 
     def add_column(self, name, data, unit='', null='', description='', \
-        format=None, dtype=None, before=None, after=None, position=None, mask=None, fill=None):
+        format=None, dtype=None, column_header=None, before=None, after=None, position=None, mask=None, fill=None):
         '''
         Add a column to the table
 
@@ -463,6 +471,14 @@ class Table(object):
                 Numpy type to convert the data to. This is the equivalent to
                 the dtype= argument in numpy.array
 
+            *column_header*: [ ColumnHeader ]
+                The metadata from an existing column to copy over. Metadata
+                includes the unit, null value, description, format, and dtype.
+                For example, to create a column 'b' with identical metadata to
+                column 'a' in table 't', use:
+
+                    >>> t.add_column('b', column_header=t.columns[a])
+
             *before*: [ string ]
                 Column before which the new column should be inserted
 
@@ -481,6 +497,28 @@ class Table(object):
                 If masked arrays are used, this value is used as the fill
                 value in the numpy masked array.
         '''
+
+        if column_header is not None:
+
+            if dtype is not None:
+                warnings.warn("dtype= argument overriden by column_header=")
+            dtype = column_header.dtype
+
+            if unit != '':
+                warnings.warn("unit= argument overriden by column_header=")
+            unit = column_header.unit
+
+            if null != '':
+                warnings.warn("null= argument overriden by column_header=")
+            null = column_header.null
+
+            if description != '':
+                warnings.warn("description= argument overriden by column_header=")
+            description = column_header.description
+
+            if format is not None:
+                warnings.warn("format= argument overriden by column_header=")
+            format = column_header.format
 
         if self._masked:
             if null:
