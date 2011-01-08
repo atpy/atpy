@@ -62,19 +62,19 @@ class ColumnHeader(object):
         return s
 
     def __eq__(self, other):
-        if self.dtype <> other.dtype:
+        if self.dtype != other.dtype:
             return False
-        if self.unit <> other.unit:
+        if self.unit != other.unit:
             return False
-        if self.description <> other.description:
+        if self.description != other.description:
             return False
-        if self.null <> other.null:
+        if self.null != other.null:
             if np.isnan(self.null):
                 if not np.isnan(other.null):
                     return False
             else:
                 return False
-        if self.format <> other.format:
+        if self.format != other.format:
             return False
         return True
 
@@ -297,7 +297,7 @@ class Table(object):
 
     def append(self, table):
         for colname in self.columns:
-            if self.columns[colname] <> table.columns[colname]:
+            if self.columns[colname] != table.columns[colname]:
                 raise Exception("Columns do not match")
         self.data = np.hstack((self.data, table.data))
 
@@ -842,10 +842,10 @@ class Table(object):
         if not key in self.names:
             raise Exception("No such column: %s" % key)
         else:
-            if self.columns[key].null <> '':
+            if self.columns[key].null != '':
                 if np.any(self.data[key] == self.columns[key].null):
                     raise Exception("Primary key column cannot contain null values")
-            elif len(np.unique(self.data[key])) <> len(self.data[key]):
+            elif len(np.unique(self.data[key])) != len(self.data[key]):
                 raise Exception("Primary key column cannot contain duplicate values")
             else:
                 self._primary_key = key
