@@ -119,6 +119,14 @@ def read(self, filename, hdu=None, verbose=True):
             elif format == 'D':
                 type = np.float64
 
+        if format == 'X' and type.type == np.uint8:
+            type = np.bool
+            if len(shape) == 1:
+                shape = (shape[0] * 8,)
+
+        if format == 'L':
+            type = np.bool
+
         if bzero and format in ['B', 'I', 'J']:
             if format == 'B' and bzero == -128:
                 dtype.append((name, np.int8, shape))
@@ -199,6 +207,8 @@ def _to_hdu(self):
             null = self.data[name].fill_value
             if data.ndim > 1:
                 null = null[0]
+            if type(null) in [np.bool_, np.bool]:
+                null = bool(null)
         else:
             data = self.data[name]
             null = self.columns[name].null
