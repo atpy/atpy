@@ -111,10 +111,10 @@ def read(self, filename, hdu=None, verbose=True):
         # Remove numbers from format, to find just type
         format = format.strip("1234567890.")
 
-        if type.type is np.string_ and format in ['I','F','E','D']:
+        if type.type is np.string_ and format in ['I', 'F', 'E', 'D']:
             if format == 'I':
                 type = np.int64
-            elif format in ['F','E']:
+            elif format in ['F', 'E']:
                 type = np.float32
             elif format == 'D':
                 type = np.float64
@@ -144,7 +144,8 @@ def read(self, filename, hdu=None, verbose=True):
     if self._masked:
         self._setup_table(len(hdu.data), dtype, units=columns.units)
     else:
-        self._setup_table(len(hdu.data), dtype, units=columns.units, nulls=columns.nulls)
+        self._setup_table(len(hdu.data), dtype, units=columns.units, \
+                          nulls=columns.nulls)
 
     # Populate the table
 
