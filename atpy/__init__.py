@@ -155,7 +155,7 @@ def register_extensions(ttype, extensions, override=False):
 def _determine_type(string, verbose):
 
     if type(string) != str:
-        raise Exception('Could not determine input type (non-string input)')
+        raise Exception('Could not determine table type (non-string argument)')
 
     s = string.lower()
 
@@ -169,9 +169,9 @@ def _determine_type(string, verbose):
     if extension in _extensions:
         table_type = _extensions[extension]
         if verbose:
-            print "Auto-detected input type: %s" % table_type
+            print "Auto-detected table type: %s" % table_type
     else:
-        raise Exception('Could not determine input type for extension %s' % extension)
+        raise Exception('Could not determine table type for extension %s' % extension)
 
     return table_type
 

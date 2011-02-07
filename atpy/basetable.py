@@ -193,7 +193,7 @@ class Table(object):
         elif type(args[0]) == str:
             table_type = atpy._determine_type(args[0], verbose)
         else:
-            raise Exception('Could not determine input type')
+            raise Exception('Could not determine table type')
 
         original_filters = warnings.filters[:]
 
@@ -244,7 +244,7 @@ class Table(object):
         elif type(args[0]) == str:
             table_type = atpy._determine_type(args[0], verbose)
         else:
-            raise Exception('Could not determine input type')
+            raise Exception('Could not determine table type')
 
         original_filters = warnings.filters[:]
 
@@ -976,7 +976,7 @@ class TableSet(object):
         elif type(args[0]) == str:
             table_type = atpy._determine_type(args[0], verbose)
         else:
-            raise Exception('Could not determine input type')
+            raise Exception('Could not determine table type')
 
         original_filters = warnings.filters[:]
 
@@ -1027,7 +1027,7 @@ class TableSet(object):
         elif type(args[0]) == str:
             table_type = atpy._determine_type(args[0], verbose)
         else:
-            raise Exception('Could not determine input type')
+            raise Exception('Could not determine table type')
 
         original_filters = warnings.filters[:]
 
