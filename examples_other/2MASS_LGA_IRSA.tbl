@@ -1,5 +1,0 @@
-\ORIGIN  = 'T. Jarrett 2MASS Large Galaxy Atlas'
-\EQUINOX = 'J2000'
-| name             | morphology         |   ra    |    dec   |   r_k20fe|   j_m_k20fe|j_msig_k20fe| j_flg_k20fe|   h_m_k20fe|h_msig_k20fe| h_flg_k20fe|   k_m_k20fe|k_msig_k20fe| k_flg_k20fe|
-| char             | char               |   real  |    real  |   real   |   real     |   real     |           i|       real |       real |           i|       real |       real |           i|
-M31                 SA(s)b                10.68471   41.26875     1614.7        2.149        0.015            1        1.331        0.016            1        1.038        0.016            1 

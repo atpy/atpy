@@ -1,7 +1,0 @@
-\name=value                                                    
-\ Comment                                                      
-|  column1 |  column2 | column3 | column4  |    column5       |
-|   char   |   char   |   char  |   char   |     char         |
-|   unit   |   unit   |   unit  |    unit  |     unit         |
-|   null   |   null   |   null  |    null  |     null         |
-c1111111111c2222222222c333333333c4444444444c555555555555555555
