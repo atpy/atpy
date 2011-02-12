@@ -1,6 +1,7 @@
 import urllib2
 import tempfile
 import string
+from xml.etree.ElementTree import ElementTree
 
 '''
 
@@ -90,11 +91,11 @@ If onlist=0, the following parameters are required:
                         constraints.
 '''
 
-base_url = 'http://irsa.ipac.caltech.edu/cgi-bin/Gator/nph-query'
-
 
 def irsa_reader(self, spatial, catalog, polygon=None, radius=None,
                 radunits='arcsec', size=None, objstr=None):
+
+    base_url = 'http://irsa.ipac.caltech.edu/cgi-bin/Gator/nph-query'
 
     self.reset()
 
@@ -174,3 +175,18 @@ def irsa_reader(self, spatial, catalog, polygon=None, radius=None,
 
     # Remove temporary file
     output.close()
+
+
+def list_irsa_catalogs():
+
+    url = 'http://irsa.ipac.caltech.edu/cgi-bin/Gator/nph-scan?mode=xml'
+
+    req = urllib2.Request(url)
+    response = urllib2.urlopen(req)
+
+    tree = ElementTree()
+
+    for catalog in tree.parse(response).findall('catalog'):
+        catname = catalog.find('catname').text
+        desc = catalog.find('desc').text
+        print "%30s  %s" % (catname, desc)
