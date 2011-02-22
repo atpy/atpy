@@ -532,11 +532,17 @@ class Table(object):
         dtype = data.dtype
 
         if dtype.type == np.object_:
-            longest = len(max(data, key=len))
+
+            if len(data) == 0:
+                longest = 0
+            else:
+                longest = len(max(data, key=len))
+
             if self._masked:
                 data = ma.array(data, dtype='|%iS' % longest)
             else:
                 data = np.array(data, dtype='|%iS' % longest)
+
             dtype = data.dtype
 
         if data.ndim > 1:
