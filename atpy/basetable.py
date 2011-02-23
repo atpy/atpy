@@ -293,7 +293,14 @@ class Table(object):
         return self.data[item]
 
     def keys(self):
-        return self.data.dtype.names
+        '''An alias for Table.data.dtype.names
+        
+        keys() is a standard function to look for keys to iterate over, so we supply that.'''
+        try: 
+		names = self.data.dtype.names
+		return names
+	except AttributeError:
+		return []
 
     def append(self, table):
         for colname in self.columns:
