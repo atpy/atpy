@@ -222,6 +222,7 @@ register_reader('fits', fitstable.read)
 register_writer('fits', fitstable.write)
 register_set_reader('fits', fitstable.read_set)
 register_set_writer('fits', fitstable.write_set)
+# pyfits has its own decompression, so just pass all possible compression straight into pyfits
 register_extensions('fits', ['fit', 'fits', 'fit.gz', 'fits.gz', 'fit.bz2', 'fits.bz2', 'fit.bzip2', 'fits.bzip2', 'fit.Z', 'fits.Z'])
 
 import votable
@@ -248,14 +249,15 @@ register_extensions('sql', ['sqlite', 'postgres', 'mysql', 'db'])
 
 import asciitables
 
-register_reader('cds', asciitables.read_cds)
-register_reader('mrt', asciitables.read_cds)
+#asciitable accepts file objects in its read method and all derivatives
+register_reader('cds', asciitables.read_cds, accepts_file_objects = True)
+register_reader('mrt', asciitables.read_cds, accepts_file_objects = True)
 
-register_reader('rdb', asciitables.read_rdb)
+register_reader('rdb', asciitables.read_rdb, accepts_file_objects = True)
 register_writer('rdb', asciitables.write_rdb)
 register_extensions('rdb', ['rdb'])
 
-register_reader('daophot', asciitables.read_daophot)
+register_reader('daophot', asciitables.read_daophot, accepts_file_objects = True)
 
 register_reader('ascii', asciitables.read_ascii, accepts_file_objects = True)
 register_writer('ascii', asciitables.write_ascii)
