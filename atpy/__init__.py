@@ -8,6 +8,7 @@ from basetable import Table, TableSet, VectorException
 __version__ = '0.9.4'
 
 _readers = {}
+_readers_fileobjcts = {} 
 _writers = {}
 _set_readers = {}
 _set_writers = {}
@@ -19,7 +20,7 @@ def set_masked_default(choice):
     atpy.__masked__ = choice
 
 
-def register_reader(ttype, function, override=False):
+def register_reader(ttype, function, override=False,  accepts_file_objects = False):
     '''
     Register a table reader function.
 
@@ -36,10 +37,16 @@ def register_reader(ttype, function, override=False):
 
         *override*: [ True | False ]
             Whether to override any existing type if already present.
+
+        *accepts_file_objects*: [ True | False ]
+            Whether the reader function accaps a file object as input instead 
+            of a file name.
+
     '''
 
     if not ttype in _readers or override:
         _readers[ttype] = function
+        _readers_fileobjects[ttype] = accepts_file_objects
     else:
         raise Exception("Type %s is already defined" % ttype)
 
@@ -159,21 +166,55 @@ def _determine_type(string, verbose):
 
     s = string.lower()
 
-    if not '.' in s:
-        extension = s
-    else:
-        extension = s.split('.')[-1]
-        if extension in ['gz', 'bzip2', 'Z']:
-            extension = s.split('.')[-2]
+    # check if _extension is registered
+    for extension in _extensions:
+        if s.endswith(extension):
+            table_type = _extensions[extension]
+            compression = None
+            if verbose:
+                 print "Auto-detected input type: %s" % table_type
+            break
+    else:   # the else clause is executed, if the for loop does NOT terminate by "break"
+        # check if extension + gz / bz2 is possible
+        for extension in _extensions:
+            if _readers_fileobjects[_extensions[extension]] & '.'.join((s.split('.')[:-1])).endswith(extension):
+                table_type = _extensions[extension]
+                compression = s.split('.')[-1]
+                if verbose:
+                    print "Auto-detected input type: %s" % table_type
+                    print "Auto-detected compression type: %s" % compression
+                break
+        else:  # the else clause is executed, if the for loop does NOT terminate by "break"
+            raise Exception('Could not determine input type from extension: %s' % string)
 
-    if extension in _extensions:
-        table_type = _extensions[extension]
-        if verbose:
-            print "Auto-detected table type: %s" % table_type
-    else:
-        raise Exception('Could not determine table type for extension %s' % extension)
+    return table_type, compression
 
-    return table_type
+import bz2
+import gzip
+
+def _file_access(self, function, compression, mode, *args, **kwargs):
+    if compression:
+        if compression == 'gz':
+            # support with with statement comes in 2.7 and later
+            #with gzip.open(args[0], mode) as file:
+            #    function(self, file, args[1:], **kwargs)
+            try:
+                file = gzip.open(args[0], mode)
+                function(self, file, *args[1:], **kwargs)
+            finally:
+                file.close()
+        elif compression in ['bz2', 'bzip2']:
+            # support with with statement comes in 2.7 and later
+            #with bz2.BZ2File(args[0], mode) as file:
+            #    function(self, file, args[1:], **kwargs)
+            try:
+                file = bz2.BZ2File(args[0], mode)
+                function(self, file, args[1:], **kwargs)
+            finally:
+                file.close()
+        else:
+            raise NotImpelentedError('No file access implemented for compression type %s' % compression)
+
 
 import fitstable
 
@@ -181,7 +222,7 @@ register_reader('fits', fitstable.read)
 register_writer('fits', fitstable.write)
 register_set_reader('fits', fitstable.read_set)
 register_set_writer('fits', fitstable.write_set)
-register_extensions('fits', ['fit', 'fits'])
+register_extensions('fits', ['fit', 'fits', 'fit.gz', 'fits.gz', 'fit.bz2', 'fits.bz2', 'fit.bzip2', 'fits.bzip2', 'fit.Z', 'fits.Z'])
 
 import votable
 
@@ -216,7 +257,7 @@ register_extensions('rdb', ['rdb'])
 
 register_reader('daophot', asciitables.read_daophot)
 
-register_reader('ascii', asciitables.read_ascii)
+register_reader('ascii', asciitables.read_ascii, accepts_file_objects = True)
 register_writer('ascii', asciitables.write_ascii)
 
 import hdf5table
