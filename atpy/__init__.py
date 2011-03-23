@@ -8,7 +8,7 @@ from basetable import Table, TableSet, VectorException
 __version__ = '0.9.4'
 
 _readers = {}
-_readers_fileobjcts = {} 
+_readers_fileobjects = {} 
 _writers = {}
 _set_readers = {}
 _set_writers = {}
