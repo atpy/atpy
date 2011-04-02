@@ -231,6 +231,10 @@ import irsa_service
 
 register_reader('irsa', irsa_service.irsa_reader)
 
+import vo_conesearch
+
+register_reader('vo_conesearch', vo_conesearch.read)
+
 set_masked_default(False)
 
 filename = os.path.expanduser('~/.atpyrc')
