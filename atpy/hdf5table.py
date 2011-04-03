@@ -229,6 +229,11 @@ def write_set(self, filename, compression=False, group="", append=False,
         *filename*: [ string ]
             The HDF5 file to write the tables to
 
+          OR
+
+        *file or group handle*: [ h5py.highlevel.File | h5py.highlevel.Group ]
+            The HDF5 file handle or group handle to write the tables to
+
     Optional Keyword Arguments:
 
         *compression*: [ True | False ]
@@ -252,13 +257,21 @@ def write_set(self, filename, compression=False, group="", append=False,
 
     _check_h5py_installed()
 
-    if os.path.exists(filename) and not append:
-        if overwrite:
-            os.remove(filename)
-        else:
-            raise Exception("File exists: %s" % filename)
+    if isinstance(filename, h5py.highlevel.File) or isinstance(filename, h5py.highlevel.Group):
+        f, g = None, filename
+        if group:
+            if group in g:
+                g = g[group]
+            else:
+                g = g.create_group(group)
+    else:
+        if os.path.exists(filename) and not append:
+            if overwrite:
+                os.remove(filename)
+            else:
+                raise Exception("File exists: %s" % filename)
 
-    f, g = _get_group(filename, group=group, append=append)
+        f, g = _get_group(filename, group=group, append=append)
 
     for keyword in self.keywords:
         g.attrs[keyword] = self.keywords[keyword]
@@ -285,4 +298,5 @@ def write_set(self, filename, compression=False, group="", append=False,
         for keyword in self.tables[table_key].keywords:
             dset.attrs[keyword] = self.tables[table_key].keywords[keyword]
 
-    f.close()
+    if f is not None:
+        f.close()

@@ -235,6 +235,11 @@ import vo_conesearch
 
 register_reader('vo_conesearch', vo_conesearch.read)
 
+import htmltable
+
+register_writer('html', htmltable.write)
+register_extensions('html', ['html', 'htm'])
+
 set_masked_default(False)
 
 filename = os.path.expanduser('~/.atpyrc')
