@@ -11,7 +11,7 @@ def read(self, catalog=None, ra=None, dec=None, radius=None, verb=1,
 
     This docstring has been adapted from the STScI vo conesearch module:
 
-        *catalog* [ None | string ]
+        *catalog* [ None | string | VOSCatalog | list ]
 
             May be one of the following, in order from easiest to use to most
             control:
