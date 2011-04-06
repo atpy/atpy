@@ -174,6 +174,9 @@ def irsa_reader(self, spatial, catalog, polygon=None, radius=None,
     # Read it in using ATpy VO reader
     self.read(output.name, type='vo', verbose=False)
 
+    # Set table name
+    self.table_name = "IRSA_query"
+
     # Check if table is empty
     if len(self) == 0:
         warnings.warn("Query returned no results, so the table will be empty")
