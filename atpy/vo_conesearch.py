@@ -66,7 +66,7 @@ def read(self, catalog=None, ra=None, dec=None, radius=None, verb=1,
             ignore the parameter and should always return the same columns for
             every request.
 
-        Additional keyword argumnets may be provided to pass along to the
+        Additional keyword arguments may be provided to pass along to the
         server. These arguments are specific to the particular catalog being
         queried.
     '''
