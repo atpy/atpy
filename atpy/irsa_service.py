@@ -93,8 +93,8 @@ If onlist=0, the following parameters are required:
 '''
 
 
-def irsa_reader(self, spatial, catalog, polygon=None, radius=None,
-                radunits='arcsec', size=None, objstr=None):
+def read(self, spatial, catalog, polygon=None, radius=None,
+         radunits='arcsec', size=None, objstr=None):
 
     base_url = 'http://irsa.ipac.caltech.edu/cgi-bin/Gator/nph-query'
 
@@ -185,7 +185,7 @@ def irsa_reader(self, spatial, catalog, polygon=None, radius=None,
     output.close()
 
 
-def list_irsa_catalogs():
+def list_catalogs():
 
     url = 'http://irsa.ipac.caltech.edu/cgi-bin/Gator/nph-scan?mode=xml'
 

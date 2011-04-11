@@ -229,7 +229,7 @@ register_extensions('hdf5', ['hdf5', 'h5'])
 
 import irsa_service
 
-register_reader('irsa', irsa_service.irsa_reader)
+register_reader('irsa', irsa_service.read)
 
 import vo_conesearch
 
