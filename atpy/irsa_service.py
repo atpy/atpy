@@ -93,9 +93,43 @@ If onlist=0, the following parameters are required:
 '''
 
 
-def read(self, spatial, catalog, polygon=None, radius=None,
-         radunits='arcsec', size=None, objstr=None):
+def read(self, spatial, catalog, objstr=None, radius=None,
+         units='arcsec', size=None, polygon=None):
+    '''
+    Query the NASA/IPAC Infrared Science Archive (IRSA)
 
+    Required Arguments:
+
+        *spatial* [ 'Cone' | 'Box' | 'Polygon' ]
+            The type of query to execute
+
+        *catalog* [ string ]
+            One of the catalogs listed by atpy.irsa_service.list_catalogs()
+
+    Optional Keyword Arguments:
+
+        *objstr* [ str ]
+            This string gives the position of the center of the cone or box if
+            performing a cone or box search. The string can give coordinates
+            in various coordinate systems, or the name of a source that will
+            be resolved on the server (see
+            http://irsa.ipac.caltech.edu/search_help.html for more details).
+            Required if spatial is 'Cone' or 'Box'.
+
+        *radius* [ float ]
+            The radius for the cone search. Required if spatial is 'Cone'
+
+        *units* [ 'arcsec' | 'arcmin' | 'deg' ]
+            The units for the cone search radius. Defaults to 'arcsec'.
+
+        *size* [ float ]
+            The size of the box to search in arcseconds. Required if spatial
+            is 'Box'.
+
+        *polygon* [ list of tuples ]
+            The list of (ra, dec) pairs, in decimal degrees, outlinining the
+            polygon to search in. Required if spatial is 'Polygon'
+     '''
     base_url = 'http://irsa.ipac.caltech.edu/cgi-bin/Gator/nph-query'
 
     self.reset()
@@ -115,9 +149,11 @@ def read(self, spatial, catalog, polygon=None, radius=None,
             raise Exception("radius is required for Cone search")
         options['radius'] = radius
 
-        if not radunits:
-            raise Exception("radunits is required for Cone search")
-        options['radunits'] = radunits
+        if not units:
+            raise Exception("units is required for Cone search")
+        if units not in ['arcsec', 'arcmin', 'deg']:
+            raise Exception("units should be one of arcsec/arcmin/deg")
+        options['radunits'] = units
 
         if not objstr:
             raise Exception("objstr is required for Cone search")
