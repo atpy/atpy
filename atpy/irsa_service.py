@@ -104,7 +104,7 @@ def read(self, spatial, catalog, objstr=None, radius=None,
             The type of query to execute
 
         *catalog* [ string ]
-            One of the catalogs listed by atpy.irsa_service.list_catalogs()
+            One of the catalogs listed by ``atpy.irsa_service.list_catalogs()``
 
     Optional Keyword Arguments:
 
@@ -112,9 +112,9 @@ def read(self, spatial, catalog, objstr=None, radius=None,
             This string gives the position of the center of the cone or box if
             performing a cone or box search. The string can give coordinates
             in various coordinate systems, or the name of a source that will
-            be resolved on the server (see
-            http://irsa.ipac.caltech.edu/search_help.html for more details).
-            Required if spatial is 'Cone' or 'Box'.
+            be resolved on the server (see `here
+            <http://irsa.ipac.caltech.edu/search_help.html>`_ for more
+            details). Required if spatial is 'Cone' or 'Box'.
 
         *radius* [ float ]
             The radius for the cone search. Required if spatial is 'Cone'
