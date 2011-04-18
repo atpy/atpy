@@ -292,6 +292,14 @@ class Table(object):
     def __getitem__(self, item):
         return self.data[item]
 
+    def __setitem__(self, item, value):
+        if 'data' in self.__dict__:
+            if isinstance(self.data, np.ndarray):
+                if item in self.data.dtype.names:
+                    self.data[item] = value
+                    return
+        raise ValueError("Column %s does not exist" % item)
+
     def keys(self):
         return self.data.dtype.names
 
