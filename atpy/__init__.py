@@ -227,6 +227,14 @@ register_writer('hdf5', hdf5table.write)
 register_set_writer('hdf5', hdf5table.write_set)
 register_extensions('hdf5', ['hdf5', 'h5'])
 
+import irsa_service
+
+register_reader('irsa', irsa_service.read)
+
+import vo_conesearch
+
+register_reader('vo_conesearch', vo_conesearch.read)
+
 import htmltable
 
 register_writer('html', htmltable.write)
