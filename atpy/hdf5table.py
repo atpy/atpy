@@ -112,6 +112,9 @@ def read(self, filename, table=None, verbose=True):
     for name in g[table].dtype.names:
         self.data[name][:] = g[table][name][:]
 
+    for attribute in g[table].attrs:
+        self.add_keyword(attribute, g[table].attrs[attribute])
+
     if f is not None:
         f.close()
 
