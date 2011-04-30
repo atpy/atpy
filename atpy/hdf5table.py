@@ -92,7 +92,7 @@ def read(self, filename, table=None, verbose=True):
     else:
         if not os.path.exists(filename):
             raise Exception("File not found: %s" % filename)
-        f = h5py.File(filename)
+        f = h5py.File(filename, 'r')
         g = f['/']
 
     # If no table is requested, check that there is only one table
@@ -133,16 +133,24 @@ def read_set(self, filename, pedantic=False, verbose=True):
 
     self.reset()
 
-    f = h5py.File(filename, 'r')
-    for keyword in f.attrs:
-        self.keywords[keyword] = f.attrs[keyword]
-    f.close()
+    if isinstance(filename, h5py.highlevel.File) or isinstance(filename, h5py.highlevel.Group):
+        f, g = None, filename
+    else:
+        if not os.path.exists(filename):
+            raise Exception("File not found: %s" % filename)
+        f = h5py.File(filename, 'r')
+        g = f['/']
 
-    for table in _list_tables(h5py.File(filename)):
+    for keyword in g.attrs:
+        self.keywords[keyword] = g.attrs[keyword]
+
+    for table in _list_tables(g):
         t = atpy.Table()
         read(t, filename, table=table, verbose=verbose)
         self.append(t)
 
+    if f is not None:
+        f.close()
 
 def write(self, filename, compression=False, group="", append=False,
           overwrite=False, ignore_groups=False):
