@@ -1,6 +1,19 @@
+from distutils import version
 import warnings
 import tempfile
-import vo.conesearch as vcone
+
+vo_minimum_version = version.LooseVersion('0.3')
+
+try:
+    import vo.conesearch as vcone
+    vo_installed = True
+except:
+    vo_installed = False
+
+def _check_vo_installed():
+    if not vo_installed:
+        raise Exception("Cannot query the VO - vo " +  \
+            vo_minimum_version.vstring + " or later required")
 
 
 def read(self, catalog=None, ra=None, dec=None, radius=None, verb=1,
@@ -71,6 +84,8 @@ def read(self, catalog=None, ra=None, dec=None, radius=None, verb=1,
         queried.
     '''
 
+    _check_vo_installed()
+
     self.reset()
 
     # Perform the cone search
@@ -94,6 +109,8 @@ def read(self, catalog=None, ra=None, dec=None, radius=None, verb=1,
 
 
 def list_catalogs():
+
+    _check_vo_installed()
 
     for catalog in vcone.list_catalogs():
         if "BROKEN" in catalog:
