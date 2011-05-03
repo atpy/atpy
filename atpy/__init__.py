@@ -5,7 +5,7 @@ from ConfigParser import SafeConfigParser
 import atpy
 from basetable import Table, TableSet, VectorException
 
-__version__ = '0.9.5'
+__version__ = '0.9.5.1'
 
 _readers = {}
 _writers = {}
