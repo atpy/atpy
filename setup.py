@@ -11,10 +11,18 @@ except ImportError: # Python 2.x
 setup(name='ATpy',
       version='0.9.5.1',
       description='Astronomical Tables in Python',
-      author='Eli Bressert and Thomas Robitaille',
-      author_email='elibre@users.sourceforge.net, \
-        robitaille@users.sourceforge.net',
-      url='http://atpy.sourceforge.net/',
+      author='Thomas Robitaille and Eli Bressert',
+      author_email='thomas.robitaille@gmail.com, elibre@users.sourceforge.net',
+      license='MIT',
+      url='http://atpy.github.com/',
       packages=['atpy'],
+      provides=['atpy'],
+      requires=['numpy'],
       cmdclass = {'build_py':build_py},
+      keywords=['Scientific/Engineering'],
+      classifiers=[
+                   "Development Status :: 4 - Beta",
+                   "Programming Language :: Python",
+                   "License :: OSI Approved :: MIT License",
+                  ],
      )
