@@ -1,4 +1,5 @@
 import warnings
+import urllib
 import urllib2
 import tempfile
 import string
@@ -191,7 +192,7 @@ def read(self, spatial, catalog, objstr=None, radius=None,
 
     # Construct query URL
     url = base_url + "?" + \
-          string.join(["%s=%s" % (x, options[x]) for x in options], "&")
+          string.join(["%s=%s" % (x, urllib.quote_plus(str(options[x]))) for x in options], "&")
 
     # Request page
     req = urllib2.Request(url)
@@ -201,6 +202,10 @@ def read(self, spatial, catalog, objstr=None, radius=None,
     # Check if results were returned
     if 'The catalog is not on the list' in result:
         raise Exception("Catalog not found")
+
+    # Check that object name was not malformed
+    if 'Either wrong or missing coordinate/object name' in result:
+        raise Exception("Malformed coordinate/object name")
 
     # Write table to temporary file
     output = tempfile.NamedTemporaryFile()
