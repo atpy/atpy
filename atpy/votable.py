@@ -78,6 +78,8 @@ def read(self, filename, pedantic=False, tid=-1, verbose=True):
         tables = _list_tables(filename, pedantic=pedantic)
         if len(tables) == 1:
             tid = 0
+        elif len(tables) == 0:
+            raise Exception("There are no tables present in this file")
         else:
             raise TableException(tables, 'tid')
 
