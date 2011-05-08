@@ -207,6 +207,10 @@ def read(self, spatial, catalog, objstr=None, radius=None,
     if 'Either wrong or missing coordinate/object name' in result:
         raise Exception("Malformed coordinate/object name")
 
+    # Check that the results are not of length zero
+    if len(result) == 0:
+        raise Exception("The IRSA server sent back an empty reply")
+
     # Write table to temporary file
     output = tempfile.NamedTemporaryFile()
     output.write(result)
