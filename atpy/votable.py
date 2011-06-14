@@ -78,6 +78,8 @@ def read(self, filename, pedantic=False, tid=-1, verbose=True):
         tables = _list_tables(filename, pedantic=pedantic)
         if len(tables) == 1:
             tid = 0
+        elif len(tables) == 0:
+            raise Exception("There are no tables present in this file")
         else:
             raise TableException(tables, 'tid')
 
@@ -101,12 +103,6 @@ def read(self, filename, pedantic=False, tid=-1, verbose=True):
             else:
                 raise Exception("Error reading in the VO table: no name or ID for field")
 
-        # Ensure that colname is a valid python variable name (i.e. contains
-        # no non-allowed chars). The following will replace any invalid chars
-        # with underscores, and/or prepend an initial underscore to names
-        # that begin with a digit (patch provided by Marshall Perrin)
-        clean = lambda varStr: re.sub('\W|^(?=\d)', '_', varStr)
-        colname = clean(colname)
 
         if self._masked:
             self.add_column(colname, table.array[colname], \

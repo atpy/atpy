@@ -5,7 +5,7 @@ from ConfigParser import SafeConfigParser
 import atpy
 from basetable import Table, TableSet, VectorException
 
-__version__ = '0.9.4'
+__version__ = '0.9.5.1'
 
 _readers = {}
 _readers_fileobjects = {} 
@@ -269,6 +269,19 @@ register_set_reader('hdf5', hdf5table.read_set)
 register_writer('hdf5', hdf5table.write)
 register_set_writer('hdf5', hdf5table.write_set)
 register_extensions('hdf5', ['hdf5', 'h5'])
+
+import irsa_service
+
+register_reader('irsa', irsa_service.read)
+
+import vo_conesearch
+
+register_reader('vo_conesearch', vo_conesearch.read)
+
+import htmltable
+
+register_writer('html', htmltable.write)
+register_extensions('html', ['html', 'htm'])
 
 set_masked_default(False)
 
