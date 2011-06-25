@@ -12,7 +12,7 @@ class odict(object):
                 raise Exception("Element %i does not exist" % key)
             else:
                 self.values[key] = value
-        elif type(key) in [str, np.string_]:
+        elif type(key) in [str, np.string_, unicode]:
             if key in self.keys:
                 index = self.keys.index(key)
                 self.values[index] = value
