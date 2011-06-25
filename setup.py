@@ -9,7 +9,7 @@ except ImportError: # Python 2.x
 
 
 setup(name='ATpy',
-      version='0.9.5.1',
+      version='0.9.5.2',
       description='Astronomical Tables in Python',
       author='Thomas Robitaille and Eli Bressert',
       author_email='thomas.robitaille@gmail.com, elibre@users.sourceforge.net',

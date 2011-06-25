@@ -1,6 +1,10 @@
 CHANGES
 --------
 
+Version 0.9.5.2
+
+    Removed automatic cleaning of VO column names
+
 Version 0.9.5.1
 
     Fixed a crash that occurred when importing ATpy if vo was not present
