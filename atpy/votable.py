@@ -103,12 +103,17 @@ def read(self, filename, pedantic=False, tid=-1, verbose=True):
             else:
                 raise Exception("Error reading in the VO table: no name or ID for field")
 
+        data = table.array[colname]
+
+        if len(data) > 0 and data.ndim == 1 and not np.all([np.isscalar(x) for x in data]):
+            warnings.warn("VO Variable length vector column detected (%s) - converting to string" % colname)
+            data = np.array([str(x) for x in data])
 
         if self._masked:
-            self.add_column(colname, table.array[colname], \
+            self.add_column(colname, data, \
                 unit=field.unit, mask=table.mask[colname])
         else:
-            self.add_column(colname, table.array[colname], \
+            self.add_column(colname, data, \
                 unit=field.unit)
 
 
