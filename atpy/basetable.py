@@ -181,6 +181,14 @@ class Table(object):
                 The read method attempts to automatically guess the
                 file/database format based on the arguments supplied. The type
                 can be overridden by setting this argument.
+
+            *compression*: [ string ]
+                The read method attempts to automatically guess the
+                compression type (if any) from the file extension.
+                Only readers that accepts file objects can be used with
+                compression.
+                If the type is automatically selected, then so is compression
+                independend of the keyword value.
         '''
 
         if 'verbose' in kwargs:
@@ -188,10 +196,19 @@ class Table(object):
         else:
             verbose = True
 
+        
+
         if 'type' in kwargs:
             table_type = kwargs.pop('type').lower()
+            if 'compression' in kwargs:
+                compression = kwargs.pop('compression').lower()
+            else:
+                compression = atpy._determine_compression(args[0], verbose)
         elif type(args[0]) == str:
-            table_type = atpy._determine_type(args[0], verbose)
+            table_type, compression = atpy._determine_type(args[0], verbose)
+            if 'compression' in kwargs:
+                print "Using user input compression type: %s" % compression
+                compression = kwargs.pop('compression').lower()
         else:
             raise Exception('Could not determine table type')
 
@@ -210,7 +227,7 @@ class Table(object):
                 warnings.simplefilter("ignore")
 
             if table_type in atpy._readers:
-                atpy._readers[table_type](self, *args, **kwargs)
+                atpy._file_access(self, atpy._readers[table_type], compression, *args, **kwargs)
             else:
                 raise Exception("Unknown table type: " + table_type)
 
@@ -242,7 +259,7 @@ class Table(object):
         if 'type' in kwargs:
             table_type = kwargs.pop('type').lower()
         elif type(args[0]) == str:
-            table_type = atpy._determine_type(args[0], verbose)
+            table_type, compression = atpy._determine_type(args[0], verbose)
         else:
             raise Exception('Could not determine table type')
 
@@ -301,7 +318,14 @@ class Table(object):
         raise ValueError("Column %s does not exist" % item)
 
     def keys(self):
-        return self.data.dtype.names
+        '''An alias for Table.data.dtype.names
+        
+        keys() is a standard function to look for keys to iterate over, so we supply that.'''
+        try: 
+		names = self.data.dtype.names
+		return names
+	except AttributeError:
+		return []
 
     def append(self, table):
         for colname in self.columns:
@@ -988,7 +1012,7 @@ class TableSet(object):
         if 'type' in kwargs:
             table_type = kwargs.pop('type').lower()
         elif type(args[0]) == str:
-            table_type = atpy._determine_type(args[0], verbose)
+            table_type, compression = atpy._determine_type(args[0], verbose)
         else:
             raise Exception('Could not determine table type')
 
@@ -1039,7 +1063,7 @@ class TableSet(object):
         if 'type' in kwargs:
             table_type = kwargs.pop('type').lower()
         elif type(args[0]) == str:
-            table_type = atpy._determine_type(args[0], verbose)
+            table_type, compression = atpy._determine_type(args[0], verbose)
         else:
             raise Exception('Could not determine table type')
 
