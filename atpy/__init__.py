@@ -177,43 +177,55 @@ def _determine_type(string, verbose):
     else:   # the else clause is executed, if the for loop does NOT terminate by "break"
         # check if extension + gz / bz2 is possible
         for extension in _extensions:
-            if _readers_fileobjects[_extensions[extension]] & '.'.join((s.split('.')[:-1])).endswith(extension):
+            if (_extensions[extension] in _readers_fileobjects) & '.'.join((s.split('.')[:-1])).endswith(extension):
                 table_type = _extensions[extension]
-                compression = s.split('.')[-1]
+                compression = _determine_compression(s, verbose)
                 if verbose:
                     print "Auto-detected input type: %s" % table_type
-                    print "Auto-detected compression type: %s" % compression
                 break
         else:  # the else clause is executed, if the for loop does NOT terminate by "break"
             raise Exception('Could not determine input type from extension: %s' % string)
 
     return table_type, compression
 
+def _determine_compression(string, verbose):
+    
+    if type(string) != str:
+        raise Exception('Could not determine table type (non-string argument)')
+
+    s = string.lower()
+    fileext = s.split('.')[-1]
+    if fileext in ['gz', 'bz2', 'bzip2']:
+        compression = fileext
+        if verbose:
+            print "Auto-detected compression type: %s" % compression
+    else:
+        compression = None
+    return compression
+
 import bz2
 import gzip
 
-def _file_access(self, function, compression, mode, *args, **kwargs):
+def _file_access(self, function, compression, *args, **kwargs):
     if compression:
         if compression == 'gz':
-            # support with with statement comes in 2.7 and later
+            # support for with statement comes in 2.7 and later
             #with gzip.open(args[0], mode) as file:
             #    function(self, file, args[1:], **kwargs)
-            try:
-                file = gzip.open(args[0], mode)
-                function(self, file, *args[1:], **kwargs)
-            finally:
-                file.close()
+            file = gzip.open(args[0], 'r')
+            function(self, file, *args[1:], **kwargs)
+            file.close()
         elif compression in ['bz2', 'bzip2']:
-            # support with with statement comes in 2.7 and later
+            # support for with statement comes in 2.7 and later
             #with bz2.BZ2File(args[0], mode) as file:
             #    function(self, file, args[1:], **kwargs)
-            try:
-                file = bz2.BZ2File(args[0], mode)
-                function(self, file, args[1:], **kwargs)
-            finally:
-                file.close()
+            file = bz2.BZ2File(args[0], 'r')
+            function(self, file, *args[1:], **kwargs)
+            file.close()
         else:
             raise NotImpelentedError('No file access implemented for compression type %s' % compression)
+    else:
+        function(self, *args, **kwargs)
 
 
 import fitstable
@@ -227,7 +239,7 @@ register_extensions('fits', ['fit', 'fits', 'fit.gz', 'fits.gz', 'fit.bz2', 'fit
 
 import votable
 
-register_reader('vo', votable.read)
+register_reader('vo', votable.read, accepts_file_objects = True)
 register_writer('vo', votable.write)
 register_set_reader('vo', votable.read_set)
 register_set_writer('vo', votable.write_set)

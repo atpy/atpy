@@ -196,15 +196,19 @@ class Table(object):
         else:
             verbose = True
 
-        if 'compression' in kwargs:
-            compression = kwargs.pop('compression').lower()
-        else:
-            compression = None
+        
 
         if 'type' in kwargs:
             table_type = kwargs.pop('type').lower()
+            if 'compression' in kwargs:
+                compression = kwargs.pop('compression').lower()
+            else:
+                compression = atpy._determine_compression(args[0], verbose)
         elif type(args[0]) == str:
             table_type, compression = atpy._determine_type(args[0], verbose)
+            if 'compression' in kwargs:
+                print "Using user input compression type: %s" % compression
+                compression = kwargs.pop('compression').lower()
         else:
             raise Exception('Could not determine table type')
 
@@ -223,7 +227,7 @@ class Table(object):
                 warnings.simplefilter("ignore")
 
             if table_type in atpy._readers:
-                atpy._file_access(self, atpy._readers[table_type], compression, 'r', *args, **kwargs)
+                atpy._file_access(self, atpy._readers[table_type], compression, *args, **kwargs)
             else:
                 raise Exception("Unknown table type: " + table_type)
 
