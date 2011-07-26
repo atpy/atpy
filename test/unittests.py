@@ -265,6 +265,7 @@ try:
             os.remove('test_atpy.fits')
 
 except:
+    print "pyfits is not installed - skipping FITS tests"
     pass
 
 try:
@@ -295,6 +296,7 @@ try:
             os.remove('test_atpy.hdf5')
 
 except:
+    print "h5py is not installed - skipping HDF5 tests"
     pass
 
 try:
@@ -328,6 +330,7 @@ try:
             os.remove('test_atpy.xml')
 
 except:
+    print "vo is not installed - skipping MySQL tests"
     pass
 
 
@@ -372,6 +375,7 @@ try:
             os.remove('test_atpy.db')
 
 except:
+    print "sqlite3 is not installed - skipping SQLite tests"
     pass
 
 try:
@@ -398,6 +402,7 @@ try:
             self.table_new = atpy.Table('mysql', db='python', verbose=False, user=username, passwd=password, query='select * from atpy_test')
 
 except:
+    print "MySQLdb is not installed - skipping MySQL tests"
     pass
 
 try:
@@ -429,6 +434,7 @@ try:
 
 
 except:
+    print "pgdb is not installed - skipping PostGreSQL tests"
     pass
 
 if __name__ == '__main__':
