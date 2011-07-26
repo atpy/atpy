@@ -2,13 +2,13 @@ import os
 from distutils import version
 import numpy as np
 import warnings
-import re
 
 from exceptions import TableException
 
 import atpy
 
 from helpers import smart_dtype
+from decorators import auto_download_to_file, auto_decompress_to_fileobj, auto_fileobj_to_file
 
 vo_minimum_version = version.LooseVersion('0.3')
 
@@ -49,6 +49,11 @@ def _list_tables(filename, pedantic=False):
     return tables
 
 
+# VO can handle file objects, but because we need to read it twice we don't
+# use that capability
+@auto_download_to_file
+@auto_decompress_to_fileobj
+@auto_fileobj_to_file
 def read(self, filename, pedantic=False, tid=-1, verbose=True):
     '''
     Read a table from a VOT file
@@ -242,6 +247,11 @@ def write(self, filename, votype='ascii', overwrite=False):
     VOTable.to_xml(filename)
 
 
+# VO can handle file objects, but because we need to read it twice we don't
+# use that capability
+@auto_download_to_file
+@auto_decompress_to_fileobj
+@auto_fileobj_to_file
 def read_set(self, filename, pedantic=False, verbose=True):
     '''
     Read all tables from a VOT file

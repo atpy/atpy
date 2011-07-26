@@ -3,6 +3,7 @@ import numpy as np
 import warnings
 
 from helpers import smart_mask
+from decorators import auto_download_to_file, auto_decompress_to_fileobj, auto_fileobj_to_file
 
 # Define type conversion from IPAC table to numpy arrays
 type_dict = {}
@@ -39,6 +40,9 @@ invalid[np.float32] = np.float32(np.nan)
 invalid[np.float64] = np.float64(np.nan)
 
 
+@auto_download_to_file
+@auto_decompress_to_fileobj
+@auto_fileobj_to_file
 def read(self, filename, definition=3, verbose=True, smart_typing=False):
     '''
     Read a table from a IPAC file

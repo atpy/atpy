@@ -4,6 +4,7 @@ import numpy as np
 
 from exceptions import TableException
 from helpers import smart_dtype, smart_mask
+from decorators import auto_download_to_file, auto_fileobj_to_file
 
 import atpy
 
@@ -55,6 +56,9 @@ def _list_tables(filename):
     return tables
 
 
+# PyFITS can handle compression, so no decompression detection
+@auto_download_to_file
+@auto_fileobj_to_file
 def read(self, filename, hdu=None, verbose=True):
     '''
     Read a table from a FITS file
@@ -296,6 +300,9 @@ def write(self, filename, overwrite=False):
         _to_hdu(self).writeto(filename, output_verify='silentfix')
 
 
+# PyFITS can handle compression, so no decompression detection
+@auto_download_to_file
+@auto_fileobj_to_file
 def read_set(self, filename, verbose=True):
     '''
     Read all tables from a FITS file

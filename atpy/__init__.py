@@ -163,7 +163,7 @@ def _determine_type(string, verbose):
         extension = s
     else:
         extension = s.split('.')[-1]
-        if extension in ['gz', 'bzip2', 'Z']:
+        if extension.lower() in ['gz', 'bz2', 'bzip2']:
             extension = s.split('.')[-2]
 
     if extension in _extensions:

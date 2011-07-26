@@ -1,9 +1,10 @@
 import os
-import warnings
 
 from exceptions import TableException
 
 import atpy
+
+from decorators import auto_download_to_file, auto_decompress_to_fileobj, auto_fileobj_to_file
 
 
 try:
@@ -62,6 +63,9 @@ def _list_tables(file_handle):
     return tables
 
 
+@auto_download_to_file
+@auto_decompress_to_fileobj
+@auto_fileobj_to_file
 def read(self, filename, table=None, verbose=True):
     '''
     Read a table from an HDF5 file
@@ -119,6 +123,9 @@ def read(self, filename, table=None, verbose=True):
         f.close()
 
 
+@auto_download_to_file
+@auto_decompress_to_fileobj
+@auto_fileobj_to_file
 def read_set(self, filename, pedantic=False, verbose=True):
     '''
     Read all tables from an HDF5 file
