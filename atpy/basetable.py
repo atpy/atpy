@@ -683,6 +683,10 @@ class Table(object):
         Prints a description of the table
         '''
 
+        if self.data is None:
+            print "Table is empty"
+            return
+
         if self.table_name:
             print "Table : " + self.table_name
         else:
