@@ -42,6 +42,34 @@ def read_daophot(self, filename, **kwargs):
     '''
     read_ascii(self, filename, Reader=asciitable.DaophotReader, **kwargs)
 
+def read_latex(self, filename, **kwargs):
+    '''
+    Read data from a Latex table
+
+        Required Arguments:
+
+            *filename*: [ string ]
+                The file to read the table from
+
+        Keyword Arguments are passed to asciitable
+    '''
+    read_ascii(self, filename, Reader=asciitable.LatexReader, **kwargs)
+
+
+def write_latex(self, filename, **kwargs):
+    '''
+    Write data to a Latex table
+
+        Required Arguments:
+
+            *filename*: [ string ]
+                The file to write the table to
+
+        Keyword Arguments are passed to asciitable
+    '''
+    write_ascii(self, filename, Writer=asciitable.Latex, **kwargs)
+
+
 
 def read_rdb(self, filename, **kwargs):
     '''

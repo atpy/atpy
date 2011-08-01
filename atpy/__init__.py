@@ -210,6 +210,9 @@ import asciitables
 register_reader('cds', asciitables.read_cds)
 register_reader('mrt', asciitables.read_cds)
 
+register_reader('latex', asciitables.read_latex)
+register_writer('latex', asciitables.write_latex)
+
 register_reader('rdb', asciitables.read_rdb)
 register_writer('rdb', asciitables.write_rdb)
 register_extensions('rdb', ['rdb'])
