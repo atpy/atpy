@@ -190,7 +190,7 @@ class Table(object):
 
         if 'type' in kwargs:
             table_type = kwargs.pop('type').lower()
-        elif type(args[0]) == str:
+        elif isinstance(args[0], basestring):
             table_type = atpy._determine_type(args[0], verbose)
         else:
             raise Exception('Could not determine table type')
