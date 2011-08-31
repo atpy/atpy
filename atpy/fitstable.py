@@ -188,7 +188,10 @@ def read(self, filename, hdu=None, verbose=True):
             self.add_keyword(key, header[key])
 
     for comment in header.get_comment():
-        self.add_comment(comment)
+        if isinstance(comment, pyfits.Card):
+            self.add_comment(comment.value)
+        else:
+            self.add_comment(comment)
 
     if hdu.name:
         self.table_name = str(hdu.name)
