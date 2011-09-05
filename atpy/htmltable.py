@@ -28,9 +28,9 @@ def write(self, filename):
         for name in self.names:
 
             if self.columns[name].dtype == np.uint64:
-                item = (("%" + self.format(name)) % long(self.data[name][i]))
+                item = (("%" + self.columns[name].format) % long(self.data[name][i]))
             else:
-                item = (("%" + self.format(name)) % self.data[name][i])
+                item = (("%" + self.columns[name].format) % self.data[name][i])
 
             f.write("      <td>%s</td>\n" % item.strip())
 

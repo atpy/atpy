@@ -16,3 +16,10 @@ def smart_dtype(dtype):
         return dtype.subdtype[0].type
     else:
         return dtype.type
+
+
+def format_length(format):
+    if '.' in format:
+        return int(format.split('.')[0])
+    else:
+        return int(format[:-1])

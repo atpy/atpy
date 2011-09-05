@@ -15,7 +15,7 @@ class LaTeXTable(object):
             for j, name in enumerate(self.names):
                 if j > 0:
                     line += ' & '
-                line += (("%" + self.format(name)) % self.data[name][i])
+                line += (("%" + self.columns[name].format) % self.data[name][i])
 
             line = line + " \\\\ \n"
 

@@ -15,23 +15,23 @@ import structhelper as sta
 from odict import odict
 
 default_format = {}
-default_format[None.__class__] = 16, '.9e'
-default_format[np.bool_] = 1, 'i'
-default_format[np.int8] = 3, 'i'
-default_format[np.uint8] = 3, 'i'
-default_format[np.int16] = 5, 'i'
-default_format[np.uint16] = 5, 'i'
-default_format[np.int32] = 12, 'i'
-default_format[np.uint32] = 12, 'i'
-default_format[np.int64] = 22, 'i'
-default_format[np.uint64] = 23, 'i'
-default_format[np.float32] = 16, '.8e'
-default_format[np.float64] = 25, '.17e'
-default_format[np.str] = 0, 's'
-default_format[np.string_] = 0, 's'
-default_format[np.uint8] = 0, 's'
-default_format[str] = 0, 's'
-default_format[np.unicode_] = 0, 's'
+default_format[None.__class__] = '16.9e'
+default_format[np.bool_] = '1i'
+default_format[np.int8] = '3i'
+default_format[np.uint8] = '3i'
+default_format[np.int16] = '5i'
+default_format[np.uint16] = '5i'
+default_format[np.int32] = '12i'
+default_format[np.uint32] = '12i'
+default_format[np.int64] = '22i'
+default_format[np.uint64] = '23i'
+default_format[np.float32] = '16.8e'
+default_format[np.float64] = '25.17e'
+default_format[np.str] = 's'
+default_format[np.string_] = 's'
+default_format[np.uint8] = 's'
+default_format[str] = 's'
+default_format[np.unicode_] = 's'
 
 
 class ColumnHeader(object):
@@ -363,7 +363,7 @@ class Table(object):
             else:
                 description = descriptions[i]
 
-            if formats is None:
+            if formats is None or format in ['e', 'g', 'f']:
                 if dtype[i].subdtype:
                     format = default_format[dtype[i].subdtype[0].type]
                 else:
@@ -371,8 +371,12 @@ class Table(object):
             else:
                 format = formats[i]
 
-            if format[1] == 's':
-                format = self.data.itemsize, 's'
+            # Backward compatibility with tuple-style format
+            if type(format) in [tuple, list]:
+                format = string.join([str(x) for x in format], "")
+
+            if format == 's':
+                format = '%is' % self.data.itemsize
 
             if nulls is None:
                 null = None
@@ -577,11 +581,15 @@ class Table(object):
             else:
                 self.data = np.array(zip(data), dtype=[newdtype])
 
-        if not format:
+        if not format or format in ['e', 'g', 'f']:
             format = default_format[dtype.type]
 
-        if format[1] == 's':
-            format = data.itemsize, 's'
+        # Backward compatibility with tuple-style format
+        if type(format) in [tuple, list]:
+            format = string.join([str(x) for x in format], "")
+
+        if format == 's':
+            format = '%is' % data.itemsize
 
         column = ColumnHeader(dtype, unit=unit, description=description, null=null, format=format)
 
@@ -706,9 +714,9 @@ class Table(object):
         # Print out table
 
         format = "| %" + str(len_name_max) + \
-            "s | %" + str(len_unit_max) + \
-            "s | %" + str(len_datatype_max) + \
-            "s | %" + str(len_formats_max) + "s |"
+               "s | %" + str(len_unit_max) + \
+               "s | %" + str(len_datatype_max) + \
+               "s | %" + str(len_formats_max) + "s |"
 
         len_tot = len_name_max + len_unit_max + len_datatype_max + \
             len_formats_max + 13
@@ -719,7 +727,7 @@ class Table(object):
 
         for name in self.names:
             print format % (name, str(self.columns[name].unit), \
-                str(self.columns[name].dtype), self.format(name))
+                str(self.columns[name].dtype), self.columns[name].format)
 
         print "-" * len_tot
 
@@ -801,17 +809,6 @@ class Table(object):
         new_table.data = self.data[mask]
 
         return new_table
-
-    def format(self, name):
-        '''
-        Return the ASCII format of a given column
-
-        Required Arguments:
-
-            *name*: [ string ]
-                The column name
-        '''
-        return str(self.columns[name].format[0]) + self.columns[name].format[1]
 
     def add_comment(self, comment):
         '''

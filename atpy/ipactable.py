@@ -2,7 +2,7 @@ import os
 import numpy as np
 import warnings
 
-from helpers import smart_mask
+from helpers import smart_mask, format_length
 from decorators import auto_download_to_file, auto_decompress_to_fileobj, auto_fileobj_to_file
 
 # Define type conversion from IPAC table to numpy arrays
@@ -338,13 +338,13 @@ def write(self, filename, overwrite=False):
             colnull = self.columns[name].null
 
         if colnull:
-            colnull = ("%" + self.format(name)) % colnull
+            colnull = ("%" + self.columns[name].format) % colnull
         else:
             colnull = ''
 
         # Adjust the format for each column
 
-        width[name] = self.columns[name].format[0]
+        width[name] = format_length(self.columns[name].format)
 
         max_width = max(len(name), len(coltype), len(colunit), \
             len(colnull))
@@ -376,9 +376,9 @@ def write(self, filename, overwrite=False):
 
         for name in self.names:
             if self.columns[name].dtype == np.uint64:
-                item = (("%" + self.format(name)) % long(self.data[name][i]))
+                item = (("%" + self.columns[name].format) % long(self.data[name][i]))
             else:
-                item = (("%" + self.format(name)) % self.data[name][i])
+                item = (("%" + self.columns[name].format) % self.data[name][i])
             item = ("%" + str(width[name]) + "s") % item
             line = line + " " + item
 
