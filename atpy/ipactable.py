@@ -380,6 +380,10 @@ def write(self, filename, overwrite=False):
             else:
                 item = (("%" + self.columns[name].format) % self.data[name][i])
             item = ("%" + str(width[name]) + "s") % item
+
+            if len(item) > width[name]:
+                raise Exception('format for column %s (%s) is not wide enough to contain data' % (name, self.columns[name].format))
+
             line = line + " " + item
 
         line = line + " \n"
