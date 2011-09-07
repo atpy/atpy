@@ -59,7 +59,7 @@ def _list_tables(filename):
 # PyFITS can handle compression, so no decompression detection
 @auto_download_to_file
 @auto_fileobj_to_file
-def read(self, filename, hdu=None, verbose=True):
+def read(self, filename, hdu=None, memmap=False, verbose=True):
     '''
     Read a table from a FITS file
 
@@ -73,6 +73,9 @@ def read(self, filename, hdu=None, verbose=True):
         *hdu*: [ integer ]
             The HDU to read from the FITS file (this is only required
             if there are more than one table in the FITS file)
+
+        *memmap*: [ bool ]
+            Whether PyFITS should use memory mapping
     '''
 
     _check_pyfits_installed()
@@ -89,7 +92,7 @@ def read(self, filename, hdu=None, verbose=True):
         else:
             raise TableException(tables, 'hdu')
 
-    hdulist = pyfits.open(filename)
+    hdulist = pyfits.open(filename, memmap=memmap)
     hdu = hdulist[hdu]
 
     table = hdu.data
