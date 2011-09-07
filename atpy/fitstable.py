@@ -309,7 +309,7 @@ def write(self, filename, overwrite=False):
 # PyFITS can handle compression, so no decompression detection
 @auto_download_to_file
 @auto_fileobj_to_file
-def read_set(self, filename, verbose=True):
+def read_set(self, filename, memmap=False, verbose=True):
     '''
     Read all tables from a FITS file
 
@@ -317,6 +317,11 @@ def read_set(self, filename, verbose=True):
 
         *filename*: [ string ]
             The FITS file to read the tables from
+
+    Optional Keyword Arguments:
+
+        *memmap*: [ bool ]
+            Whether PyFITS should use memory mapping
     '''
 
     _check_pyfits_installed()
@@ -337,7 +342,7 @@ def read_set(self, filename, verbose=True):
     # Read in tables one by one
     for hdu in _list_tables(filename):
         table = atpy.Table()
-        read(table, filename, hdu=hdu, verbose=verbose)
+        read(table, filename, hdu=hdu, memmap=memmap, verbose=verbose)
         self.append(table)
 
 
