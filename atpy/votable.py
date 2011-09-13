@@ -139,6 +139,7 @@ def _to_table(self, VOTable):
 
         data = self.data[name]
         unit = self.columns[name].unit
+        description = self.columns[name].description
         dtype = self.columns[name].dtype
         column_type = smart_dtype(dtype)
 
@@ -170,9 +171,13 @@ def _to_table(self, VOTable):
         else:
             precision = None
 
-        fields.append(Field(VOTable, ID="col" + str(i), name=name, \
+        field = Field(VOTable, ID="col" + str(i), name=name, \
                 datatype=datatype, unit=unit, arraysize=arraysize, \
-                precision=precision))
+                precision=precision)
+
+        field.description = description
+
+        fields.append(field)
 
     table.fields.extend(fields)
 
