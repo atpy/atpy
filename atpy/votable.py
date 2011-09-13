@@ -116,10 +116,11 @@ def read(self, filename, pedantic=False, tid=-1, verbose=True):
 
         if self._masked:
             self.add_column(colname, data, \
-                unit=field.unit, mask=table.mask[colname])
+                unit=field.unit, mask=table.mask[colname], \
+                description=field.description)
         else:
             self.add_column(colname, data, \
-                unit=field.unit)
+                unit=field.unit, description=field.description)
 
 
 def _to_table(self, VOTable):
