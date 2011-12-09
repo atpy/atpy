@@ -100,13 +100,7 @@ def read(self, filename, pedantic=False, tid=-1, verbose=True):
 
     for field in table.fields:
 
-        if type(field.name) == str:
-            colname = field.name
-        else:
-            if type(field._ID) == str:
-                colname = field._ID
-            else:
-                raise Exception("Error reading in the VO table: no name or ID for field")
+        colname = field.ID
 
         data = table.array[colname]
 
