@@ -1,6 +1,41 @@
 CHANGES
 --------
 
+Version 0.9.6
+
+    New Features
+    ~~~~~~~~~~~~
+
+    - filenames can now be specified as HTTP or FTP URLs, which will cause
+      files to be downloaded on-the-fly
+
+    - tables can now be read from gzip and bzip2 files for any file-based
+      format
+
+    - tables can now be read from any file object for any file-based format
+
+    - added support for LaTeX read/write via asciitable
+
+    API Changes
+    ~~~~~~~~~~~
+
+    - formats for ASCII output are now Python 2.x formatting specifiers
+      (instead of tuples).
+
+    - added support for memmap= option in FITS tables and table sets
+
+    Bug fixes
+    ~~~~~~~~~
+
+    - filenames can now be passed as any basestring object, not just str
+
+    - when reading from VO tables, the column ID is used instead of the name
+      since the ID is guaranteed to be unique.
+
+Version 0.9.5.3
+
+    Minor fixes
+
 Version 0.9.5.2
 
     Removed automatic cleaning of VO column names
