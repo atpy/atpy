@@ -62,7 +62,7 @@ class ColumnHeader(object):
         return s
 
     def __eq__(self, other):
-        if self.dtype != other.dtype:
+        if self.dtype.type != other.dtype.type:
             return False
         if self.unit != other.unit:
             return False
