@@ -171,7 +171,7 @@ def _to_table(self, VOTable):
             else:
                 raise ValueError("Cannot write vector string columns to VO files")
 
-        field = Field(VOTable, ID="col" + str(i), name=name, \
+        field = Field(VOTable, ID=name, name=name, \
                 datatype=datatype, unit=unit, arraysize=arraysize, \
                 precision=precision)
 
