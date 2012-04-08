@@ -79,6 +79,7 @@ type_dict[np.float64] = "DOUBLE PRECISION"
 type_dict[np.str] = "TEXT"
 type_dict[np.string_] = "TEXT"
 type_dict[str] = "TEXT"
+type_dict[np.bool_] = "BOOLEAN"
 
 # Reverse type conversion dictionary
 
@@ -116,7 +117,7 @@ type_dict_rev['timestamp'] = np.str
 type_dict_rev['datetime'] = np.str
 type_dict_rev['date'] = np.str
 type_dict_rev['var_string'] = np.str
-
+type_dict_rev['boolean'] = np.bool
 
 # Define symbol to use in insert statement
 
@@ -304,8 +305,10 @@ def drop_table(cursor, table_name):
     cursor.execute('DROP TABLE ' + table_name + ';')
     return
 
+def get_array_column_name(column, i):
+    return column+'_%d'%i
 
-def create_table(cursor, dbtype, table_name, columns, primary_key=None):
+def create_table(cursor, dbtype, table_name, columns, shapes, primary_key=None):
     '''
     Create a table in an SQL database
 
@@ -334,9 +337,10 @@ def create_table(cursor, dbtype, table_name, columns, primary_key=None):
     for i, column in enumerate(columns):
         if i > 0:
             query += ", "
+        
         column_name = column[0]
-        column_type = type_dict[column[1]]
-
+        column_type= type_dict[column[1]]
+         
         # PostgreSQL does not support TINYINT
         if dbtype == 'postgres' and column_type == 'TINYINT':
             column_type = 'SMALLINT'
@@ -367,8 +371,14 @@ def create_table(cursor, dbtype, table_name, columns, primary_key=None):
         if dbtype == 'postgres' and column[1] == np.float32:
             column_type = "REAL"
 
-        query += quote[dbtype] + column_name + quote[dbtype] + " " + \
-            column_type
+        if len(shapes[i])==1:
+            query += quote[dbtype] + column_name + quote[dbtype] + " " + \
+             column_type
+        else:
+            for j in range(shapes[i][1]):
+                query += ',' if j>0 else ''
+                query += quote[dbtype] + get_array_column_name(column_name,j+1) + quote[dbtype] + " " + \
+                    column_type 
 
     if primary_key:
         query += ", PRIMARY KEY (%s%s%s)" % \
@@ -380,6 +390,50 @@ def create_table(cursor, dbtype, table_name, columns, primary_key=None):
 
     return
 
+def get_sql_row_mapper(shapes):
+    '''
+    This function returns the function which can process rows containing arrays,
+    by flattening them: e.g
+    > mapper=sqlhelper.get_sql_row_mapper(([(10,),(10,),(10,3),(10,),(10,),(10,2),(10,)])
+    > print mapper(['a',2,numpy.arange(3),0.3,0.5,[2,3],'z'])
+    ['a', 2, 0, 1, 2, 0.29999999999999999, 0.5, 2, 3, 'z']
+
+    Arguments :
+     *shapes* [list]
+        List of shapes of columns
+    '''
+
+    if all([len(tmp)==1 for tmp in shapes]): return lambda x:x
+    ranges = []
+    offsets = []
+    arraypos = []
+    arrayranges = []
+    state = 0
+    curoffset = 0
+    for i,s in enumerate(shapes):
+        if len(s)==1:
+            if state == 0:
+                ranges.append([i,i+1])
+                offsets.append(curoffset)
+                state = 1
+            else:
+                ranges[-1][1]=ranges[-1][1]+1
+            curoffset+=1
+        else:
+            arraypos.append(i)
+            arrayranges.append([curoffset,curoffset+s[1]])
+            curoffset+=s[1]
+            state = 0
+    totlen = curoffset
+    outranges = [(o,o+r[1]-r[0]) for o,r in zip(offsets,ranges)]
+    rowout = [None]*totlen
+    def func(row):
+        for rin,rout in zip(ranges,outranges):
+            rowout[rout[0]:rout[1]]=row[rin[0]:rin[1]]
+        for posin,  rout in zip(arraypos,arrayranges):
+            rowout[rout[0]:rout[1]]=row[posin].tolist()
+        return rowout
+    return func
 
 def insert_row(cursor, dbtype, table_name, row, fixnan=False):
     '''

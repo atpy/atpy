@@ -5,7 +5,7 @@ import warnings
 
 import numpy as np
 import sqlhelper as sql
-
+from helpers import smart_dtype
 from exceptions import TableException, ExistingTableException
 
 import atpy
@@ -211,7 +211,7 @@ def read(self, dbtype, *args, **kwargs):
 
 def write(self, dbtype, *args, **kwargs):
 
-    self._raise_vector_columns()
+    #self._raise_vector_columns()
 
     # Check if table overwrite is requested
     if 'overwrite' in kwargs:
@@ -245,18 +245,19 @@ def write(self, dbtype, *args, **kwargs):
             raise ExistingTableException()
 
     # Create table
-    columns = [(name, self.columns[name].dtype.type) \
+    columns = [(name, smart_dtype(self.columns[name].dtype)) \
                                         for name in self.names]
-    sql.create_table(cursor, dbtype, table_name, columns, primary_key=self._primary_key)
+    shapes  = [self.data[name].shape for name in self.names]
+    sql.create_table(cursor, dbtype, table_name, columns, shapes, primary_key=self._primary_key)
 
-
+    mapper = sql.get_sql_row_mapper(shapes)
     # Insert row
     float_column = [self.columns[name].dtype.type in [np.float32, np.float64] for name in self.names]
 
     for i in range(self.__len__()):
         row = self.row(i, python_types=True)
 
-        sql.insert_row(cursor, dbtype, table_name, row, fixnan=not self._masked)
+        sql.insert_row(cursor, dbtype, table_name, mapper(row), fixnan=not self._masked)
 
     # Close connection
     connection.commit()
