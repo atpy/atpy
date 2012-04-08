@@ -165,6 +165,12 @@ def _to_table(self, VOTable):
         else:
             precision = None
 
+        if datatype == 'char':
+            if arraysize is None:
+                arraysize = '*'
+            else:
+                raise ValueError("Cannot write vector string columns to VO files")
+
         field = Field(VOTable, ID="col" + str(i), name=name, \
                 datatype=datatype, unit=unit, arraysize=arraysize, \
                 precision=precision)
