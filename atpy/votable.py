@@ -14,7 +14,7 @@ vo_minimum_version = version.LooseVersion('0.3')
 
 try:
     from vo.table import parse
-    from vo.tree import VOTableFile, Resource, Table, Field
+    from vo.tree import VOTableFile, Resource, Table, Field, Param
     vo_installed = True
 except:
     vo_installed = False
@@ -116,6 +116,9 @@ def read(self, filename, pedantic=False, tid=-1, verbose=True):
             self.add_column(colname, data, \
                 unit=field.unit, description=field.description)
 
+    for param in table.params:
+        self.add_keyword(param.ID, param.value)
+
 
 def _to_table(self, VOTable):
     '''
@@ -123,6 +126,15 @@ def _to_table(self, VOTable):
     '''
 
     table = Table(VOTable)
+
+    # Add keywords
+    for key in self.keywords:
+        if isinstance(self.keywords[key], basestring):
+            arraysize = '*'
+        else:
+            arraysize = None
+        param = Param(table, name=key, ID=key, value=self.keywords[key], arraysize=arraysize)
+        table.params.append(param)
 
     # Define some fields
 
