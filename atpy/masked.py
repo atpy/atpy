@@ -1,7 +1,11 @@
 import os
 import warnings
 
-from ConfigParser import SafeConfigParser
+import sys
+if sys.version_info[0] == 2:
+    from ConfigParser import SafeConfigParser
+else:
+    from configparser import SafeConfigParser
 
 __masked__ = False
 
