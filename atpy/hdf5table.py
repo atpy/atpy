@@ -231,7 +231,12 @@ def write(self, filename, compression=False, group="", append=False,
     dset = g.create_dataset(name, data=self.data, compression=compression)
 
     for keyword in self.keywords:
-        dset.attrs[keyword] = self.keywords[keyword]
+        # Due to a bug in HDF5, in order to get this to work in Python 3, we
+        # need to encode string values in utf-8
+        if isinstance(self.keywords[keyword], basestring):
+            dset.attrs[keyword] = self.keywords[keyword].encode('utf-8')
+        else:
+            dset.attrs[keyword] = self.keywords[keyword]
 
     if f is not None:
         f.close()
@@ -292,7 +297,13 @@ def write_set(self, filename, compression=False, group="", append=False,
         f, g = _get_group(filename, group=group, append=append)
 
     for keyword in self.keywords:
-        g.attrs[keyword] = self.keywords[keyword]
+        # Due to a bug in HDF5, in order to get this to work in Python 3, we
+        # need to encode string values in utf-8
+        if isinstance(self.keywords[keyword], basestring):
+            g.attrs[keyword] = self.keywords[keyword].encode('utf-8')
+        else:
+            g.attrs[keyword] = self.keywords[keyword]
+
 
     for i, table_key in enumerate(self.tables):
 
@@ -314,7 +325,12 @@ def write_set(self, filename, compression=False, group="", append=False,
         dset = g.create_dataset(name, data=self.tables[table_key].data, compression=compression)
 
         for keyword in self.tables[table_key].keywords:
-            dset.attrs[keyword] = self.tables[table_key].keywords[keyword]
+            # Due to a bug in HDF5, in order to get this to work in Python 3, we
+            # need to encode string values in utf-8
+            if isinstance(self.tables[table_key].keywords[keyword], basestring):
+                dset.attrs[keyword] = self.tables[table_key].keywords[keyword].encode('utf-8')
+            else:
+                dset.attrs[keyword] = self.tables[table_key].keywords[keyword]
 
     if f is not None:
         f.close()
