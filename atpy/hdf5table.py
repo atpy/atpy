@@ -116,7 +116,13 @@ def read(self, filename, table=None, verbose=True):
         self.data[name][:] = g[table][name][:]
 
     for attribute in g[table].attrs:
-        self.add_keyword(attribute, g[table].attrs[attribute])
+        # Due to a bug in HDF5, in order to get this to work in Python 3, we
+        # need to encode string values in utf-8
+        if type(g[table].attrs[attribute]) is bytes:
+            self.add_keyword(attribute, g[table].attrs[attribute].decode('utf-8'))
+        else:
+            self.add_keyword(attribute, g[table].attrs[attribute])
+
 
     if f is not None:
         f.close()
@@ -148,7 +154,12 @@ def read_set(self, filename, pedantic=False, verbose=True):
         g = f['/']
 
     for keyword in g.attrs:
-        self.keywords[keyword] = g.attrs[keyword]
+        # Due to a bug in HDF5, in order to get this to work in Python 3, we
+        # need to encode string values in utf-8
+        if type(g.attrs[keyword]) is bytes:
+            self.keywords[keyword] = g.attrs[keyword].decode('utf-8')
+        else:
+            self.keywords[keyword] = g.attrs[keyword]
 
     from .basetable import Table
     for table in _list_tables(g):
