@@ -1,3 +1,5 @@
+from __future__ import print_function, division
+
 from distutils import version
 import warnings
 import tempfile
@@ -115,4 +117,4 @@ def list_catalogs():
     for catalog in vcone.list_catalogs():
         if "BROKEN" in catalog:
             continue
-        print "%30s" % (catalog)
+        print("%30s" % catalog)

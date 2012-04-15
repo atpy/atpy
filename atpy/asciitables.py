@@ -1,5 +1,8 @@
+from __future__ import print_function, division
+
 import os
-from decorators import auto_download_to_file, auto_decompress_to_fileobj
+
+from .decorators import auto_download_to_file, auto_decompress_to_fileobj
 
 # Thanks to Moritz Guenther for providing the initial code used to create this file
 

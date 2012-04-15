@@ -1,9 +1,11 @@
+from __future__ import print_function, division
+
 import urllib2
 import tempfile
 import gzip
 import bz2
 
-from decorator import decorator
+from .decorator import decorator
 
 
 def auto_download_to_file(f):

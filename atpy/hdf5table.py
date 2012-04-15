@@ -1,10 +1,9 @@
+from __future__ import print_function, division
+
 import os
 
-from exceptions import TableException
-
-import atpy
-
-from decorators import auto_download_to_file, auto_decompress_to_fileobj, auto_fileobj_to_file
+from .exceptions import TableException
+from .decorators import auto_download_to_file, auto_decompress_to_fileobj, auto_fileobj_to_file
 
 
 try:
@@ -151,8 +150,9 @@ def read_set(self, filename, pedantic=False, verbose=True):
     for keyword in g.attrs:
         self.keywords[keyword] = g.attrs[keyword]
 
+    from .basetable import Table
     for table in _list_tables(g):
-        t = atpy.Table()
+        t = Table()
         read(t, filename, table=table, verbose=verbose)
         self.append(t)
 

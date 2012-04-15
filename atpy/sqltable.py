@@ -1,3 +1,5 @@
+from __future__ import print_function, division
+
 # NOTE: docstring is long and so only written once!
 #       It is copied for the other routines
 
@@ -6,9 +8,7 @@ import warnings
 import numpy as np
 import sqlhelper as sql
 
-from exceptions import TableException, ExistingTableException
-
-import atpy
+from .exceptions import TableException, ExistingTableException
 
 invalid = {}
 invalid[np.uint8] = np.iinfo(np.uint8).max
@@ -273,9 +273,10 @@ def read_set(self, dbtype, *args, **kwargs):
     table_names = sql.list_tables(cursor, dbtype)
     cursor.close()
 
+    from .basetable import Table
     for table in table_names:
         kwargs['table'] = table
-        table = atpy.Table()
+        table = Table()
         read(table, dbtype, *args, **kwargs)
         self.append(table)
 

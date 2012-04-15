@@ -1,9 +1,11 @@
+from __future__ import print_function, division
+
 import os
 import numpy as np
 import warnings
 
-from helpers import smart_mask, format_length
-from decorators import auto_download_to_file, auto_decompress_to_fileobj, auto_fileobj_to_file
+from .helpers import smart_mask, format_length
+from .decorators import auto_download_to_file, auto_decompress_to_fileobj, auto_fileobj_to_file
 
 # Define type conversion from IPAC table to numpy arrays
 type_dict = {}
@@ -43,7 +45,7 @@ invalid[np.float64] = np.float64(np.nan)
 @auto_download_to_file
 @auto_decompress_to_fileobj
 @auto_fileobj_to_file
-def read(self, filename, definition=3, verbose=True, smart_typing=False):
+def read(self, filename, definition=3, verbose=False, smart_typing=False):
     '''
     Read a table from a IPAC file
 
@@ -92,7 +94,7 @@ def read(self, filename, definition=3, verbose=True, smart_typing=False):
         char1 = line[0:1]
         char2 = line[1:2]
 
-        if char1 <> '\\':
+        if char1 != '\\':
             break
 
         if char2==' ' or not '=' in line: # comment
@@ -117,7 +119,7 @@ def read(self, filename, definition=3, verbose=True, smart_typing=False):
 
         char1 = line[0:1]
 
-        if char1 <> "|":
+        if char1 != "|":
             break
 
         if l==0: # Column names
@@ -153,7 +155,7 @@ def read(self, filename, definition=3, verbose=True, smart_typing=False):
         line = f.readline()
         l = l + 1
 
-    if len(pipes) <> len(names) + 1:
+    if len(pipes) != len(names) + 1:
         raise "An error occured while reading the IPAC table"
 
     if len(units)==0:
@@ -200,10 +202,10 @@ def read(self, filename, definition=3, verbose=True, smart_typing=False):
             else:
                 item = line[first:last].strip()
 
-            if item.lower() == 'null' and nulls[names[i]] <> 'null':
+            if item.lower() == 'null' and nulls[names[i]] != 'null':
                 if nulls[names[i]] == '':
                     if verbose:
-                        print "WARNING: found unexpected 'null' value. Setting null value for column "+names[i]+" to 'null'"
+                        warnings.warn("WARNING: found unexpected 'null' value. Setting null value for column "+names[i]+" to 'null'")
                     nulls[names[i]] = 'null'
                     nulls_given = True
                 else:
@@ -225,9 +227,9 @@ def read(self, filename, definition=3, verbose=True, smart_typing=False):
                         array[name][i] = n
                 if verbose:
                     if len(str(nulls[name]).strip()) == 0:
-                        print "WARNING: empty null value for column "+name+" set to "+str(n)
+                        warnings.warn("WARNING: empty null value for column "+name+" set to "+str(n))
                     else:
-                        print "WARNING: null value for column "+name+" changed from "+str(nulls[name])+" to "+str(n)
+                        warnings.warn("WARNING: null value for column "+name+" changed from "+str(nulls[name])+" to "+str(n))
                 nulls[name] = n
 
     # Convert to numpy arrays

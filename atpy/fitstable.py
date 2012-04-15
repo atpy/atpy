@@ -1,12 +1,12 @@
+from __future__ import print_function, division
+
 import os
 from distutils import version
 import numpy as np
 
-from exceptions import TableException
-from helpers import smart_dtype, smart_mask
-from decorators import auto_download_to_file, auto_fileobj_to_file
-
-import atpy
+from .exceptions import TableException
+from .helpers import smart_dtype, smart_mask
+from .decorators import auto_download_to_file, auto_fileobj_to_file
 
 
 pyfits_minimum_version = version.LooseVersion('2.1')
@@ -340,8 +340,9 @@ def read_set(self, filename, memmap=False, verbose=True):
         self.add_comment(comment)
 
     # Read in tables one by one
+    from .basetable import Table
     for hdu in _list_tables(filename):
-        table = atpy.Table()
+        table = Table()
         read(table, filename, hdu=hdu, memmap=memmap, verbose=verbose)
         self.append(table)
 

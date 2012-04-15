@@ -1,4 +1,4 @@
-import numpy as np
+from __future__ import print_function, division
 
 
 class LaTeXTable(object):

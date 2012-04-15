@@ -1,3 +1,5 @@
+from __future__ import print_function, division
+
 import warnings
 import urllib
 import urllib2
@@ -242,4 +244,4 @@ def list_catalogs():
     for catalog in tree.parse(response).findall('catalog'):
         catname = catalog.find('catname').text
         desc = catalog.find('desc').text
-        print "%30s  %s" % (catname, desc)
+        print("%30s  %s" % (catname, desc))

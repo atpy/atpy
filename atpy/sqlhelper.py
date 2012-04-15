@@ -1,3 +1,5 @@
+from __future__ import print_function, division
+
 from distutils import version
 import numpy as np
 import warnings
@@ -32,7 +34,7 @@ except:
 mysql_types = {}
 if MySQLdb_installed:
     for variable in list(dir(mysqlft)):
-        if variable[0] <> '_':
+        if variable[0] != '_':
             code = mysqlft.__getattribute__(variable)
             mysql_types[code] = variable
 
@@ -145,9 +147,9 @@ def numpy_type(sql_type):
     unsigned = 'unsigned' in sql_type
     sql_type = sql_type.split('(')[0].lower()
     if not sql_type in type_dict_rev:
-        print "WARNING: need to define reverse type for " + str(sql_type)
-        print "         Please report this on the ATpy forums!"
-        print "         This type has been converted to a string"
+        print("WARNING: need to define reverse type for " + str(sql_type))
+        print("         Please report this on the ATpy forums!")
+        print("         This type has been converted to a string")
         sql_type = 'text'
     dtype = type_dict_rev[sql_type]
     if unsigned:

@@ -1,20 +1,20 @@
+from __future__ import print_function, division
+
 import os
 from distutils import version
 import numpy as np
 import warnings
 
-from exceptions import TableException
-
-import atpy
-
-from helpers import smart_dtype
-from decorators import auto_download_to_file, auto_decompress_to_fileobj, auto_fileobj_to_file
+from .exceptions import TableException
+from .helpers import smart_dtype
+from .decorators import auto_download_to_file, auto_decompress_to_fileobj, auto_fileobj_to_file
 
 vo_minimum_version = version.LooseVersion('0.3')
 
 try:
     from vo.table import parse
-    from vo.tree import VOTableFile, Resource, Table, Field, Param
+    from vo.tree import VOTableFile, Resource, Field, Param
+    from vo.tree import Table as VOTable
     vo_installed = True
 except:
     vo_installed = False
@@ -120,12 +120,12 @@ def read(self, filename, pedantic=False, tid=-1, verbose=True):
         self.add_keyword(param.ID, param.value)
 
 
-def _to_table(self, VOTable):
+def _to_table(self, vo_table):
     '''
     Return the current table as a VOT object
     '''
 
-    table = Table(VOTable)
+    table = VOTable(vo_table)
 
     # Add keywords
     for key in self.keywords:
@@ -183,7 +183,7 @@ def _to_table(self, VOTable):
             else:
                 raise ValueError("Cannot write vector string columns to VO files")
 
-        field = Field(VOTable, ID=name, name=name, \
+        field = Field(vo_table, ID=name, name=name, \
                 datatype=datatype, unit=unit, arraysize=arraysize, \
                 precision=precision)
 
@@ -195,7 +195,7 @@ def _to_table(self, VOTable):
 
     table.create_arrays(n_rows)
 
-    # Character columns are stored as object columns in the VOTable
+    # Character columns are stored as object columns in the vo_table
     # instance. Leaving the type as string should work, but causes
     # a segmentation fault on MacOS X with Python 2.6 64-bit so
     # we force the conversion to object type columns.
@@ -252,17 +252,17 @@ def write(self, filename, votype='ascii', overwrite=False):
         else:
             raise Exception("File exists: %s" % filename)
 
-    VOTable = VOTableFile()
+    vo_table = VOTableFile()
     resource = Resource()
-    VOTable.resources.append(resource)
+    vo_table.resources.append(resource)
 
-    resource.tables.append(_to_table(self, VOTable))
+    resource.tables.append(_to_table(self, vo_table))
 
     if votype is 'binary':
-        VOTable.get_first_table().format = 'binary'
-        VOTable.set_all_tables_format('binary')
+        vo_table.get_first_table().format = 'binary'
+        vo_table.set_all_tables_format('binary')
 
-    VOTable.to_xml(filename)
+    vo_table.to_xml(filename)
 
 
 # VO can handle file objects, but because we need to read it twice we don't
@@ -290,8 +290,9 @@ def read_set(self, filename, pedantic=False, verbose=True):
 
     self.reset()
 
+    from .basetable import Table
     for tid in _list_tables(filename, pedantic=pedantic):
-        t = atpy.Table()
+        t = Table()
         read(t, filename, tid=tid, verbose=verbose, pedantic=pedantic)
         self.append(t)
 
@@ -319,15 +320,15 @@ def write_set(self, filename, votype='ascii', overwrite=False):
         else:
             raise Exception("File exists: %s" % filename)
 
-    VOTable = VOTableFile()
+    vo_table = VOTableFile()
     resource = Resource()
-    VOTable.resources.append(resource)
+    vo_table.resources.append(resource)
 
     for table_key in self.tables:
-        resource.tables.append(_to_table(self.tables[table_key], VOTable))
+        resource.tables.append(_to_table(self.tables[table_key], vo_table))
 
     if votype is 'binary':
-        VOTable.get_first_table().format = 'binary'
-        VOTable.set_all_tables_format('binary')
+        vo_table.get_first_table().format = 'binary'
+        vo_table.set_all_tables_format('binary')
 
-    VOTable.to_xml(filename)
+    vo_table.to_xml(filename)

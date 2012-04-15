@@ -1,18 +1,19 @@
+from __future__ import print_function, division
+
 # Need to depracate fits_read, etc.
 
+import string
 import warnings
-import atpy
+from copy import deepcopy
 
 import numpy as np
 import numpy.ma as ma
 
-from copy import deepcopy
-import string
-
-from exceptions import VectorException
-
-import structhelper as sta
-from odict import odict
+from .exceptions import VectorException
+from .structhelper import append_field, drop_fields
+from .odict import odict
+from . import registry
+from .masked import __masked__
 
 default_format = {}
 default_format[None.__class__] = '16.9e'
@@ -62,7 +63,7 @@ class ColumnHeader(object):
         return s
 
     def __eq__(self, other):
-        if self.dtype.type != other.dtype.type:
+        if self.dtype != other.dtype:
             return False
         if self.unit != other.unit:
             return False
@@ -161,7 +162,7 @@ class Table(object):
         if 'masked' in kwargs:
             self._masked = kwargs.pop('masked')
         else:
-            self._masked = atpy.__masked__
+            self._masked = __masked__
 
         if len(args) + len(kwargs) > 0:
             self.read(*args, **kwargs)
@@ -191,7 +192,7 @@ class Table(object):
         if 'type' in kwargs:
             table_type = kwargs.pop('type').lower()
         elif isinstance(args[0], basestring):
-            table_type = atpy._determine_type(args[0], verbose)
+            table_type = registry._determine_type(args[0], verbose)
         else:
             raise Exception('Could not determine table type')
 
@@ -209,8 +210,8 @@ class Table(object):
             else:
                 warnings.simplefilter("ignore")
 
-            if table_type in atpy._readers:
-                atpy._readers[table_type](self, *args, **kwargs)
+            if table_type in registry._readers:
+                registry._readers[table_type](self, *args, **kwargs)
             else:
                 raise Exception("Unknown table type: " + table_type)
 
@@ -242,7 +243,7 @@ class Table(object):
         if 'type' in kwargs:
             table_type = kwargs.pop('type').lower()
         elif type(args[0]) == str:
-            table_type = atpy._determine_type(args[0], verbose)
+            table_type = registry._determine_type(args[0], verbose)
         else:
             raise Exception('Could not determine table type')
 
@@ -255,8 +256,8 @@ class Table(object):
 
         try:
 
-            if table_type in atpy._writers:
-                atpy._writers[table_type](self, *args, **kwargs)
+            if table_type in registry._writers:
+                registry._writers[table_type](self, *args, **kwargs)
             else:
                 raise Exception("Unknown table type: " + table_type)
 
@@ -270,16 +271,16 @@ class Table(object):
         if attribute == 'names':
             return self.__dict__['data'].dtype.names
         elif attribute == 'units':
-            print "WARNING: Table.units is depracated - use Table.columns to access this information"
+            print("WARNING: Table.units is depracated - use Table.columns to access this information")
             return dict([(name, self.columns[name].unit) for name in self.names])
         elif attribute == 'types':
-            print "WARNING: Table.types is depracated - use Table.columns to access this information"
+            print("WARNING: Table.types is depracated - use Table.columns to access this information")
             return dict([(name, self.columns[name].type) for name in self.names])
         elif attribute == 'nulls':
-            print "WARNING: Table.nulls is depracated - use Table.columns to access this information"
+            print("WARNING: Table.nulls is depracated - use Table.columns to access this information")
             return dict([(name, self.columns[name].null) for name in self.names])
         elif attribute == 'formats':
-            print "WARNING: Table.formats is depracated - use Table.columns to access this information"
+            print("WARNING: Table.formats is depracated - use Table.columns to access this information")
             return dict([(name, self.columns[name].format) for name in self.names])
         elif attribute == 'shape':
             return (len(self.data), len(self.names))
@@ -305,8 +306,10 @@ class Table(object):
 
     def append(self, table):
         for colname in self.columns:
-            if self.columns[colname] != table.columns[colname]:
-                raise Exception("Columns do not match")
+            if self.columns.keys != table.columns.keys:
+                raise Exception("Column names do not match")
+            if self.columns[colname].dtype.type != table.columns[colname].dtype.type:
+                raise Exception("Column types do not match")
         self.data = np.hstack((self.data, table.data))
 
     def __setattr__(self, attribute, value):
@@ -574,7 +577,7 @@ class Table(object):
                 raise Exception("Column %s does not exist" % before)
 
         if len(self.columns) > 0:
-            self.data = sta.append_field(self.data, data, dtype=newdtype, position=position, masked=self._masked)
+            self.data = append_field(self.data, data, dtype=newdtype, position=position, masked=self._masked)
         else:
             if self._masked:
                 self.data = ma.array(zip(data), dtype=[newdtype], mask=zip(data.mask), fill_value=data.fill_value)
@@ -601,7 +604,7 @@ class Table(object):
         return
 
     def remove_column(self, remove_name):
-        print "WARNING: remove_column is depracated - use remove_columns instead"
+        print("WARNING: remove_column is depracated - use remove_columns instead")
         self.remove_columns([remove_name])
         return
 
@@ -621,7 +624,7 @@ class Table(object):
         for remove_name in remove_names:
             self.columns.pop(remove_name)
 
-        self.data = sta.drop_fields(self.data, remove_names, masked=self._masked)
+        self.data = drop_fields(self.data, remove_names, masked=self._masked)
 
         # Remove primary key if needed
         if self._primary_key in remove_names:
@@ -692,13 +695,13 @@ class Table(object):
         '''
 
         if self.data is None:
-            print "Table is empty"
+            print("Table is empty")
             return
 
         if self.table_name:
-            print "Table : " + self.table_name
+            print("Table : " + self.table_name)
         else:
-            print "Table has no name"
+            print("Table has no name")
 
         # Find maximum column widths
         len_name_max, len_unit_max, len_datatype_max, \
@@ -721,15 +724,15 @@ class Table(object):
         len_tot = len_name_max + len_unit_max + len_datatype_max + \
             len_formats_max + 13
 
-        print "-" * len_tot
-        print format % ("Name", "Unit", "Type", "Format")
-        print "-" * len_tot
+        print("-" * len_tot)
+        print(format % ("Name", "Unit", "Type", "Format"))
+        print("-" * len_tot)
 
         for name in self.names:
-            print format % (name, str(self.columns[name].unit), \
-                str(self.columns[name].dtype), self.columns[name].format)
+            print(format % (name, str(self.columns[name].unit), \
+                str(self.columns[name].dtype), self.columns[name].format))
 
-        print "-" * len_tot
+        print("-" * len_tot)
 
         return
 
@@ -989,7 +992,7 @@ class TableSet(object):
         if 'type' in kwargs:
             table_type = kwargs.pop('type').lower()
         elif type(args[0]) == str:
-            table_type = atpy._determine_type(args[0], verbose)
+            table_type = registry._determine_type(args[0], verbose)
         else:
             raise Exception('Could not determine table type')
 
@@ -1007,8 +1010,8 @@ class TableSet(object):
             else:
                 warnings.simplefilter("ignore")
 
-            if table_type in atpy._set_readers:
-                atpy._set_readers[table_type](self, *args, **kwargs)
+            if table_type in registry._set_readers:
+                registry._set_readers[table_type](self, *args, **kwargs)
             else:
                 raise Exception("Unknown table type: " + table_type)
 
@@ -1040,7 +1043,7 @@ class TableSet(object):
         if 'type' in kwargs:
             table_type = kwargs.pop('type').lower()
         elif type(args[0]) == str:
-            table_type = atpy._determine_type(args[0], verbose)
+            table_type = registry._determine_type(args[0], verbose)
         else:
             raise Exception('Could not determine table type')
 
@@ -1053,8 +1056,8 @@ class TableSet(object):
 
         try:
 
-            if table_type in atpy._set_writers:
-                atpy._set_writers[table_type](self, *args, **kwargs)
+            if table_type in registry._set_writers:
+                registry._set_writers[table_type](self, *args, **kwargs)
             else:
                 raise Exception("Unknown table type: " + table_type)
 
