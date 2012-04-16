@@ -14,6 +14,11 @@ try:
 except:
     h5py_installed = False
 
+try:
+    BYTE_TYPES = [bytes, np.bytes_]
+except AttributeError:
+    BYTE_TYPES = [bytes]
+
 
 def _check_h5py_installed():
     if not h5py_installed:
@@ -120,7 +125,7 @@ def read(self, filename, table=None, verbose=True):
     for attribute in g[table].attrs:
         # Due to a bug in HDF5, in order to get this to work in Python 3, we
         # need to encode string values in utf-8
-        if type(g[table].attrs[attribute]) in [bytes, np.bytes_]:
+        if type(g[table].attrs[attribute]) in BYTE_TYPES:
             self.add_keyword(attribute, g[table].attrs[attribute].decode('utf-8'))
         else:
             self.add_keyword(attribute, g[table].attrs[attribute])
@@ -158,7 +163,7 @@ def read_set(self, filename, pedantic=False, verbose=True):
     for keyword in g.attrs:
         # Due to a bug in HDF5, in order to get this to work in Python 3, we
         # need to encode string values in utf-8
-        if type(g.attrs[keyword]) in [bytes, np.bytes_]:
+        if type(g.attrs[keyword]) in BYTE_TYPES:
             self.keywords[keyword] = g.attrs[keyword].decode('utf-8')
         else:
             self.keywords[keyword] = g.attrs[keyword]
