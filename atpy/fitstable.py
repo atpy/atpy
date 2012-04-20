@@ -190,11 +190,14 @@ def read(self, filename, hdu=None, memmap=False, verbose=True):
             not key in standard_keys:
             self.add_keyword(key, header[key])
 
-    for comment in header.get_comment():
-        if isinstance(comment, pyfits.Card):
-            self.add_comment(comment.value)
-        else:
-            self.add_comment(comment)
+    try:
+        for comment in header.get_comment():
+            if isinstance(comment, pyfits.Card):
+                self.add_comment(comment.value)
+            else:
+                self.add_comment(comment)
+    except KeyError:
+        pass
 
     if hdu.name:
         self.table_name = str(hdu.name)
@@ -265,11 +268,16 @@ def _to_hdu(self):
     hdu.name = self.table_name
 
     for key in self.keywords:
+
         if len(key) > 8:
             keyname = "hierarch " + key
         else:
             keyname = key
-        hdu.header.update(keyname, self.keywords[key])
+
+        try:  # PyFITS 3.x
+            hdu.header[keyname] = self.keywords[key]
+        except KeyError:  # PyFITS 2.x
+            hdu.header.update(keyname, self.keywords[key])
 
     for comment in self.comments:
         hdu.header.add_comment(comment)
@@ -335,9 +343,14 @@ def read_set(self, filename, memmap=False, verbose=True):
         if not key[:4] in ['TFOR', 'TDIS', 'TDIM', 'TTYP', 'TUNI'] and \
             not key in standard_keys:
             self.add_keyword(key, header[key])
-
-    for comment in header.get_comment():
-        self.add_comment(comment)
+    try:
+        for comment in header.get_comment():
+            if isinstance(comment, pyfits.Card):
+                self.add_comment(comment.value)
+            else:
+                self.add_comment(comment)
+    except KeyError:
+        pass
 
     # Read in tables one by one
     from .basetable import Table
@@ -372,11 +385,16 @@ def write_set(self, filename, overwrite=False):
 
     primary = pyfits.PrimaryHDU()
     for key in self.keywords:
+
         if len(key) > 8:
             keyname = "hierarch " + key
         else:
             keyname = key
-        primary.header.update(keyname, self.keywords[key])
+
+        try:  # PyFITS 3.x
+            primary.header[keyname] = self.keywords[key]
+        except KeyError:  # PyFITS 2.x
+            primary.header.update(keyname, self.keywords[key])
 
     for comment in self.comments:
         primary.header.add_comment(comment)
