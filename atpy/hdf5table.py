@@ -346,9 +346,10 @@ def write_set(self, filename, compression=False, group="", append=False,
 
         for keyword in self.tables[table_key].keywords:
             # Due to a bug in HDF5, in order to get this to work in Python 3, we
-            # need to encode string values in utf-8
+            # need to encode string values in utf-8. In addition, we have to use
+            # np.string_ to ensure that fixed-length attributes are used.
             if isinstance(self.tables[table_key].keywords[keyword], basestring):
-                dset.attrs[keyword] = self.tables[table_key].keywords[keyword].encode('utf-8')
+                dset.attrs[keyword] = np.string_(self.tables[table_key].keywords[keyword].encode('utf-8'))
             else:
                 dset.attrs[keyword] = self.tables[table_key].keywords[keyword]
 
