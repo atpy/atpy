@@ -15,9 +15,9 @@ except:
     h5py_installed = False
 
 try:
-    BYTE_TYPES = [bytes, np.bytes_]
+    STRING_TYPES = [bytes, np.bytes_, np.string_, str]
 except AttributeError:
-    BYTE_TYPES = [bytes]
+    STRING_TYPES = [bytes, np.string_, str]
 
 
 def _check_h5py_installed():
@@ -125,8 +125,8 @@ def read(self, filename, table=None, verbose=True):
     for attribute in g[table].attrs:
         # Due to a bug in HDF5, in order to get this to work in Python 3, we
         # need to encode string values in utf-8
-        if type(g[table].attrs[attribute]) in BYTE_TYPES:
-            self.add_keyword(attribute, g[table].attrs[attribute].decode('utf-8'))
+        if type(g[table].attrs[attribute]) in STRING_TYPES:
+            self.add_keyword(attribute, np.compat.asstr(g[table].attrs[attribute]))
         else:
             self.add_keyword(attribute, g[table].attrs[attribute])
 
@@ -163,8 +163,8 @@ def read_set(self, filename, pedantic=False, verbose=True):
     for keyword in g.attrs:
         # Due to a bug in HDF5, in order to get this to work in Python 3, we
         # need to encode string values in utf-8
-        if type(g.attrs[keyword]) in BYTE_TYPES:
-            self.keywords[keyword] = g.attrs[keyword].decode('utf-8')
+        if type(g.attrs[keyword]) in STRING_TYPES:
+            self.keywords[keyword] = np.compat.asstr(g.attrs[keyword])
         else:
             self.keywords[keyword] = g.attrs[keyword]
 
@@ -253,7 +253,7 @@ def write(self, filename, compression=False, group="", append=False,
         # need to encode string values in utf-8. In addition, we have to use
         # np.string_ to ensure that fixed-length attributes are used.
         if isinstance(self.keywords[keyword], basestring):
-            dset.attrs[keyword] = np.string_(self.keywords[keyword].encode('utf-8'))
+            dset.attrs[keyword] = np.string_(self.keywords[keyword])
         else:
             dset.attrs[keyword] = self.keywords[keyword]
 
@@ -320,7 +320,7 @@ def write_set(self, filename, compression=False, group="", append=False,
         # need to encode string values in utf-8. In addition, we have to use
         # np.string_ to ensure that fixed-length attributes are used.
         if isinstance(self.keywords[keyword], basestring):
-            g.attrs[keyword] = np.string_(self.keywords[keyword].encode('utf-8'))
+            g.attrs[keyword] = np.string_(self.keywords[keyword])
         else:
             g.attrs[keyword] = self.keywords[keyword]
 
@@ -349,7 +349,7 @@ def write_set(self, filename, compression=False, group="", append=False,
             # need to encode string values in utf-8. In addition, we have to use
             # np.string_ to ensure that fixed-length attributes are used.
             if isinstance(self.tables[table_key].keywords[keyword], basestring):
-                dset.attrs[keyword] = np.string_(self.tables[table_key].keywords[keyword].encode('utf-8'))
+                dset.attrs[keyword] = np.string_(self.tables[table_key].keywords[keyword])
             else:
                 dset.attrs[keyword] = self.tables[table_key].keywords[keyword]
 
