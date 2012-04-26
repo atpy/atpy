@@ -4,6 +4,7 @@ import os
 from distutils import version
 import numpy as np
 import warnings
+import re
 
 from .exceptions import TableException
 from .helpers import smart_dtype
@@ -101,6 +102,14 @@ def read(self, filename, pedantic=False, tid=-1, verbose=True):
     for field in table.fields:
 
         colname = field.ID
+
+        # ensure that colname is a valid python variable name (i.e. contains no non-allowed chars)
+        # the following will replace any invalid chars with underscores, and/or prepend an initial
+        # underscore to names that begin with a digit.
+        clean = lambda varStr: re.sub('\W|^(?=\d)','_', varStr)
+        colname = clean(colname)
+
+
 
         data = table.array[colname]
 
