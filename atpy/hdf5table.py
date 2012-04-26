@@ -4,6 +4,18 @@ import os
 
 import numpy as np
 
+try:
+    asstr = np.compat.asstr
+except AttributeError:  # For Numpy 1.4.1
+    import sys
+    if sys.version_info[0] >= 3:
+        def asstr(s):
+            if isinstance(s, bytes):
+                return s.decode('latin1')
+            return str(s)
+    else:
+        asstr = str
+
 from .exceptions import TableException
 from .decorators import auto_download_to_file, auto_decompress_to_fileobj, auto_fileobj_to_file
 
@@ -126,7 +138,7 @@ def read(self, filename, table=None, verbose=True):
         # Due to a bug in HDF5, in order to get this to work in Python 3, we
         # need to encode string values in utf-8
         if type(g[table].attrs[attribute]) in STRING_TYPES:
-            self.add_keyword(attribute, np.compat.asstr(g[table].attrs[attribute]))
+            self.add_keyword(attribute, asstr(g[table].attrs[attribute]))
         else:
             self.add_keyword(attribute, g[table].attrs[attribute])
 
@@ -164,7 +176,7 @@ def read_set(self, filename, pedantic=False, verbose=True):
         # Due to a bug in HDF5, in order to get this to work in Python 3, we
         # need to encode string values in utf-8
         if type(g.attrs[keyword]) in STRING_TYPES:
-            self.keywords[keyword] = np.compat.asstr(g.attrs[keyword])
+            self.keywords[keyword] = asstr(g.attrs[keyword])
         else:
             self.keywords[keyword] = g.attrs[keyword]
 
