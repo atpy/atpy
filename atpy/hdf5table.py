@@ -26,10 +26,19 @@ try:
 except:
     h5py_installed = False
 
+STRING_TYPES = [bytes, np.string_, str]
+
+
 try:
-    STRING_TYPES = [bytes, np.bytes_, np.string_, str]
+    STRING_TYPES.append(np.bytes_)
 except AttributeError:
-    STRING_TYPES = [bytes, np.string_, str]
+    pass
+
+
+try:
+    STRING_TYPES.append(unicode)
+except NameError:
+    pass
 
 
 def _check_h5py_installed():
