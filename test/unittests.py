@@ -81,6 +81,9 @@ def generate_simple_table(dtype, shape):
 
 class ColumnsDefaultTestCase():
 
+    def test_bool(self):
+        self.generic_test(np.bool_)
+
     def test_uint8(self):
         self.generic_test(np.uint8)
 
@@ -155,6 +158,9 @@ class DefaultTestCase():
             for i in range(before.shape[0]):
                 for j in range(before.shape[1]):
                     self.assertEqual(before[i, j], after[i, j])
+
+    def test_bool(self):
+        self.integer_test(np.bool_)
 
     def test_uint8(self):
         self.integer_test(np.uint8)
