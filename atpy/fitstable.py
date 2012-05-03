@@ -161,7 +161,7 @@ def read(self, filename, hdu=None, memmap=False, verbose=True):
         format, bzero = hdu.columns[i].format[-1], hdu.columns[i].bzero
 
         if bzero and format in ['B', 'I', 'J']:
-            data = pyfits.rec.recarray.field(hdu.data, i)
+            data = np.rec.recarray.field(hdu.data, i)
             if format == 'B' and bzero == -128:
                 data = (data.astype(np.int16) + bzero).astype(np.int8)
             elif format == 'I' and bzero == - np.iinfo(np.int16).min:
