@@ -124,6 +124,7 @@ type_dict_rev['date'] = np.str
 type_dict_rev['var_string'] = np.str
 type_dict_rev['decimal'] = np.str
 type_dict_rev['numeric'] = np.str
+type_dict_rev['enum'] = np.str
 
 
 # Define symbol to use in insert statement
