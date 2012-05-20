@@ -9,13 +9,13 @@ except ImportError: # Python 2.x
 
 
 setup(name='ATpy',
-      version='0.9.5.3',
+      version='0.9.6',
       description='Astronomical Tables in Python',
       author='Thomas Robitaille and Eli Bressert',
       author_email='thomas.robitaille@gmail.com, elibre@users.sourceforge.net',
       license='MIT',
       url='http://atpy.github.com/',
-      download_url='https://github.com/downloads/atpy/atpy/ATpy-0.9.5.3.tar.gz',
+      download_url='https://github.com/downloads/atpy/atpy/ATpy-0.9.6.tar.gz',
       packages=['atpy'],
       provides=['atpy'],
       requires=['numpy'],
