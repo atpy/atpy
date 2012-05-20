@@ -271,16 +271,16 @@ class Table(object):
         if attribute == 'names':
             return self.__dict__['data'].dtype.names
         elif attribute == 'units':
-            print("WARNING: Table.units is depracated - use Table.columns to access this information")
+            print("WARNING: Table.units is deprecated - use Table.columns to access this information")
             return dict([(name, self.columns[name].unit) for name in self.names])
         elif attribute == 'types':
-            print("WARNING: Table.types is depracated - use Table.columns to access this information")
+            print("WARNING: Table.types is deprecated - use Table.columns to access this information")
             return dict([(name, self.columns[name].type) for name in self.names])
         elif attribute == 'nulls':
-            print("WARNING: Table.nulls is depracated - use Table.columns to access this information")
+            print("WARNING: Table.nulls is deprecated - use Table.columns to access this information")
             return dict([(name, self.columns[name].null) for name in self.names])
         elif attribute == 'formats':
-            print("WARNING: Table.formats is depracated - use Table.columns to access this information")
+            print("WARNING: Table.formats is deprecated - use Table.columns to access this information")
             return dict([(name, self.columns[name].format) for name in self.names])
         elif attribute == 'shape':
             return (len(self.data), len(self.names))
@@ -604,7 +604,7 @@ class Table(object):
         return
 
     def remove_column(self, remove_name):
-        print("WARNING: remove_column is depracated - use remove_columns instead")
+        print("WARNING: remove_column is deprecated - use remove_columns instead")
         self.remove_columns([remove_name])
         return
 
