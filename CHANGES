@@ -16,6 +16,8 @@ Version 0.9.6
 
     - added support for LaTeX read/write via asciitable
 
+    - PARAM values in VO tables are now read/written as keywords
+
     API Changes
     ~~~~~~~~~~~
 
@@ -31,6 +33,10 @@ Version 0.9.6
 
     - when reading from VO tables, the column ID is used instead of the name
       since the ID is guaranteed to be unique.
+
+    - fixed compatibility with PyFITS 3.0.x
+
+    - fixed compatibility with recent versions of h5py
 
 Version 0.9.5.3
 
