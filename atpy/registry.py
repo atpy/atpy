@@ -140,10 +140,10 @@ def register_extensions(ttype, extensions, override=False):
 
 def _determine_type(string, verbose):
 
-    if type(string) != str:
+    if not isinstance(string, basestring):
         raise Exception('Could not determine table type (non-string argument)')
 
-    s = string.lower()
+    s = str(string).lower()
 
     if not '.' in s:
         extension = s
