@@ -102,7 +102,10 @@ def read(self, filename, pedantic=False, tid=-1, verbose=True):
 
         colname = field.ID
 
-        data = table.array[colname]
+        if table.array.size:
+            data = table.array[colname]
+        else:
+            data = np.array([], dtype=field.converter.format)
 
         if len(data) > 0 and data.ndim == 1 and not np.all([np.isscalar(x) for x in data]):
             warnings.warn("VO Variable length vector column detected (%s) - converting to string" % colname)
