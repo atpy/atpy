@@ -65,3 +65,6 @@ class odict(object):
 
     def __iter__(self):
         return iter(self.keys)
+
+    def items(self):
+        return zip(self.keys, self.values)
