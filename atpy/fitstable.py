@@ -198,13 +198,25 @@ def read(self, filename, hdu=None, memmap=False, verbose=True):
             self.add_keyword(key, header[key])
 
     try:
-        for comment in header.get_comment():
-            if isinstance(comment, pyfits.Card):
-                self.add_comment(comment.value)
-            else:
-                self.add_comment(comment)
+        header['COMMENT']
     except KeyError:
         pass
+    else:
+        # PyFITS used to define header['COMMENT'] as the last comment read in
+        # (which was a string), but now defines it as a _HeaderCommentaryCards
+        # object
+        if isinstance(header['COMMENT'], basestring):
+            for comment in header.get_comment():
+                if isinstance(comment, pyfits.Card):
+                    self.add_comment(comment.value)
+                else:
+                    self.add_comment(comment)
+        else:
+            for comment in header['COMMENT']:
+                if isinstance(comment, pyfits.Card):
+                    self.add_comment(comment.value)
+                else:
+                    self.add_comment(comment)
 
     if hdu.name:
         self.table_name = str(hdu.name)
@@ -350,14 +362,28 @@ def read_set(self, filename, memmap=False, verbose=True):
         if not key[:4] in ['TFOR', 'TDIS', 'TDIM', 'TTYP', 'TUNI'] and \
             not key in standard_keys:
             self.add_keyword(key, header[key])
+
     try:
-        for comment in header.get_comment():
-            if isinstance(comment, pyfits.Card):
-                self.add_comment(comment.value)
-            else:
-                self.add_comment(comment)
+        header['COMMENT']
     except KeyError:
         pass
+    else:
+        # PyFITS used to define header['COMMENT'] as the last comment read in
+        # (which was a string), but now defines it as a _HeaderCommentaryCards
+        # object
+        if isinstance(header['COMMENT'], basestring):
+            for comment in header.get_comment():
+                if isinstance(comment, pyfits.Card):
+                    self.add_comment(comment.value)
+                else:
+                    self.add_comment(comment)
+        else:
+            for comment in header['COMMENT']:
+                if isinstance(comment, pyfits.Card):
+                    self.add_comment(comment.value)
+                else:
+                    self.add_comment(comment)
+
 
     # Read in tables one by one
     from .basetable import Table
