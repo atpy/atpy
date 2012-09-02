@@ -2,6 +2,8 @@ from __future__ import print_function, division
 
 import os
 from distutils import version
+import warnings
+
 import numpy as np
 
 from .exceptions import TableException
@@ -13,16 +15,21 @@ pyfits_minimum_version = version.LooseVersion('2.1')
 
 try:
     import pyfits
-    if version.LooseVersion(pyfits.__version__) < pyfits_minimum_version:
-        raise
+    # Some users have reported issues with pyfits.__version__ being set to
+    # None. If that is the case, we simply emit a warning and continue.
+    if pyfits.__version__ is None:
+        warnings.warn("Could not determine PyFITS version")
+    else:
+        if version.LooseVersion(pyfits.__version__) < pyfits_minimum_version:
+            raise
     pyfits_installed = True
-except:
+except ImportError:
     pyfits_installed = False
 
 
 def _check_pyfits_installed():
     if not pyfits_installed:
-        raise Exception("Cannot read/write FITS files - pyfits " + \
+        raise Exception("Cannot read/write FITS files - PyFITS " + \
             pyfits_minimum_version.vstring + " or later required")
 
 standard_keys = ['XTENSION', 'NAXIS', 'NAXIS1', 'NAXIS2', 'TFIELDS', \
