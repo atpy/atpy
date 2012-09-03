@@ -17,7 +17,7 @@ try:
     import pyfits
     # Some users have reported issues with pyfits.__version__ being set to
     # None. If that is the case, we simply emit a warning and continue.
-    if pyfits.__version__ is None:
+    if pyfits.__version__ is None or pyfits.__version__ == '':
         warnings.warn("Could not determine PyFITS version")
     else:
         if version.LooseVersion(pyfits.__version__) < pyfits_minimum_version:
