@@ -5,32 +5,12 @@ from distutils import version
 import warnings
 
 import numpy as np
+from astropy.io import fits
 
 from .exceptions import TableException
 from .helpers import smart_dtype, smart_mask
 from .decorators import auto_download_to_file, auto_fileobj_to_file
 
-
-pyfits_minimum_version = version.LooseVersion('2.1')
-
-try:
-    import pyfits
-    # Some users have reported issues with pyfits.__version__ being set to
-    # None. If that is the case, we simply emit a warning and continue.
-    if pyfits.__version__ is None or pyfits.__version__ == '':
-        warnings.warn("Could not determine PyFITS version")
-    else:
-        if version.LooseVersion(pyfits.__version__) < pyfits_minimum_version:
-            raise
-    pyfits_installed = True
-except ImportError:
-    pyfits_installed = False
-
-
-def _check_pyfits_installed():
-    if not pyfits_installed:
-        raise Exception("Cannot read/write FITS files - PyFITS " + \
-            pyfits_minimum_version.vstring + " or later required")
 
 standard_keys = ['XTENSION', 'NAXIS', 'NAXIS1', 'NAXIS2', 'TFIELDS', \
     'PCOUNT', 'GCOUNT', 'BITPIX', 'EXTNAME']
@@ -54,7 +34,7 @@ type_dict[str] = "A"
 
 
 def _list_tables(filename):
-    hdulist = pyfits.open(filename)
+    hdulist = fits.open(filename)
     tables = {}
     for i, hdu in enumerate(hdulist[1:]):
         if hdu.header['XTENSION'] in ['BINTABLE', 'ASCIITABLE', 'TABLE']:
@@ -85,8 +65,6 @@ def read(self, filename, hdu=None, memmap=False, verbose=True):
             Whether PyFITS should use memory mapping
     '''
 
-    _check_pyfits_installed()
-
     self.reset()
 
     # If no hdu is requested, check that there is only one table
@@ -99,7 +77,7 @@ def read(self, filename, hdu=None, memmap=False, verbose=True):
         else:
             raise TableException(tables, 'hdu')
 
-    hdulist = pyfits.open(filename, memmap=memmap)
+    hdulist = fits.open(filename, memmap=memmap)
     hdu = hdulist[hdu]
 
     table = hdu.data
@@ -207,13 +185,13 @@ def read(self, filename, hdu=None, memmap=False, verbose=True):
         # object
         if isinstance(header['COMMENT'], basestring):
             for comment in header.get_comment():
-                if isinstance(comment, pyfits.Card):
+                if isinstance(comment, fits.Card):
                     self.add_comment(comment.value)
                 else:
                     self.add_comment(comment)
         else:
             for comment in header['COMMENT']:
-                if isinstance(comment, pyfits.Card):
+                if isinstance(comment, fits.Card):
                     self.add_comment(comment.value)
                 else:
                     self.add_comment(comment)
@@ -228,7 +206,7 @@ def read(self, filename, hdu=None, memmap=False, verbose=True):
 
 def _to_hdu(self):
     '''
-    Return the current table as a pyfits HDU object
+    Return the current table as a astropy.io.fits HDU object
     '''
 
     columns = []
@@ -280,10 +258,10 @@ def _to_hdu(self):
         else:
             bzero = None
 
-        columns.append(pyfits.Column(name=name, format=format, unit=unit, \
+        columns.append(fits.Column(name=name, format=format, unit=unit, \
             null=null, array=data, bzero=bzero))
 
-    hdu = pyfits.new_table(pyfits.ColDefs(columns))
+    hdu = fits.new_table(fits.ColDefs(columns))
     hdu.name = self.table_name
 
     for key in self.keywords:
@@ -319,8 +297,6 @@ def write(self, filename, overwrite=False):
             Whether to overwrite any existing file without warning
     '''
 
-    _check_pyfits_installed()
-
     if os.path.exists(filename):
         if overwrite:
             os.remove(filename)
@@ -351,12 +327,10 @@ def read_set(self, filename, memmap=False, verbose=True):
             Whether PyFITS should use memory mapping
     '''
 
-    _check_pyfits_installed()
-
     self.reset()
 
     # Read in primary header
-    header = pyfits.getheader(filename, 0)
+    header = fits.getheader(filename, 0)
 
     for key in header.keys():
         if not key[:4] in ['TFOR', 'TDIS', 'TDIM', 'TTYP', 'TUNI'] and \
@@ -373,13 +347,13 @@ def read_set(self, filename, memmap=False, verbose=True):
         # object
         if isinstance(header['COMMENT'], basestring):
             for comment in header.get_comment():
-                if isinstance(comment, pyfits.Card):
+                if isinstance(comment, fits.Card):
                     self.add_comment(comment.value)
                 else:
                     self.add_comment(comment)
         else:
             for comment in header['COMMENT']:
-                if isinstance(comment, pyfits.Card):
+                if isinstance(comment, fits.Card):
                     self.add_comment(comment.value)
                 else:
                     self.add_comment(comment)
@@ -408,15 +382,13 @@ def write_set(self, filename, overwrite=False):
             Whether to overwrite any existing file without warning
     '''
 
-    _check_pyfits_installed()
-
     if os.path.exists(filename):
         if overwrite:
             os.remove(filename)
         else:
             raise Exception("File exists: %s" % filename)
 
-    primary = pyfits.PrimaryHDU()
+    primary = fits.PrimaryHDU()
     for key in self.keywords:
 
         if len(key) > 8:
@@ -435,5 +407,5 @@ def write_set(self, filename, overwrite=False):
     hdulist = [primary]
     for table_key in self.tables:
         hdulist.append(_to_hdu(self.tables[table_key]))
-    hdulist = pyfits.HDUList(hdulist)
+    hdulist = fits.HDUList(hdulist)
     hdulist.writeto(filename)

@@ -2,20 +2,11 @@ from __future__ import print_function, division
 
 import os
 
+from astropy.io import ascii as asciitable
+
 from .decorators import auto_download_to_file, auto_decompress_to_fileobj
 
 # Thanks to Moritz Guenther for providing the initial code used to create this file
-
-try:
-    import asciitable
-    asciitable_installed = True
-except:
-    asciitable_installed = False
-
-
-def _check_asciitable_installed():
-    if not asciitable_installed:
-        raise Exception("Cannot read data with asciitable - no version of asciitable is found")
 
 
 def read_cds(self, filename, **kwargs):
@@ -131,8 +122,6 @@ def read_ascii(self, filename, **kwargs):
     See the asciitable documentation at http://cxc.harvard.edu/contrib/asciitable/ for more details.
     '''
 
-    _check_asciitable_installed()
-
     self.reset()
 
     kwargs['numpy'] = True
@@ -161,8 +150,6 @@ def write_ascii(self, filename, **kwargs):
 
     See the asciitable documentation at http://cxc.harvard.edu/contrib/asciitable/ for more details.
     '''
-
-    _check_asciitable_installed()
 
     if 'overwrite' in kwargs:
         overwrite = kwargs.pop('overwrite')
