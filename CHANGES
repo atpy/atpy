@@ -1,6 +1,11 @@
 CHANGES
 --------
 
+Version 0.9.7
+
+    The main change in this version is that Astropy is now required as a
+    dependency, and PyFITS, vo, and asciitable are no longer required.
+
 Version 0.9.6
 
     New Features
