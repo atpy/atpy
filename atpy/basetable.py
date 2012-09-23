@@ -561,9 +561,9 @@ class Table(object):
             dtype = data.dtype
 
         if data.ndim > 1:
-            newdtype = (name, data.dtype, (data.shape[1],))
+            newdtype = (str(name), data.dtype, (data.shape[1],))
         else:
-            newdtype = (name, data.dtype)
+            newdtype = (str(name), data.dtype)
 
         if before:
             try:

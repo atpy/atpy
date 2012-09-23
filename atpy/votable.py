@@ -5,25 +5,14 @@ from distutils import version
 import numpy as np
 import warnings
 
+from astropy.io.vo.table import parse
+from astropy.io.vo.tree import VOTableFile, Resource, Field, Param
+from astropy.io.vo.tree import Table as VOTable
+
 from .exceptions import TableException
 from .helpers import smart_dtype
 from .decorators import auto_download_to_file, auto_decompress_to_fileobj, auto_fileobj_to_file
 
-vo_minimum_version = version.LooseVersion('0.3')
-
-try:
-    from vo.table import parse
-    from vo.tree import VOTableFile, Resource, Field, Param
-    from vo.tree import Table as VOTable
-    vo_installed = True
-except:
-    vo_installed = False
-
-
-def _check_vo_installed():
-    if not vo_installed:
-        raise Exception("Cannot read/write VO table files - vo " +  \
-            vo_minimum_version.vstring + " or later required")
 
 # Define type conversion dictionary
 type_dict = {}
@@ -73,8 +62,6 @@ def read(self, filename, pedantic=False, tid=-1, verbose=True):
             When *pedantic* is True, raise an error when the file violates
             the VO Table specification, otherwise issue a warning.
     '''
-
-    _check_vo_installed()
 
     self.reset()
 
@@ -247,7 +234,6 @@ def write(self, filename, votype='ascii', overwrite=False):
             Whether to write the table as ASCII or binary
     '''
 
-    _check_vo_installed()
 
     if os.path.exists(filename):
         if overwrite:
@@ -289,7 +275,6 @@ def read_set(self, filename, pedantic=False, verbose=True):
             the VO Table specification, otherwise issue a warning.
     '''
 
-    _check_vo_installed()
 
     self.reset()
 
@@ -315,7 +300,6 @@ def write_set(self, filename, votype='ascii', overwrite=False):
             Whether to write the tables as ASCII or binary tables
     '''
 
-    _check_vo_installed()
 
     if os.path.exists(filename):
         if overwrite:
