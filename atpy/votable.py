@@ -5,9 +5,9 @@ from distutils import version
 import numpy as np
 import warnings
 
-from astropy.io.vo.table import parse
-from astropy.io.vo.tree import VOTableFile, Resource, Field, Param
-from astropy.io.vo.tree import Table as VOTable
+from astropy.io.votable.table import parse
+from astropy.io.votable.tree import VOTableFile, Resource, Field, Param
+from astropy.io.votable.tree import Table as VOTable
 
 from .exceptions import TableException
 from .helpers import smart_dtype
