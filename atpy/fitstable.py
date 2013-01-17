@@ -196,7 +196,7 @@ def read(self, filename, hdu=None, memmap=False, verbose=True):
                 else:
                     self.add_comment(comment)
 
-    if hdu.name:
+    if hdu.name is not None:
         self.table_name = str(hdu.name)
 
     hdulist.close()
@@ -262,7 +262,9 @@ def _to_hdu(self):
             null=null, array=data, bzero=bzero))
 
     hdu = fits.new_table(fits.ColDefs(columns))
-    hdu.name = self.table_name
+
+    if self.table_name is not None:
+        hdu.name = self.table_name
 
     for key in self.keywords:
 
