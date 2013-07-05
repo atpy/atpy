@@ -4,19 +4,11 @@ from distutils import version
 import numpy as np
 import warnings
 import math
+import sys
 
 # SQLite
 
-try:
-    import sqlite3
-    sqlite3_installed = True
-except:
-    sqlite3_installed = False
-
-
-def _check_sqlite3_installed():
-    if not sqlite3_installed:
-        raise Exception("Cannot read/write SQLite tables - sqlite3 required")
+import sqlite3
 
 # SQLite
 
@@ -195,7 +187,10 @@ def list_tables(cursor, dbtype):
         for i, table_name in enumerate(table_names):
             if type(table_name) == tuple:
                 table_name = table_name[0]
-            tables[str(table_name.encode())] = str(table_name.encode())
+            if sys.version_info[0] > 2:
+                tables[table_name] = table_name
+            else:
+                tables[str(table_name.encode())] = str(table_name.encode())
     elif dbtype=='mysql':
         cursor.execute('SHOW TABLES;')
         for i, table_name in enumerate(cursor):
@@ -284,7 +279,6 @@ def connect_database(dbtype, *args, **kwargs):
         - pgdb.connect() for PostgreSQL
     '''
     if dbtype == 'sqlite':
-        _check_sqlite3_installed()
         connection = sqlite3.connect(*args, **kwargs)
     elif dbtype == 'mysql':
         _check_MySQLdb_installed()

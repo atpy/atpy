@@ -6,7 +6,7 @@ class LaTeXTable(object):
     def latex_write(self, filename):
 
         # Open file for writing
-        f = file(filename, 'wb')
+        f = open(filename, 'wb')
 
         for i in range(self.__len__()):
 

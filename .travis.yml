@@ -1,0 +1,65 @@
+language: python
+
+python:
+    - 2.6
+    - 2.7
+    - 3.2
+    - 3.3
+
+services:
+    - mysql
+    - postgresql
+
+env:
+    # try all python versions with the latest stable numpy and astropy
+    - ASTROPY_VERSION=stable NUMPY_VERSION=1.7.1 SETUP_CMD='test'
+
+matrix:
+    include:
+
+        # try alternate numpy versions with the latest stable astropy
+        - python: 2.7
+          env: ASTROPY_VERSION=stable NUMPY_VERSION=1.6.2 SETUP_CMD='test'
+        - python: 2.7
+          env: ASTROPY_VERSION=stable NUMPY_VERSION=1.5.1 SETUP_CMD='test'
+        - python: 3.2
+          env: ASTROPY_VERSION=stable NUMPY_VERSION=1.6.2 SETUP_CMD='test'
+        # numpy < 1.6 does not work on py 3.x
+
+        # try latest developer version of astropy
+        - python: 2.7
+          env: ASTROPY_VERSION=development NUMPY_VERSION=1.7.1 SETUP_CMD='test'
+        - python: 3.3
+          env: ASTROPY_VERSION=development NUMPY_VERSION=1.7.1 SETUP_CMD='test'
+
+before_install:
+   # We do this to make sure we get the dependencies so pip works below
+   - sudo apt-get update -qq
+   - sudo apt-get install -qq python-numpy cython libatlas-dev liblapack-dev gfortran
+
+install:
+   - export PYTHONIOENCODING=UTF8 # just in case
+   - pip -q install --upgrade "numpy==$NUMPY_VERSION" --use-mirrors
+   - pip -q install --upgrade Cython --use-mirrors
+   - export PV=$(python -V 2>&1)
+
+   - sudo apt-get install -qq python-scipy libhdf5-serial-1.8.4 libhdf5-serial-dev
+
+   - if [[ $PV != *3.3* ]]; then pip -q install h5py --upgrade; fi
+   - if [[ $PV != *3.* ]]; then pip -q install MySQL-python --upgrade; fi
+   - if [[ $PV != *3.* ]]; then pip -q install PyGreSQL --upgrade; fi
+
+   - if [[ $ASTROPY_VERSION == stable ]]; then pip -q install astropy --use-mirrors; fi
+   - if [[ $ASTROPY_VERSION == development ]]; then pip -q install git+http://github.com/astropy/astropy.git#egg=astropy --use-mirrors; fi
+
+before_script:
+  - mysql -e "CREATE DATABASE python;" -u root
+  - mysql -e "CREATE USER 'testuser'@'localhost' IDENTIFIED BY 'testpassword';" -u root
+  - mysql -e "GRANT ALL ON python.* TO 'testuser'@'localhost';" -u root
+  - psql -c "CREATE DATABASE python;" -U postgres
+  - psql -c "CREATE USER testuser WITH PASSWORD 'testpassword';" -U postgres
+  - psql -c "GRANT ALL PRIVILEGES ON DATABASE python TO testuser;" -U postgres
+
+script:
+   - python setup.py $SETUP_CMD
+

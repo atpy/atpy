@@ -1,6 +1,12 @@
 from __future__ import print_function, division
 
-import urllib2
+import sys
+
+if sys.version_info[0] > 2:
+    from urllib.request import Request, urlopen
+else:
+    from urllib2 import Request, urlopen
+
 import tempfile
 import gzip
 import bz2
@@ -22,8 +28,8 @@ def _auto_download_to_file(read, table, filename, *args, **kwargs):
             if filename.lower().startswith('%s://' % protocol):
 
                 # Retrieve file
-                req = urllib2.Request(filename)
-                response = urllib2.urlopen(req)
+                req = Request(filename)
+                response = urlopen(req)
                 result = response.read()
 
                 # Write it out to a temporary file
