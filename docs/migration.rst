@@ -1,18 +1,26 @@
 Guide for Migrating to Astropy
 ==============================
 
+.. note:: If you encounter any other issues not described here when migrating to
+          Astropy, please `let us know <https://github.com/atpy/atpy/issues>`_
+          and we will update this guide accordingly.
+
 Much of the functionality from ATpy has been incorporated into the `Astropy
 <http://www.astropy.org>`_ as the `astropy.table
-<http://docs.astropy.org/en/stable/table>`_ sub-package. The Astropy table
+<http://docs.astropy.org/en/stable/table>`_ sub-package. The Astropy ``Table``.
 class can be imported with::
 
     >>> from astropy.table import Table
 
-which aims to replace the ATpy ``Table``` class.
-
 In the process of including the code in Astropy, the API has been changed in a
 backward-incompatible way, and the present document aims to describe the main
 changes.
+
+Note that the Astropy ``Table`` class is more powerful than the ATpy
+equivalent in many respects, and we do not describe all the features here,
+only functionality of ATpy that has changed in Astropy. For a full overview of
+the Astropy ``Table`` class, see `astropy.table
+<http://docs.astropy.org/en/stable/table>`_.
 
 Adding columns
 --------------
@@ -23,7 +31,7 @@ In ATpy, columns are added with::
     >>> t = Table()
     >>> t.add_column('a', [1, 2, 3])
 
-In the Astropy table class, as of 0.2, the equivalent is::
+In the Astropy 0.2.x ``Table`` class, the equivalent is::
 
     >>> from astropy.table import Table, Column
     >>> t = Table()
@@ -63,5 +71,5 @@ version of Astropy), FITS reading/writing is also implemented. This means that
 as of Astropy 0.3, the only features ATpy includes that are not supported by
 Astropy directly are the SQL input/output and the online (VO and IRSA)
 querying. However, the VO and IRSA querying will be possible with the new
-`astroquery <http://astroquery.readthedocs.org`_ package which is still under
-development.
+`astroquery <http://astroquery.readthedocs.org>`_ package which is currently
+under development.
