@@ -1,8 +1,6 @@
 from __future__ import print_function, division
 
 import os
-from distutils import version
-import warnings
 
 import numpy as np
 from astropy.io import fits
@@ -196,7 +194,7 @@ def read(self, filename, hdu=None, memmap=False, verbose=True):
                 else:
                     self.add_comment(comment)
 
-    if hdu.name is not None:
+    if hdu.name:
         self.table_name = str(hdu.name)
 
     hdulist.close()
@@ -262,9 +260,7 @@ def _to_hdu(self):
             null=null, array=data, bzero=bzero))
 
     hdu = fits.new_table(fits.ColDefs(columns))
-
-    if self.table_name is not None:
-        hdu.name = self.table_name
+    hdu.name = self.table_name
 
     for key in self.keywords:
 

@@ -1,18 +1,16 @@
 from __future__ import print_function, division
 
 import os
-from distutils import version
 import numpy as np
 import warnings
 
-from astropy.io.votable.table import parse
+from astropy.io.votable import parse
 from astropy.io.votable.tree import VOTableFile, Resource, Field, Param
 from astropy.io.votable.tree import Table as VOTable
 
 from .exceptions import TableException
 from .helpers import smart_dtype
 from .decorators import auto_download_to_file, auto_decompress_to_fileobj, auto_fileobj_to_file
-
 
 # Define type conversion dictionary
 type_dict = {}
@@ -99,11 +97,11 @@ def read(self, filename, pedantic=False, tid=-1, verbose=True):
             data = np.array([str(x) for x in data])
 
         if self._masked:
-            self.add_column(colname, data, \
-                unit=field.unit, mask=table.mask[colname], \
+            self.add_column(str(colname), np.array(data), \
+                unit=field.unit, mask=data.mask[colname], \
                 description=field.description)
         else:
-            self.add_column(colname, data, \
+            self.add_column(str(colname), np.array(data),
                 unit=field.unit, description=field.description)
 
     for param in table.params:
@@ -161,9 +159,9 @@ def _to_table(self, vo_table):
             raise Exception("cannot use numpy type " + str(column_type))
 
         if column_type == np.float32:
-            precision = 'F9'
+            precision = 'E9'
         elif column_type == np.float64:
-            precision = 'F17'
+            precision = 'E17'
         else:
             precision = None
 
@@ -202,17 +200,21 @@ def _to_table(self, vo_table):
         if column_type == np.string_:
             table.array[name] = self.data[name].astype(np.object_)
             if self._masked:
-                table.mask[name] = self.data[name].mask.astype(np.object_)
+                table.array.mask[name] = self.data[name].mask.astype(np.object_)
             else:
-                table.mask[name] = (self.data[name] == \
-                            self.columns[name].null).astype(np.object_)
+                if self.data[name].dtype.type == np.bytes_ and type(self.columns[name].null) != bytes:
+                    table.array.mask[name] = (self.data[name] == \
+                                self.columns[name].null.encode('utf-8')).astype(np.object_)
+                else:
+                    table.array.mask[name] = (self.data[name] == \
+                                self.columns[name].null).astype(np.object_)
         else:
             table.array[name] = self.data[name]
             if self._masked:
-                table.mask[name] = self.data[name].mask
+                table.array.mask[name] = self.data[name].mask
             else:
-                table.mask[name] = self.data[name] == \
-                            self.columns[name].null
+                table.array.mask[name] = self.data[name] == \
+                                        self.columns[name].null
 
     table.name = self.table_name
 
@@ -233,7 +235,6 @@ def write(self, filename, votype='ascii', overwrite=False):
         *votype*: [ 'ascii' | 'binary' ]
             Whether to write the table as ASCII or binary
     '''
-
 
     if os.path.exists(filename):
         if overwrite:
@@ -275,7 +276,6 @@ def read_set(self, filename, pedantic=False, verbose=True):
             the VO Table specification, otherwise issue a warning.
     '''
 
-
     self.reset()
 
     from .basetable import Table
@@ -299,7 +299,6 @@ def write_set(self, filename, votype='ascii', overwrite=False):
         *votype*: [ 'ascii' | 'binary' ]
             Whether to write the tables as ASCII or binary tables
     '''
-
 
     if os.path.exists(filename):
         if overwrite:
