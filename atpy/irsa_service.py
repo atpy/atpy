@@ -2,7 +2,13 @@ from __future__ import print_function, division
 
 import warnings
 import urllib
-import urllib2
+
+import sys
+if sys.version_info[0] > 2:
+    from urllib.request import Request, urlopen
+else:
+    from urllib2 import Request, urlopen
+
 import tempfile
 import string
 from xml.etree.ElementTree import ElementTree
@@ -197,8 +203,8 @@ def read(self, spatial, catalog, objstr=None, radius=None,
           string.join(["%s=%s" % (x, urllib.quote_plus(str(options[x]))) for x in options], "&")
 
     # Request page
-    req = urllib2.Request(url)
-    response = urllib2.urlopen(req)
+    req = Request(url)
+    response = urlopen(req)
     result = response.read()
 
     # Check if results were returned
@@ -236,8 +242,8 @@ def list_catalogs():
 
     url = 'http://irsa.ipac.caltech.edu/cgi-bin/Gator/nph-scan?mode=xml'
 
-    req = urllib2.Request(url)
-    response = urllib2.urlopen(req)
+    req = Request(url)
+    response = urlopen(req)
 
     tree = ElementTree()
 
