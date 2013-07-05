@@ -73,3 +73,10 @@ Astropy directly are the SQL input/output and the online (VO and IRSA)
 querying. However, the VO and IRSA querying will be possible with the new
 `astroquery <http://astroquery.readthedocs.org>`_ package which is currently
 under development.
+
+Table Sets
+----------
+
+Table sets are not implemented in Astropy at this time, but it is possible to
+simply loop over the tables in a file and construct a list or dictionary of
+them.
