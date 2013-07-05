@@ -5,18 +5,16 @@ ATpy - Astronomical Tables in Python
 .. admonition:: Please note!
 
              Much of ATpy's functionality has now been incorporated into
-             `Astropy <http://www.astropy.org>`_, and **ATpy will eventually be
-             deprecated**. If you are a new user, and do not need the
-             SQL-querying functionality, we recommend using `Astropy Tables
+             `Astropy <http://www.astropy.org>`_, and while we will continue
+             to fix bugs, we are no longer actively developing new features in
+             ATpy , instead focusing our efforts on Astropy. If you are a new
+             user, and do not need the SQL-querying functionality, we
+             recommend using `Astropy Tables
              <http://docs.astropy.org/en/stable/table>`_ directly. If you are
              already using ATpy and are interested in migrating to Astropy,
              please read our :doc:`migration` guide.
 
-`GitHub <https://github.com/atpy/atpy>`_ - `Download latest stable version <https://github.com/downloads/atpy/atpy/ATpy-0.9.6.tar.gz>`_ 
-
-`Announcement Mailing List <http://groups.google.com/group/atpy-announce>`_ - `Twitter <http://twitter.com/astropython/>`_ - `Discussion Group <http://groups.google.com/group/atpy-users>`_
-
-`Report Bugs <https://github.com/atpy/atpy/issues>`_ - `Requests Features <https://github.com/atpy/atpy/issues>`_
+`GitHub <https://github.com/atpy/atpy>`_ - `Download latest stable version <https://pypi.python.org/pypi/ATpy/>`_ - `Report Bugs <https://github.com/atpy/atpy/issues>`_
 
 ATpy is a high-level Python package providing a way to manipulate tables of
 astronomical data in a uniform way. The two main features of ATpy are:
