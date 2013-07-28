@@ -5,22 +5,15 @@ Obtaining and Installing
 Requirements
 ============
 
-Python 2.5 or later is required, and Python 2.6 is recommended (as SQLite is included by default).
+Python 2.6 or later is required.
 
-ATpy relies on a number of different packages to support reading and writing
-to different file or database formats. However, the only compulsory package is
-`NumPy <http://numpy.scipy.org/>`_. All other requirements are optional - if
-they are not present, the relevant read/write methods will be disabled but
-will not otherwise prevent ATpy from functioning.
+The required dependencies are:
 
-Below is a list of the optional packages that ATpy depends on to support reading and writing to various table types:
+* `NumPy <http://numpy.scipy.org/>`_ 1.5.0 or later
 
-* `pyfits <http://www.stsci.edu/resources/software_hardware/pyfits>`_ (FITS
-  tables)
+* `Astropy <http://www.astropy.org/>`_ 0.2 or later
 
-* `vo <https://trac6.assembla.com/astrolib>`_ (VO tables)
-
-* `asciitable <http://cxc.harvard.edu/contrib/asciitable/>`_ (ASCII tables)
+In addition, the following packages will optionally extend the ability of ATpy to read/write certain formats:
 
 * `h5py <http://code.google.com/p/h5py/>`_ (HDF5 tables)
 
@@ -32,7 +25,7 @@ Below is a list of the optional packages that ATpy depends on to support reading
 Stable version
 ==============
 
-The latest stable release of ATpy can be downloaded from `GitHub <https://github.com/atpy/atpy/archives/master>`_. To install ATpy, use the standard installation procedure::
+The latest stable release of ATpy can be downloaded from `GitHub <https://pypi.python.org/pypi/ATpy>`_. To install ATpy, use the standard installation procedure::
 
     tar xvzf ATpy-X-X.X.tar.gz
     cd ATpy-X.X.X/
