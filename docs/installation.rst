@@ -5,17 +5,15 @@ Obtaining and Installing
 Requirements
 ============
 
-Python 2.6 or later is required.
+Python 2.6 or later is required, as well as the following packages:
 
-The required dependencies are:
-
-* `NumPy <http://numpy.scipy.org/>`_ 1.5.0 or later
+* `NumPy <http://www.numpy.org/>`_ 1.5 or later
 
 * `Astropy <http://www.astropy.org/>`_ 0.2 or later
 
 In addition, the following packages will optionally extend the ability of ATpy to read/write certain formats:
 
-* `h5py <http://code.google.com/p/h5py/>`_ (HDF5 tables)
+* `h5py <http://www.h5py.org>`_ (HDF5 tables)
 
 * `MySQL-python <http://sourceforge.net/projects/mysql-python>`_ (MySQL
   databases)
@@ -30,14 +28,14 @@ The latest stable release of ATpy can be downloaded from `GitHub <https://pypi.p
     tar xvzf ATpy-X-X.X.tar.gz
     cd ATpy-X.X.X/
     python setup.py install
-    
+
 Developer version
 =================
 
 Advanced users wishing to use the latest development ("unstable") version can check it out with::
 
     git clone git://github.com/atpy/atpy.git
-   
+
 which can then be installed with::
 
     cd atpy
