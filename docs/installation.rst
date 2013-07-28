@@ -5,20 +5,23 @@ Obtaining and Installing
 Requirements
 ============
 
-Python 2.6 or later is required, as well as the following packages:
+ATpy requires the following:
 
-* `NumPy <http://www.numpy.org/>`_ 1.5 or later
+- `Python <http://www.python.org>`_ 2.6 or later
 
-* `Astropy <http://www.astropy.org/>`_ 0.2 or later
+- `Numpy <http://www.numpy.org/>`_ 1.5 or later
 
-In addition, the following packages will optionally extend the ability of ATpy to read/write certain formats:
+- `Astropy <http://www.astropy.org>`_ 0.2 or later
 
-* `h5py <http://www.h5py.org>`_ (HDF5 tables)
+The following packages are optional, but are required to read/write to files of
+the relevant format:
 
-* `MySQL-python <http://sourceforge.net/projects/mysql-python>`_ (MySQL
-  databases)
+- `h5py <http://www.h5py.org>`_ 1.3.0 or later (for HDF5 tables)
 
-* `PyGreSQL <http://www.pygresql.org/>`_ (PostGreSQL databases)
+- `MySQL-python <http://sourceforge.net/projects/mysql-python>`_ 1.2.2 or later
+  (for MySQL tables)
+
+- `PyGreSQL <http://www.pygresql.org/>`_ 3.8.1 or later (for PostGreSQL tables)
 
 Stable version
 ==============
