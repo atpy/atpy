@@ -6,6 +6,23 @@ Version 0.9.7
     The main change in this version is that Astropy is now required as a
     dependency, and PyFITS, vo, and asciitable are no longer required.
 
+    The documentation now includes a migration guide for using astropy.table
+    instead of ATpy.
+
+    Improvements
+    ~~~~~~~~~~~~
+
+    - The tests have been re-factored and can now run on Travis-CI
+      (http://www.travis-ci.org) to ensure stability in future.
+
+    Bug fixes
+    ~~~~~~~~~
+
+    - Fixed a bug which caused ATpy to crash if a VO table contained no data
+      (thanks to @gellule)
+
+    - Allow table type to be unicode (thnaks to @ChrisBeaumont)
+
 Version 0.9.6
 
     New Features
