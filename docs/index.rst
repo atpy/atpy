@@ -12,7 +12,7 @@ ATpy - Astronomical Tables in Python
              recommend using `Astropy Tables
              <http://docs.astropy.org/en/stable/table>`_ directly. If you are
              already using ATpy and are interested in migrating to Astropy,
-             please read our :doc:`migration` guide.
+             please read our :doc:`migration`.
 
 `GitHub <https://github.com/atpy/atpy>`_ - `Download latest stable version <https://pypi.python.org/pypi/ATpy/>`_ - `Report Bugs <https://github.com/atpy/atpy/issues>`_
 
