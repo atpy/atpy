@@ -38,7 +38,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'ATpy'
-copyright = u'2009, Eli Bressert and Thomas Robitaille'
+copyright = u'2009-2013, Eli Bressert and Thomas Robitaille'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
