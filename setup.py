@@ -46,16 +46,15 @@ class ATpyTest(Command):
 
 
 setup(name='ATpy',
-      version='0.9.6',
+      version='0.9.7',
       description='Astronomical Tables in Python',
       author='Thomas Robitaille and Eli Bressert',
       author_email='thomas.robitaille@gmail.com, elibre@users.sourceforge.net',
       license='MIT',
-      url='http://atpy.github.com/',
-      download_url='https://github.com/downloads/atpy/atpy/ATpy-0.9.6.tar.gz',
+      url='http://atpy.readthedocs.org/',
       packages=['atpy', 'atpy.tests'],
       provides=['atpy'],
-      requires=['numpy'],
+      requires=['numpy', 'astropy'],
       cmdclass = {'build_py':build_py, 'test':ATpyTest},
       keywords=['Scientific/Engineering'],
       classifiers=[
