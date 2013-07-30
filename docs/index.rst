@@ -75,3 +75,8 @@ Documentation
   formats.rst
   api_table.rst
   api_tableset.rst
+
+Developers
+----------
+
+ATpy is developed by `Thomas Robitaille <http://www.mpia-hd.mpg.de/~robitaille/>`_ and `Eli Bressert <http://astrobiased.com>`_.
