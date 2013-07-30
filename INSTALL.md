@@ -15,8 +15,8 @@ ATpy requires the following:
 - Astropy 0.2 or later
   http://www.astropy.org
 
-The following packages are optional, but are required to read/write to files of
-the relevant format:
+The following packages are optional, but are required to read/write to certain
+formats:
 
 - h5py 1.3.0 or later (for HDF5 tables)
   http://www.h5py.org

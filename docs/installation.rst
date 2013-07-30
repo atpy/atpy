@@ -13,8 +13,8 @@ ATpy requires the following:
 
 - `Astropy <http://www.astropy.org>`_ 0.2 or later
 
-The following packages are optional, but are required to read/write to files of
-the relevant format:
+The following packages are optional, but are required to read/write to certain
+formats:
 
 - `h5py <http://www.h5py.org>`_ 1.3.0 or later (for HDF5 tables)
 
@@ -26,7 +26,7 @@ the relevant format:
 Stable version
 ==============
 
-The latest stable release of ATpy can be downloaded from `GitHub <https://pypi.python.org/pypi/ATpy>`_. To install ATpy, use the standard installation procedure::
+The latest stable release of ATpy can be downloaded from `PyPI <https://pypi.python.org/pypi/ATpy>`_. To install ATpy, use the standard installation procedure::
 
     tar xvzf ATpy-X-X.X.tar.gz
     cd ATpy-X.X.X/
