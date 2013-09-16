@@ -80,6 +80,50 @@ querying. However, the VO and IRSA querying will be possible with the new
 `astroquery <http://astroquery.readthedocs.org>`_ package which is currently
 under development.
 
+Access table data
+------------------
+
+Accessing columns
++++++++++++++++++
+
+ATpy allowed access to columns by either using the column name as a key or, if the key is a valid python variable name, as an attribute of the table::
+
+    >>> from atpy import Table
+    >>> t = Table()
+    >>> t.add_column('a', [1, 2, 3])
+    >>> t['a']
+    array([1, 2, 3])
+    >>> t.a
+    array([1, 2, 3])
+
+Astropy permits column access by only key::
+
+    >>> from astropy.table import Table, Column
+    >>> t = Table()
+    >>> t.add_column(Column(data=[1, 2, 3], name='a'))
+    >>> t['a']
+    <Column name='a' units=None format=None description=None>
+    array([1, 2, 3])
+    >>> t.a
+    Traceback (most recent call last):
+      ...
+    AttributeError: 'Table' object has no attribute 'a'
+
+Accessing rows
+++++++++++++++
+
+Rows are accessed in Astropy as they were in ATpy--one can specify a single index, a slice, or an array of indices.
+
+The ``where`` method in ATpy is replaced by using a boolean index array::
+
+    >>> # In ATpy:
+    >>> t_new = t_atpy.where((t['id'] > 10) & (t['ra'] < 45.4) & (t['flag'] == 'ok'))
+
+    >>> # In Astropy:
+    >>> t_new = t_astropy[ (t['id'] > 10) & (t['ra'] < 45.4) & (t['flag'] == 'ok') ]
+
+Note that astropy returns a new ``Table`` just as the ``where`` method did.
+
 Table Sets
 ----------
 
