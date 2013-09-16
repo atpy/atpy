@@ -61,6 +61,12 @@ Astropy now requires reading to be done by a class method::
     >>> from astropy.table import Table
     >>> t = Table.read('test.fits')
 
+To explicitly specify the format of the file in Astropy use the
+``format`` keyword; it takes the same values that the ``type`` keyword did in ATpy::
+
+    >>> from astropy.table import Table
+    >>> t = Table.read('test.txt', format='ascii')
+
 Writing should be similar between ATpy and Astropy::
 
     >>> t.write('test.fits')
