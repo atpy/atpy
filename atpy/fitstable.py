@@ -260,7 +260,10 @@ def _to_hdu(self):
             null=null, array=data, bzero=bzero))
 
     hdu = fits.new_table(fits.ColDefs(columns))
-    hdu.name = self.table_name
+    try:
+        hdu.name = self.table_name
+    except:
+        hdu.name = ''
 
     for key in self.keywords:
 
