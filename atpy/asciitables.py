@@ -79,6 +79,19 @@ def read_rdb(self, filename, **kwargs):
     read_ascii(self, filename, Reader=ascii.Rdb, **kwargs)
 
 
+def write_tex(self, filename, **kwargs):
+    '''
+    Write data to a LaTeX table
+
+        Required Arguments:
+
+            *filename*: [ string ]
+                The file to write the table to
+
+        Keyword Arguments are passed to asciitable
+    '''
+    write_ascii(self, filename, Writer=asciitable.Latex, **kwargs)
+
 def write_rdb(self, filename, **kwargs):
     '''
     Write data to an RDB table
