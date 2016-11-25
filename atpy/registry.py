@@ -157,7 +157,7 @@ def _determine_type(string, verbose):
         if verbose:
             print("Auto-detected table type: %s" % table_type)
     else:
-        raise Exception('Could not determine table type for extension %s' % extension)
+        raise ValueError('Could not determine table type for extension %s' % extension)
 
     return table_type
 
@@ -207,6 +207,7 @@ register_reader('daophot', asciitables.read_daophot)
 
 register_reader('ascii', asciitables.read_ascii)
 register_writer('ascii', asciitables.write_ascii)
+register_extensions('ascii', ['csv', 'tsv', 'txt'])
 
 from . import hdf5table
 
